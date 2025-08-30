@@ -6,6 +6,7 @@ const DocumentDetail = ({ document, onBack }) => {
   const [documentDetail, setDocumentDetail] = useState(document);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fetchAttempted, setFetchAttempted] = useState(false); // Track if we've attempted to fetch details
 
   // Parse date strings in format "dd.mm.yyyy hh:mm:ss"
   const parseDateString = (dateString) => {
@@ -100,14 +101,17 @@ const DocumentDetail = ({ document, onBack }) => {
   useEffect(() => {
     const fetchDocumentDetail = async () => {
       // If we already have detailed data, no need to fetch
-      if (documentDetail && documentDetail.documentType && documentDetail.id) {
+      if (documentDetail && documentDetail.documentType && documentDetail.id && !fetchAttempted) {
         // Check if we have basic info but not detailed info
-        const hasBasicInfo = documentDetail.title && documentDetail.uploadDate;
+        const hasBasicInfo = (documentDetail.title || documentDetail.number) && documentDetail.uploadDate;
         const hasDetailedFields = documentDetail.hasOwnProperty('payments') || 
                                   documentDetail.hasOwnProperty('project') || 
-                                  documentDetail.hasOwnProperty('expenseDate');
+                                  documentDetail.hasOwnProperty('expenseDate') ||
+                                  documentDetail.hasOwnProperty('author');
         
+        // Only fetch if we don't have detailed fields yet
         if (hasBasicInfo && !hasDetailedFields) {
+          setFetchAttempted(true); // Mark that we've attempted to fetch
           setLoading(true);
           try {
             const token = localStorage.getItem('authToken');
@@ -146,12 +150,15 @@ const DocumentDetail = ({ document, onBack }) => {
           } finally {
             setLoading(false);
           }
+        } else if (hasDetailedFields) {
+          // If we already have detailed fields, mark fetch as attempted to prevent future attempts
+          setFetchAttempted(true);
         }
       }
     };
 
     fetchDocumentDetail();
-  }, [documentDetail]);
+  }, []); // Empty dependency array to run only once on mount
 
   // Render specific fields based on document type
   const renderDocumentSpecificFields = () => {
