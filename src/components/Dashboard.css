@@ -1168,6 +1168,24 @@
   cursor: pointer;
 }
 
+.btn-primary {
+  background-color: #2563eb;
+  color: white;
+}
+
+.main-content.dark .btn-primary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}
+
+.main-content.dark .btn-primary:hover {
+  background-color: #2563eb;
+}
+
 .btn-secondary {
   background-color: #e2e8f0;
   color: #1e293b;
@@ -1186,18 +1204,112 @@
   background-color: #4b5563;
 }
 
-.btn-danger {
-  background-color: #ef4444;
-  color: white;
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
 }
 
-.btn-danger:hover {
-  background-color: #dc2626;
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
 }
 
-.btn-sm {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
+.modal-content {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 500px;
+}
+
+.main-content.dark .modal-content {
+  background-color: #1f2937;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.main-content.dark .modal-header {
+  border-bottom: 1px solid #4b5563;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.main-content.dark .modal-title {
+  color: #e5e7eb;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.main-content.dark .modal-close {
+  color: #9ca3af;
+}
+
+.modal-close:hover {
+  color: #64748b;
+}
+
+.main-content.dark .modal-close:hover {
+  color: #d1d5db;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.main-content.dark .modal-footer {
+  border-top: 1px solid #4b5563;
+}
+
+.filter-group {
+  margin-bottom: 1.5rem;
+}
+
+.filter-group h4 {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.main-content.dark .filter-group h4 {
+  color: #cbd5e1;
 }
 
 /* Loading and Error States */

@@ -436,7 +436,7 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
                         )}
                       </div>
                     </td>
-                    <td>{document.id || '-'}</td>
+                    <td>{document.number || '-'}</td>
                     <td>{document.organization ? document.organization.name || document.organization : '-'}</td>
                     <td>
                       {typeof document.counterparty === 'string' 

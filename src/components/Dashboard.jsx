@@ -48,6 +48,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
         if (documentsResponse.documents && Array.isArray(documentsResponse.documents)) {
           const transformedDocuments = documentsResponse.documents.map((doc) => ({
             id: doc.id || doc.Id || '',
+            number: doc.number || doc.Number || '',
             title: doc.title || doc.Title || doc.Название || 'Без названия',
             description: doc.description || doc.Description || doc.Описание || '',
             documentType: doc.documentType || doc.DocumentType || doc.Type || 'payment',
