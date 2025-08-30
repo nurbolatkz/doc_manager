@@ -883,6 +883,10 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
                 type="button" 
                 className="btn btn-secondary"
                 onClick={() => handleActionButtonClick('send-to-route')}
+                disabled={
+                  !documentDetail || 
+                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined')
+                }
               >
                 <i className="fas fa-paper-plane"></i>
                 Отправить на маршрут
@@ -891,6 +895,10 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
                 type="button" 
                 className="btn btn-success"
                 onClick={() => handleActionButtonClick('approve')}
+                disabled={
+                  !documentDetail || 
+                  documentDetail.status !== 'on_approving'
+                }
               >
                 <i className="fas fa-check-circle"></i>
                 Согласовать
@@ -898,8 +906,12 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
               <button 
                 type="button" 
                 className="btn btn-danger"
-                onClick={() => handleActionButtonClick('decline')}
-                disabled={declining}
+                onClick={() => setShowDeclineConfirmModal(true)}
+                disabled={
+                  declining ||
+                  !documentDetail || 
+                  documentDetail.status !== 'on_approving'
+                }
               >
                 {declining ? (
                   <>
@@ -916,6 +928,10 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
                 type="button" 
                 className="btn btn-secondary"
                 onClick={() => handleActionButtonClick('edit')}
+                disabled={
+                  !documentDetail || 
+                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'rejected')
+                }
               >
                 <i className="fas fa-edit"></i>
                 Редактировать
@@ -923,8 +939,12 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
               <button 
                 type="button" 
                 className="btn btn-danger"
-                onClick={() => handleActionButtonClick('delete')}
-                disabled={deleting}
+                onClick={() => setShowDeleteConfirmModal(true)}
+                disabled={
+                  deleting ||
+                  !documentDetail || 
+                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'rejected')
+                }
               >
                 {deleting ? (
                   <>
