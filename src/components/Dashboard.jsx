@@ -27,100 +27,100 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
 
   // Fetch documents and counts from 1C backend on component mount
   useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-          throw new Error('No authentication token found');
-        }
-
-        // Fetch documents and counts in parallel
-        const [documentsResponse, countsResponse] = await Promise.all([
-          fetchDocuments(token),
-          fetchDocumentCounts(token)
-        ]);
-
-        console.log('Documents fetched from 1C backend:', documentsResponse);
-        console.log('Document counts fetched from 1C backend:', countsResponse);
-
-        // Transform the documents data to match our Document type
-        if (documentsResponse.documents && Array.isArray(documentsResponse.documents)) {
-          const transformedDocuments = documentsResponse.documents.map((doc) => ({
-            id: doc.id || doc.Id || '',
-            number: doc.number || doc.Number || '',
-            title: doc.title || doc.Title || doc.Название || 'Без названия',
-            description: doc.description || doc.Description || doc.Описание || '',
-            documentType: doc.documentType || doc.DocumentType || doc.Type || 'payment',
-            amount: doc.amount !== undefined ? doc.amount : (doc.Amount || 0),
-            currency: doc.currency || doc.Currency || 'KZT',
-            uploadDate: doc.Date || doc.date || doc.UploadDate || new Date().toISOString(),
-            lastModified: doc.lastModified || doc.LastModified || doc.Date || doc.date || new Date().toISOString(),
-            uploadedBy: {
-              id: doc.uploadedBy?.id || doc.AuthorId || 'user',
-              username: doc.uploadedBy?.username || doc.Author || 'Неизвестный автор',
-              name: doc.uploadedBy?.name || doc.Author || 'Неизвестный автор',
-              email: doc.uploadedBy?.email || `${doc.Author || 'unknown'}@company.kz`,
-              canApprove: doc.uploadedBy?.canApprove || doc.canApprove || false,
-              canReject: doc.uploadedBy?.canReject || doc.canReject || false,
-              canEdit: doc.uploadedBy?.canEdit || doc.CanEdit || false,
-              avatar: doc.uploadedBy?.avatar || 'https://via.placeholder.com/40'
-            },
-            status: doc.status || doc.Status || 'on_approving',
-            // Properly map organization and counterparty fields
-            organization: doc.organization || doc.Organization || doc.Организация || '',
-            counterparty: doc.counterparty || doc.Counterparty || doc.Контрагент || '',
-            contract: doc.contract || doc.Contract || doc.Договор || '',
-            attachments: doc.attachments || doc.Attachments || [],
-            routeSteps: doc.routeSteps || doc.RouteSteps || [],
-            // Additional fields that might be in the response
-            date: doc.date || doc.Date || '',
-            author: doc.author || doc.Author || '',
-            responsible: doc.responsible || doc.Responsible || '',
-            comment: doc.comment || doc.Comment || ''
-          }));
-
-          setDocuments(transformedDocuments);
-        }
-
-        // Update document counts
-        if (countsResponse.counts) {
-          setDocumentCounts({
-            incomingToSign: countsResponse.counts.incomingToSign || 0,
-            incomingPayment: countsResponse.counts.incomingPayment || 0,
-            incomingPaymentSchedule: countsResponse.counts.incomingPaymentSchedule || 0,
-            incomingMemo: countsResponse.counts.incomingMemo || 0,
-            outgoingPending: countsResponse.counts.outgoingPending || 0,
-            outgoingSigned: countsResponse.counts.outgoingSigned || 0,
-            outgoingRejected: countsResponse.counts.outgoingRejected || 0
-          });
-        }
-
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-        // Fallback to mock data in case of error
-        setDocuments([
-          { id: '1', title: 'Sample Document 1', status: 'on_approving' },
-          { id: '2', title: 'Sample Document 2', status: 'approved' },
-          { id: '3', title: 'Sample Document 3', status: 'rejected' }
-        ]);
-        
-        setDocumentCounts({
-          incomingToSign: 3,
-          incomingPayment: 2,
-          incomingPaymentSchedule: 1,
-          incomingMemo: 1,
-          outgoingPending: 4,
-          outgoingSigned: 8,
-          outgoingRejected: 2
-        });
-        setLoading(false);
-      }
-    };
-
     loadDashboardData();
   }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Fetch documents and counts in parallel
+      const [documentsResponse, countsResponse] = await Promise.all([
+        fetchDocuments(token),
+        fetchDocumentCounts(token)
+      ]);
+
+      console.log('Documents fetched from 1C backend:', documentsResponse);
+      console.log('Document counts fetched from 1C backend:', countsResponse);
+
+      // Transform the documents data to match our Document type
+      if (documentsResponse.documents && Array.isArray(documentsResponse.documents)) {
+        const transformedDocuments = documentsResponse.documents.map((doc) => ({
+          id: doc.id || doc.Id || '',
+          number: doc.number || doc.Number || '',
+          title: doc.title || doc.Title || doc.Название || 'Без названия',
+          description: doc.description || doc.Description || doc.Описание || '',
+          documentType: doc.documentType || doc.DocumentType || doc.Type || 'payment',
+          amount: doc.amount !== undefined ? doc.amount : (doc.Amount || 0),
+          currency: doc.currency || doc.Currency || 'KZT',
+          uploadDate: doc.Date || doc.date || doc.UploadDate || new Date().toISOString(),
+          lastModified: doc.lastModified || doc.LastModified || doc.Date || doc.date || new Date().toISOString(),
+          uploadedBy: {
+            id: doc.uploadedBy?.id || doc.AuthorId || 'user',
+            username: doc.uploadedBy?.username || doc.Author || 'Неизвестный автор',
+            name: doc.uploadedBy?.name || doc.Author || 'Неизвестный автор',
+            email: doc.uploadedBy?.email || `${doc.Author || 'unknown'}@company.kz`,
+            canApprove: doc.uploadedBy?.canApprove || doc.canApprove || false,
+            canReject: doc.uploadedBy?.canReject || doc.canReject || false,
+            canEdit: doc.uploadedBy?.canEdit || doc.CanEdit || false,
+            avatar: doc.uploadedBy?.avatar || 'https://via.placeholder.com/40'
+          },
+          status: doc.status || doc.Status || 'on_approving',
+          // Properly map organization and counterparty fields
+          organization: doc.organization || doc.Organization || doc.Организация || '',
+          counterparty: doc.counterparty || doc.Counterparty || doc.Контрагент || '',
+          contract: doc.contract || doc.Contract || doc.Договор || '',
+          attachments: doc.attachments || doc.Attachments || [],
+          routeSteps: doc.routeSteps || doc.RouteSteps || [],
+          // Additional fields that might be in the response
+          date: doc.date || doc.Date || '',
+          author: doc.author || doc.Author || '',
+          responsible: doc.responsible || doc.Responsible || '',
+          comment: doc.comment || doc.Comment || ''
+        }));
+
+        setDocuments(transformedDocuments);
+      }
+
+      // Update document counts
+      if (countsResponse.counts) {
+        setDocumentCounts({
+          incomingToSign: countsResponse.counts.incomingToSign || 0,
+          incomingPayment: countsResponse.counts.incomingPayment || 0,
+          incomingPaymentSchedule: countsResponse.counts.incomingPaymentSchedule || 0,
+          incomingMemo: countsResponse.counts.incomingMemo || 0,
+          outgoingPending: countsResponse.counts.outgoingPending || 0,
+          outgoingSigned: countsResponse.counts.outgoingSigned || 0,
+          outgoingRejected: countsResponse.counts.outgoingRejected || 0
+        });
+      }
+
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      // Fallback to mock data in case of error
+      setDocuments([
+        { id: '1', title: 'Sample Document 1', status: 'on_approving' },
+        { id: '2', title: 'Sample Document 2', status: 'approved' },
+        { id: '3', title: 'Sample Document 3', status: 'rejected' }
+      ]);
+      
+      setDocumentCounts({
+        incomingToSign: 3,
+        incomingPayment: 2,
+        incomingPaymentSchedule: 1,
+        incomingMemo: 1,
+        outgoingPending: 4,
+        outgoingSigned: 8,
+        outgoingRejected: 2
+      });
+      setLoading(false);
+    }
+  };
 
   const handleDocumentAction = (documentId, action) => {
     // Placeholder for document actions
@@ -139,6 +139,8 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
   const handleBackToList = () => {
     setSelectedDocument(null);
     setShowCreateForm(null);
+    // Refresh the document list after returning from detail view
+    loadDashboardData();
   };
 
   const toggleDropdown = (dropdownName) => {
@@ -480,6 +482,10 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
           <DocumentDetail 
             document={selectedDocument}
             onBack={handleBackToList}
+            onDelete={(documentId) => {
+              // Refresh the document list after deleting a document
+              loadDashboardData();
+            }}
           />
         ) : showCreateForm ? (
           // Empty DocumentForm component - will be implemented later

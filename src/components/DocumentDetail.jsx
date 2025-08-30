@@ -6,7 +6,7 @@ import {
   deleteDocument 
 } from '../services/fetchManager';
 
-const DocumentDetail = ({ document, onBack }) => {
+const DocumentDetail = ({ document, onBack, onDelete }) => {
   const [documentDetail, setDocumentDetail] = useState(document);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -712,8 +712,11 @@ const DocumentDetail = ({ document, onBack }) => {
       
       // Check if response has success flag
       if (response && response.success === 1) {
-        // Show success message and navigate back
+        // Show success message and notify parent component
         alert('Document deleted successfully');
+        if (onDelete) {
+          onDelete(documentDetail.id);
+        }
         onBack();
       } else {
         throw new Error(response?.message || 'Failed to delete document');
