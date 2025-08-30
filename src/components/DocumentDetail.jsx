@@ -634,6 +634,11 @@ const DocumentDetail = ({ document, onBack }) => {
     );
   };
 
+  // Action button click handlers
+  const handleActionButtonClick = (action) => {
+    alert(`Clicked button: ${action}`);
+  };
+
   if (loading) {
     return (
       <div className="document-detail-container">
@@ -760,6 +765,52 @@ const DocumentDetail = ({ document, onBack }) => {
                 </div>
               </div>
             )}
+          </div>
+          
+          {/* Document Action Buttons */}
+          <div className="content-card">
+            <div className="action-buttons">
+              <button 
+                type="button" 
+                className="btn btn-secondary"
+                onClick={() => handleActionButtonClick('send-to-route')}
+              >
+                <i className="fas fa-paper-plane"></i>
+                Отправить на маршрут
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-success"
+                onClick={() => handleActionButtonClick('approve')}
+              >
+                <i className="fas fa-check-circle"></i>
+                Согласовать
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-danger"
+                onClick={() => handleActionButtonClick('reject')}
+              >
+                <i className="fas fa-times-circle"></i>
+                Отклонить
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-secondary"
+                onClick={() => handleActionButtonClick('edit')}
+              >
+                <i className="fas fa-edit"></i>
+                Редактировать
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-danger"
+                onClick={() => handleActionButtonClick('delete')}
+              >
+                <i className="fas fa-trash-alt"></i>
+                Удалить
+              </button>
+            </div>
           </div>
           
           {/* Document-specific fields */}
