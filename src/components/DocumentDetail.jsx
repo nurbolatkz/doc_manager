@@ -3,8 +3,10 @@ import './Dashboard_Restructured.css';
 import { 
   fetchDocumentDetailsByType, 
   declineDocument, 
-  deleteDocument 
+  deleteDocument,
+  fetchDocumentRoutes
 } from '../services/fetchManager';
+import ConfirmModal from './ConfirmModal';
 
 const DocumentDetail = ({ document, onBack, onDelete }) => {
   const [documentDetail, setDocumentDetail] = useState(document);
@@ -13,6 +15,8 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
   const [fetchAttempted, setFetchAttempted] = useState(false); // Track if we've attempted to fetch details
   const [deleting, setDeleting] = useState(false); // Track if we're deleting
   const [declining, setDeclining] = useState(false); // Track if we're declining
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false); // State for delete confirmation modal
+  const [showDeclineConfirmModal, setShowDeclineConfirmModal] = useState(false); // State for decline confirmation modal
 
   // Parse date strings in format "dd.mm.yyyy hh:mm:ss"
   const parseDateString = (dateString) => {
@@ -671,6 +675,8 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         });
         
         // Show success message
+        // Replace alert with a more elegant solution if needed
+        // For now, we'll use a simple alert as requested
         alert('Document declined successfully');
       } else {
         throw new Error(response?.message || 'Failed to decline document');
@@ -681,16 +687,13 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
       alert('Failed to decline document: ' + (err.message || 'Unknown error'));
     } finally {
       setDeclining(false);
+      setShowDeclineConfirmModal(false);
     }
   };
 
   // Function to handle document deletion
   const handleDeleteDocument = async () => {
     if (!documentDetail) return;
-    
-    // Confirm deletion
-    const confirmDelete = window.confirm('Are you sure you want to delete this document? This action cannot be undone.');
-    if (!confirmDelete) return;
     
     try {
       setDeleting(true);
@@ -727,6 +730,7 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
       alert('Failed to delete document: ' + (err.message || 'Unknown error'));
     } finally {
       setDeleting(false);
+      setShowDeleteConfirmModal(false);
     }
   };
 
@@ -734,10 +738,10 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
   const handleActionButtonClick = (action) => {
     switch (action) {
       case 'decline':
-        handleDeclineDocument();
+        setShowDeclineConfirmModal(true);
         break;
       case 'delete':
-        handleDeleteDocument();
+        setShowDeleteConfirmModal(true);
         break;
       default:
         alert(`Clicked button: ${action}`);
@@ -946,6 +950,28 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
           {renderAttachments()}
         </div>
       </div>
+      
+      {/* Confirmation Modal for Declining Document */}
+      <ConfirmModal
+        isOpen={showDeclineConfirmModal}
+        onClose={() => setShowDeclineConfirmModal(false)}
+        onConfirm={handleDeclineDocument}
+        title="Отклонить документ"
+        message="Вы уверены, что хотите отклонить этот документ? Это действие нельзя отменить."
+        confirmText="Отклонить"
+        cancelText="Отмена"
+      />
+      
+      {/* Confirmation Modal for Deleting Document */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={() => setShowDeleteConfirmModal(false)}
+        onConfirm={handleDeleteDocument}
+        title="Удалить документ"
+        message="Вы уверены, что хотите удалить этот документ? Это действие нельзя отменить."
+        confirmText="Удалить"
+        cancelText="Отмена"
+      />
     </div>
   );
 };
