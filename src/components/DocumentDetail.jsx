@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import './Dashboard_Restructured.css';
-import { fetchDocumentDetailsByType } from '../services/fetchManager';
+import { 
+  fetchDocumentDetailsByType, 
+  declineDocument, 
+  deleteDocument 
+} from '../services/fetchManager';
 
 const DocumentDetail = ({ document, onBack }) => {
   const [documentDetail, setDocumentDetail] = useState(document);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [fetchAttempted, setFetchAttempted] = useState(false); // Track if we've attempted to fetch details
+  const [deleting, setDeleting] = useState(false); // Track if we're deleting
+  const [declining, setDeclining] = useState(false); // Track if we're declining
 
   // Parse date strings in format "dd.mm.yyyy hh:mm:ss"
   const parseDateString = (dateString) => {
@@ -634,9 +640,105 @@ const DocumentDetail = ({ document, onBack }) => {
     );
   };
 
+  // Function to handle document decline
+  const handleDeclineDocument = async () => {
+    if (!documentDetail) return;
+    
+    try {
+      setDeclining(true);
+      setError(null);
+      
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      // Send the decline request to the backend
+      const response = await declineDocument(
+        token,
+        documentDetail.documentType,
+        documentDetail.id
+      );
+      
+      console.log('Document declined:', response);
+      
+      // Check if response has success flag
+      if (response && response.success === 1) {
+        // Update document status to declined
+        setDocumentDetail({
+          ...documentDetail,
+          status: 'declined'
+        });
+        
+        // Show success message
+        alert('Document declined successfully');
+      } else {
+        throw new Error(response?.message || 'Failed to decline document');
+      }
+    } catch (err) {
+      console.error('Error declining document:', err);
+      setError(err.message || 'Failed to decline document');
+      alert('Failed to decline document: ' + (err.message || 'Unknown error'));
+    } finally {
+      setDeclining(false);
+    }
+  };
+
+  // Function to handle document deletion
+  const handleDeleteDocument = async () => {
+    if (!documentDetail) return;
+    
+    // Confirm deletion
+    const confirmDelete = window.confirm('Are you sure you want to delete this document? This action cannot be undone.');
+    if (!confirmDelete) return;
+    
+    try {
+      setDeleting(true);
+      setError(null);
+      
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      // Send the delete request to the backend
+      const response = await deleteDocument(
+        token,
+        documentDetail.documentType,
+        documentDetail.id
+      );
+      
+      console.log('Document deleted:', response);
+      
+      // Check if response has success flag
+      if (response && response.success === 1) {
+        // Show success message and navigate back
+        alert('Document deleted successfully');
+        onBack();
+      } else {
+        throw new Error(response?.message || 'Failed to delete document');
+      }
+    } catch (err) {
+      console.error('Error deleting document:', err);
+      setError(err.message || 'Failed to delete document');
+      alert('Failed to delete document: ' + (err.message || 'Unknown error'));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   // Action button click handlers
   const handleActionButtonClick = (action) => {
-    alert(`Clicked button: ${action}`);
+    switch (action) {
+      case 'decline':
+        handleDeclineDocument();
+        break;
+      case 'delete':
+        handleDeleteDocument();
+        break;
+      default:
+        alert(`Clicked button: ${action}`);
+    }
   };
 
   if (loading) {
@@ -789,10 +891,19 @@ const DocumentDetail = ({ document, onBack }) => {
               <button 
                 type="button" 
                 className="btn btn-danger"
-                onClick={() => handleActionButtonClick('reject')}
+                onClick={() => handleActionButtonClick('decline')}
+                disabled={declining}
               >
-                <i className="fas fa-times-circle"></i>
-                Отклонить
+                {declining ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin"></i> Отклонение...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-times-circle"></i>
+                    Отклонить
+                  </>
+                )}
               </button>
               <button 
                 type="button" 
@@ -806,9 +917,18 @@ const DocumentDetail = ({ document, onBack }) => {
                 type="button" 
                 className="btn btn-danger"
                 onClick={() => handleActionButtonClick('delete')}
+                disabled={deleting}
               >
-                <i className="fas fa-trash-alt"></i>
-                Удалить
+                {deleting ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin"></i> Удаление...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-trash-alt"></i>
+                    Удалить
+                  </>
+                )}
               </button>
             </div>
           </div>
