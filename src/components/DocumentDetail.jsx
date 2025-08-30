@@ -301,7 +301,7 @@ const DocumentDetail = ({ document, onBack }) => {
               </div>
               
               <div className="detail-card">
-                <div className="detail-item">
+                <div className="detail-item hidden">
                   <span className="detail-label">Тип документа:</span>
                   <span className="detail-value">{documentDetail.documentType || 'Не указано'}</span>
                 </div>
@@ -310,7 +310,7 @@ const DocumentDetail = ({ document, onBack }) => {
                   <span className="detail-value">{documentDetail.cfo || 'Не указано'}</span>
                 </div>
               </div>
-              
+
               <div className="detail-card" style={{ gridColumn: 'span 3' }}>
                 <div className="detail-item">
                   <span className="detail-label">Заголовок:</span>
@@ -385,7 +385,7 @@ const DocumentDetail = ({ document, onBack }) => {
                   <span className="detail-label">Сумма Взаиморасчетов:</span>
                   <span className="detail-value">{documentDetail.amountOfSettlements || 'Не указано'}</span>
                 </div>
-                <div className="detail-item">
+                <div className="detail-item hidden">
                   <span className="detail-label">Сумма Документа:</span>
                   <span className="detail-value">
                     {documentDetail.amount ? formatCurrency(documentDetail.amount) : 'Не указано'}
@@ -712,11 +712,11 @@ const DocumentDetail = ({ document, onBack }) => {
                   <span className="detail-label">Название</span>
                   <span className="detail-value">{documentDetail?.title || 'Без названия'}</span>
                 </div>
-                <div className="detail-item">
+                <div className="detail-item hidden">
                   <span className="detail-label">ID</span>
                   <span className="detail-value">{documentDetail?.id || 'Не указан'}</span>
                 </div>
-                <div className="detail-item">
+                <div className="detail-item hidden">
                   <span className="detail-label">Тип документа</span>
                   <span className="detail-value">{getDocumentTypeText(documentDetail?.documentType)}</span>
                 </div>
