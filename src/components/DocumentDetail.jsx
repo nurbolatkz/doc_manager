@@ -188,20 +188,12 @@ const DocumentDetail = ({ document, onBack }) => {
                 
                 <div className="detail-card">
                   <div className="detail-item">
-                    <span className="detail-label">Автор:</span>
-                    <span className="detail-value">{documentDetail.author || 'Не указано'}</span>
-                  </div>
-                  <div className="detail-item">
                     <span className="detail-label">Ответственный:</span>
                     <span className="detail-value">{documentDetail.responsible || 'Не указано'}</span>
                   </div>
                 </div>
                 
                 <div className="detail-card">
-                  <div className="detail-item">
-                    <span className="detail-label">Статус:</span>
-                    <span className="detail-value">{documentDetail.status || 'Не указано'}</span>
-                  </div>
                   <div className="detail-item">
                     <span className="detail-label">Комментарий:</span>
                     <span className="detail-value">{documentDetail.comment || 'Не указано'}</span>
