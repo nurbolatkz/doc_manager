@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './Dashboard.css';
+import './Dashboard_Restructured.css';
 import { fetchDocumentDetailsByType } from '../services/fetchManager';
 
 const DocumentDetail = ({ document, onBack }) => {

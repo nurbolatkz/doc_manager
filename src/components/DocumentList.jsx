@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './Dashboard.css';
+import './Dashboard_Restructured.css';
 
 const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, theme }) => {
   const [searchQuery, setSearchQuery] = useState(filter.searchQuery || '');
@@ -343,7 +343,7 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
 
       {/* Filters */}
       <div className="mb-4">
-        <div className="d-flex gap-3 mb-3 flex-wrap">
+        <div className="d-flex gap-3 mb-3 flex-wrap filter-controls">
           {/* Search */}
           <div className="flex-1" style={{ minWidth: '250px', marginRight: '10px' }}>
             <div className="search-box">

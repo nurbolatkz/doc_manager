@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './Dashboard.css';
+import './Dashboard_Restructured.css';
 import { fetchDocuments, fetchDocumentCounts } from '../services/fetchManager';
 import DocumentList from './DocumentList';
 import DocumentDetail from './DocumentDetail';
@@ -168,8 +168,26 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
       />
       
+      {/* Mobile Sidebar Toggle Button */}
+      {!sidebarOpen && (
+        <button
+          className="mobile-sidebar-toggle"
+          onClick={() => setSidebarOpen(true)}
+        >
+          <i className="fas fa-bars"></i>
+        </button>
+      )}
+      
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="mobile-sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
       {/* Sidebar */}
-      <div className="sidebar sidebar-transition">
+      <div className={`sidebar sidebar-transition ${sidebarOpen ? 'sidebar-open' : ''}`}>
         <div className="sidebar-header">
           <div className="sidebar-title">
             {sidebarOpen && (
@@ -456,7 +474,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
       </div>
 
       {/* Main Content */}
-      <div className={`main-content ${theme.mode === 'dark' ? 'dark' : 'light'}`}>
+      <div className={`main-content ${theme.mode === 'dark' ? 'dark' : 'light'}`} style={{ marginLeft: sidebarOpen ? undefined : '0' }}>
         {selectedDocument ? (
           // DocumentDetail component
           <DocumentDetail 
