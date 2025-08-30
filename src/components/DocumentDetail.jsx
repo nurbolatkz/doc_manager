@@ -4,9 +4,13 @@ import {
   fetchDocumentDetailsByType, 
   declineDocument, 
   deleteDocument,
-  fetchDocumentRoutes
+  fetchDocumentRoutes,
+  getSigningTemplate,
+  saveSignedDocument,
+  saveSignedDocumentAndApprove
 } from '../services/fetchManager';
 import ConfirmModal from './ConfirmModal';
+import SigexQRModal from './SigexQRModal';
 
 const DocumentDetail = ({ document, onBack, onDelete }) => {
   const [documentDetail, setDocumentDetail] = useState(document);
@@ -17,6 +21,12 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
   const [declining, setDeclining] = useState(false); // Track if we're declining
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false); // State for delete confirmation modal
   const [showDeclineConfirmModal, setShowDeclineConfirmModal] = useState(false); // State for decline confirmation modal
+  const [routeSteps, setRouteSteps] = useState([]); // State for route steps
+  
+  // Sigex signing state
+  const [showSigningModal, setShowSigningModal] = useState(false);
+  const [signingAction, setSigningAction] = useState(null);
+  const [signingLoading, setSigningLoading] = useState(false);
 
   // Parse date strings in format "dd.mm.yyyy hh:mm:ss"
   const parseDateString = (dateString) => {
@@ -169,6 +179,67 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
 
     fetchDocumentDetail();
   }, []); // Empty dependency array to run only once on mount
+
+  // Fetch route steps data
+  useEffect(() => {
+    const fetchRouteSteps = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+        
+        // Fetch document routes based on document type and ID
+        const routeData = await fetchDocumentRoutes(token, documentDetail.documentType, documentDetail.id);
+        console.log('Document routes fetched from 1C backend:', routeData);
+        
+        if (routeData && routeData.data && Array.isArray(routeData.data)) {
+          // Transform the fetched route data to match our route steps structure
+          const transformedRoutes = routeData.data
+            .map((route, index) => {
+              // Find the current step based on status
+              let status = 'pending';
+              if (route.status === 'approved') {
+                status = 'approved';
+              } else if (route.status === 'rejected') {
+                status = 'rejected';
+              }
+              
+              // Extract users from the route data
+              let users = [''];
+              if (route.users && Array.isArray(route.users)) {
+                // Split each user by newlines and flatten into a single array
+                users = route.users.flatMap(user => 
+                  user.split('\n').filter(line => line.trim() !== '')
+                );
+                // If no valid users after splitting, use a default
+                if (users.length === 0) users = [''];
+              }
+              
+              return {
+                id: route.id || `step-${index}`,
+                stepNumber: route.order !== undefined ? route.order + 1 : index + 1,
+                title: route.step_title || `Шаг ${index + 1}`,
+                users: users,
+                status: status,
+                comment: route.info || ''
+              };
+            })
+            .sort((a, b) => a.stepNumber - b.stepNumber); // Sort by step number to ensure correct order
+          
+          setRouteSteps(transformedRoutes);
+        }
+      } catch (err) {
+        console.error('Error fetching document routes:', err);
+        // Continue even if route fetch fails
+      }
+    };
+
+    // Only fetch routes if we have document details
+    if (documentDetail && documentDetail.documentType && documentDetail.id) {
+      fetchRouteSteps();
+    }
+  }, [documentDetail]);
 
   // Render specific fields based on document type
   const renderDocumentSpecificFields = () => {
@@ -482,7 +553,7 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
 
   // Render route steps component
   const renderRouteSteps = () => {
-    if (!documentDetail || !documentDetail.routeSteps || documentDetail.routeSteps.length === 0) {
+    if (!routeSteps || routeSteps.length === 0) {
       return (
         <div className="content-card">
           <div className="section-header">
@@ -496,6 +567,21 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         </div>
       );
     }
+
+    const getStepStatusClass = (index, status) => {
+      if (status === 'approved') return 'approved';
+      if (status === 'rejected') return 'rejected';
+      // We don't have currentStep info in our current implementation, so we'll just use pending for all other cases
+      return 'pending';
+    };
+
+    const getStepStatusIcon = (status) => {
+      switch (status) {
+        case 'approved': return 'fas fa-check';
+        case 'rejected': return 'fas fa-times';
+        default: return 'fas fa-hourglass-half';
+      }
+    };
 
     return (
       <div className="content-card">
@@ -511,24 +597,18 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
           </div>
           
           <div className="route-steps-container space-y-4 ml-8">
-            {documentDetail.routeSteps.map((step, index) => {
-              let statusClass = 'pending';
-              if (step.status === 'approved') statusClass = 'approved';
-              else if (step.status === 'rejected') statusClass = 'rejected';
-              else if (index === documentDetail.currentStep) statusClass = 'current';
-              else if (index < documentDetail.currentStep) statusClass = 'completed';
-
-              let statusIcon = 'fas fa-hourglass-half';
-              if (step.status === 'approved') statusIcon = 'fas fa-check';
-              else if (step.status === 'rejected') statusIcon = 'fas fa-times';
-              else if (index === documentDetail.currentStep) statusIcon = 'fas fa-user';
-
-              // Get users for this step
+            {routeSteps.map((step, index) => {
+              const statusClass = getStepStatusClass(index, step.status);
+              const statusIcon = getStepStatusIcon(step.status);
+              
+              // Get users for this step and flatten any multi-line users into separate users
               let users = [''];
               if (step.users && step.users.length > 0) {
+                // Split each user by newlines and flatten into a single array
                 users = step.users.flatMap(user => 
                   user.split('\n').filter(line => line.trim() !== '')
                 );
+                // If no valid users after splitting, use a default
                 if (users.length === 0) users = [''];
               }
               
@@ -798,6 +878,219 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
     );
   }
 
+  // Function to handle approval with signing
+  const handleApproveWithSigning = async () => {
+    if (!documentDetail) return;
+    
+    try {
+      setSigningLoading(true);
+      setError(null);
+      
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      console.log('Fetching signing template for document:', {
+        documentType: documentDetail.documentType,
+        documentId: documentDetail.id
+      });
+      
+      // Get signing template
+      const templateResponse = await getSigningTemplate(
+        token,
+        documentDetail.documentType,
+        documentDetail.id
+      );
+      
+      console.log('Template response received:', templateResponse);
+      
+      // Always try to process the response, even if success flag is missing
+      if (templateResponse) {
+        // Extract document info from response - handling both possible structures
+        let documentInfo, binaryData, metadata;
+        
+        // Check if response has ПараметрыПодчФормы structure
+        if (templateResponse.hasOwnProperty('ПараметрыПодчФормы')) {
+          documentInfo = templateResponse.ПараметрыПодчФормы?.ДанныеПодисываемогоДокумента;
+          binaryData = templateResponse.ПараметрыПодчФормы?.ДвоичДанные;
+          metadata = templateResponse.ПараметрыПодчФормы?.ДанныеДляРС;
+        } 
+        // Check if response has data structure
+        else if (templateResponse.hasOwnProperty('data')) {
+          documentInfo = templateResponse.data?.ДанныеПодчФормы?.ДанныеПодисываемогоДокумента;
+          binaryData = templateResponse.data?.ДвоичДанные;
+          metadata = templateResponse.data?.ДанныеДляРС;
+        }
+        // Check if response has direct structure
+        else {
+          documentInfo = templateResponse?.ДанныеПодчФормы?.ДанныеПодисываемогоДокумента;
+          binaryData = templateResponse?.ДвоичДанные;
+          metadata = templateResponse?.ДанныеДляРС;
+        }
+        
+        console.log('Extracted template data:', {
+          documentInfo,
+          binaryData: binaryData ? `${binaryData.substring(0, 50)}...` : null,
+          metadata
+        });
+        
+        // Log the size of the template data
+        if (binaryData) {
+          console.log('Template size:', binaryData.length, 'characters');
+        }
+        
+        // Check if we have the required data
+        if (!binaryData) {
+          throw new Error('Не удалось получить данные документа для подписания');
+        }
+        
+        // Store template data in document state
+        const updatedDocument = {
+          ...documentDetail,
+          signingTemplate: {
+            binaryData,
+            documentInfo,
+            metadata
+          }
+        };
+        
+        console.log('Setting document detail with signing template');
+        setDocumentDetail(updatedDocument);
+        console.log('Setting signing action to: approve');
+        setSigningAction('approve');
+        console.log('Setting showSigningModal to true');
+        setShowSigningModal(true);
+        console.log('State update completed');
+      } else {
+        throw new Error('Failed to get signing template for approve');
+      }
+    } catch (err) {
+      console.error('Error getting signing template for approve:', err);
+      const errorMessage = err.message || 'Failed to get signing template for approve';
+      setError(errorMessage);
+    } finally {
+      setSigningLoading(false);
+    }
+  };
+
+  // Function to handle SIGEX signing completion
+  const handleSigningComplete = (signedDocuments) => {
+    console.log('SIGEX signing completed with documents:', signedDocuments);
+    if (!documentDetail || !signingAction) return;
+    
+    try {
+      // Close the SIGEX modal
+      setShowSigningModal(false);
+      
+      // Send the signed document to the backend for approval
+      const sendSignedDocument = async () => {
+        try {
+          const token = localStorage.getItem('authToken');
+          if (!token) {
+            throw new Error('No authentication token found');
+          }
+          
+          // First, save the signed document data
+          
+          if (documentDetail.signingTemplate?.metadata) {
+            const saveResponse = await saveSignedDocument(
+              token,
+              documentDetail.id,
+              documentDetail.documentType,
+              signedDocuments[0]?.data || '', // Pass the signed document data
+              documentDetail.signingTemplate.metadata // Pass the metadata
+            );
+            
+            console.log('Signed document saved:', saveResponse);
+            
+            if (saveResponse && saveResponse.success !== 1) {
+              throw new Error(saveResponse?.message || 'Failed to save signed document');
+            }
+          }
+          
+          // Then, send the signed document to the backend for approval
+          const response = await saveSignedDocumentAndApprove(
+            token,
+            documentDetail.documentType,
+            documentDetail.id,
+            signedDocuments[0]?.data || '' // Pass the signed document data
+          );
+          
+          console.log('Signed document saved and approved:', response);
+          
+          // Check if response has success flag
+          if (response && response.success === 1) {
+            // Update document status to approved
+            setDocumentDetail({
+              ...documentDetail,
+              status: 'approved'
+            });
+            
+            // Refetch routes to update the route steps
+            try {
+              const routeData = await fetchDocumentRoutes(token, documentDetail.documentType, documentDetail.id);
+              console.log('Document routes refetched from 1C backend:', routeData);
+              
+              if (routeData && routeData.data && Array.isArray(routeData.data)) {
+                // Transform the fetched route data to match our route steps structure
+                const transformedRoutes = routeData.data
+                  .map((route, index) => {
+                    // Find the current step based on status
+                    let status = 'pending';
+                    if (route.status === 'approved') {
+                      status = 'approved';
+                    } else if (route.status === 'rejected') {
+                      status = 'rejected';
+                    }
+                    
+                    // Extract users from the route data
+                    let users = [''];
+                    if (route.users && Array.isArray(route.users)) {
+                      // Split each user by newlines and flatten into a single array
+                      users = route.users.flatMap(user => 
+                        user.split('\n').filter(line => line.trim() !== '')
+                      );
+                      // If no valid users after splitting, use a default
+                      if (users.length === 0) users = [''];
+                    }
+                    
+                    return {
+                      id: route.id || `step-${index}`,
+                      stepNumber: route.order !== undefined ? route.order + 1 : index + 1,
+                      title: route.step_title || `Шаг ${index + 1}`,
+                      users: users,
+                      status: status,
+                      comment: route.info || ''
+                    };
+                  })
+                  .sort((a, b) => a.stepNumber - b.stepNumber); // Sort by step number to ensure correct order
+              
+                setRouteSteps(transformedRoutes);
+              }
+            } catch (routeError) {
+              console.error('Error refetching document routes:', routeError);
+              // Continue even if route fetch fails
+            }
+          }
+          
+          // Show success message
+          alert('Document approved successfully');
+        } catch (err) {
+          console.error('Error saving signed document:', err);
+          setError(err.message || 'Failed to save signed document');
+          alert('Failed to approve document: ' + (err.message || 'Unknown error'));
+        }
+      };
+      
+      // Execute the function
+      sendSignedDocument();
+    } catch (err) {
+      console.error('Error handling signed document:', err);
+      setError(err.message || 'Failed to process signed document');
+    }
+  };
+
   return (
     <div className="document-detail-container">
       <div className="content-card">
@@ -894,14 +1187,23 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
               <button 
                 type="button" 
                 className="btn btn-success"
-                onClick={() => handleActionButtonClick('approve')}
+                onClick={handleApproveWithSigning}
                 disabled={
                   !documentDetail || 
-                  documentDetail.status !== 'on_approving'
+                  documentDetail.status !== 'on_approving' ||
+                  signingLoading
                 }
               >
-                <i className="fas fa-check-circle"></i>
-                Согласовать
+                {signingLoading ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin"></i> Подготовка...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-check-circle"></i>
+                    Согласовать
+                  </>
+                )}
               </button>
               <button 
                 type="button" 
@@ -991,6 +1293,15 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         message="Вы уверены, что хотите удалить этот документ? Это действие нельзя отменить."
         confirmText="Удалить"
         cancelText="Отмена"
+      />
+      
+      {/* SIGEX Signing Modal */}
+      <SigexQRModal
+        isOpen={showSigningModal}
+        onClose={() => setShowSigningModal(false)}
+        onSigningComplete={handleSigningComplete}
+        documentData={documentDetail?.signingTemplate?.binaryData}
+        documentInfo={documentDetail?.signingTemplate?.documentInfo}
       />
     </div>
   );
