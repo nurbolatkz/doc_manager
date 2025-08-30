@@ -153,6 +153,18 @@ export async function fetchDocumentRoutes(token, documentType, documentId) {
   return apiRequest("routes", requestBody, token);
 }
 
+// Function to get document route type
+export async function getDocumentRouteType(token, documentType, documentId) {
+  const requestBody = {
+    username: "Администратор",
+    token: token,
+    type: documentType,
+    documentId: documentId
+  };
+
+  return apiRequest("get_document_route_type", requestBody, token);
+}
+
 // Function to send document to route
 export async function sendDocumentToRoute(token, documentType, documentId, routeType = "fixed") {
   const requestBody = {
@@ -160,6 +172,43 @@ export async function sendDocumentToRoute(token, documentType, documentId, route
     action: "send_to_route",
     type: documentType,
     typeOfRoute: routeType,
+    documentId: documentId
+  };
+
+  return apiRequest("register_document_action", requestBody, token);
+}
+
+// Function to get users list
+export async function getUsersList(token) {
+  const requestBody = {
+    username: "Администратор",
+    token: token
+  };
+
+  return apiRequest("get_users_list", requestBody, token);
+}
+
+// Function to get route titles
+export async function getRouteTitles(token, documentType, documentId) {
+  const requestBody = {
+    username: "Администратор",
+    token: token,
+    type: documentType,
+    documentId: documentId
+  };
+
+  return apiRequest("get_route_title", requestBody, token);
+}
+
+// Function to send document to free route
+export async function sendToFreeRoute(token, documentType, documentId, routeSteps) {
+  const requestBody = {
+    username: "Администратор",
+    token: token,
+    action: "send_to_free_route",
+    type: documentType,
+    typeOfRoute: "free",
+    routeSteps: routeSteps,
     documentId: documentId
   };
 

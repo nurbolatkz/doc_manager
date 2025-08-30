@@ -7,7 +7,13 @@ import {
   fetchDocumentRoutes,
   getSigningTemplate,
   saveSignedDocument,
-  saveSignedDocumentAndApprove
+  saveSignedDocumentAndApprove,
+  sendDocumentToRoute,
+  checkAccessToApproveDecline,
+  getUsersList,
+  getRouteTitles,
+  sendToFreeRoute,
+  getDocumentRouteType
 } from '../services/fetchManager';
 import ConfirmModal from './ConfirmModal';
 import SigexQRModal from './SigexQRModal';
@@ -27,6 +33,21 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
   const [showSigningModal, setShowSigningModal] = useState(false);
   const [signingAction, setSigningAction] = useState(null);
   const [signingLoading, setSigningLoading] = useState(false);
+  
+  // Send to route state
+  const [sendingToRoute, setSendingToRoute] = useState(false);
+  const [routeSent, setRouteSent] = useState(false);
+  
+  // Free route state
+  const [routeTitles, setRouteTitles] = useState([]);
+  const [usersList, setUsersList] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState({});
+  const [loadingRouteTitles, setLoadingRouteTitles] = useState(false);
+  const [searchTerms, setSearchTerms] = useState({});
+  
+  // Route type state
+  const [routeType, setRouteType] = useState(null);
+  const [loadingRouteType, setLoadingRouteType] = useState(false);
 
   // Parse date strings in format "dd.mm.yyyy hh:mm:ss"
   const parseDateString = (dateString) => {
@@ -180,6 +201,67 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
     fetchDocumentDetail();
   }, []); // Empty dependency array to run only once on mount
 
+  // Clear route data when document status is 'prepared' or 'declined'
+  useEffect(() => {
+    if (documentDetail && (documentDetail.status === 'prepared' || documentDetail.status === 'declined')) {
+      // Clear route steps if they exist
+      if (routeSteps.length > 0) {
+        setRouteSteps([]);
+      }
+      
+      // Clear route titles if they exist
+      if (routeTitles.length > 0) {
+        setRouteTitles([]);
+      }
+      
+      // Reset selected users
+      if (Object.keys(selectedUsers).length > 0) {
+        setSelectedUsers({});
+      }
+      
+      // Reset route sent status
+      if (routeSent) {
+        setRouteSent(false);
+      }
+    }
+  }, [documentDetail?.status]);
+
+  // Fetch route type when document detail changes
+  useEffect(() => {
+    const fetchRouteType = async () => {
+      if (!documentDetail || !documentDetail.documentType || !documentDetail.id || routeType !== null) return;
+      
+      try {
+        setLoadingRouteType(true);
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+        
+        const response = await getDocumentRouteType(token, documentDetail.documentType, documentDetail.id);
+        
+        if (response && response.success === 1) {
+          setRouteType(response.routeType);
+          // Update document detail with route type
+          setDocumentDetail(prev => ({
+            ...prev,
+            routeType: response.routeType
+          }));
+        } else {
+          console.error('Failed to fetch route type:', response?.message);
+          setError(response?.message || 'Failed to fetch route type');
+        }
+      } catch (err) {
+        console.error('Error fetching route type:', err);
+        setError(err.message || 'Failed to fetch route type');
+      } finally {
+        setLoadingRouteType(false);
+      }
+    };
+
+    fetchRouteType();
+  }, [documentDetail]);
+
   // Fetch route steps data
   useEffect(() => {
     const fetchRouteSteps = async () => {
@@ -240,6 +322,64 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
       fetchRouteSteps();
     }
   }, [documentDetail]);
+
+  // Fetch route titles for free route type
+  const fetchRouteTitles = async () => {
+    if (!documentDetail || routeType !== 'free' || routeTitles.length > 0) return;
+    
+    try {
+      setLoadingRouteTitles(true);
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      const response = await getRouteTitles(token, documentDetail.documentType, documentDetail.id);
+      if (response && response.data && Array.isArray(response.data)) {
+        setRouteTitles(response.data);
+        // Initialize selectedUsers state
+        const initialSelectedUsers = {};
+        response.data.forEach(title => {
+          initialSelectedUsers[title.guid] = '';
+        });
+        setSelectedUsers(initialSelectedUsers);
+      }
+    } catch (err) {
+      console.error('Error fetching route titles:', err);
+      setError('Failed to fetch route titles');
+    } finally {
+      setLoadingRouteTitles(false);
+    }
+  };
+
+  // Fetch users list
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+        
+        const response = await getUsersList(token);
+        if (response && response.data && Array.isArray(response.data)) {
+          setUsersList(response.data);
+        }
+      } catch (err) {
+        console.error('Error fetching users list:', err);
+        setError('Failed to fetch users list');
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  // Fetch route titles when documentDetail changes and routeType is 'free'
+  useEffect(() => {
+    if (documentDetail && routeType === 'free' && routeTitles.length === 0) {
+      fetchRouteTitles();
+    }
+  }, [documentDetail, routeType]);
 
   // Render specific fields based on document type
   const renderDocumentSpecificFields = () => {
@@ -553,7 +693,10 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
 
   // Render route steps component
   const renderRouteSteps = () => {
-    if (!routeSteps || routeSteps.length === 0) {
+    // Check if we need to show free route steps
+    const showFreeRouteSteps = routeType === 'free' && routeTitles.length > 0 && routeSteps.length === 0;
+    
+    if (!routeSteps || (routeSteps.length === 0 && !showFreeRouteSteps)) {
       return (
         <div className="content-card">
           <div className="section-header">
@@ -563,6 +706,80 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
           <div className="text-gray-500 dark:text-gray-400 text-center py-8">
             <i className="fas fa-route text-3xl mb-2"></i>
             <p>Маршрут документа не настроен</p>
+          </div>
+        </div>
+      );
+    }
+
+    // Render free route steps
+    if (showFreeRouteSteps) {
+      return (
+        <div className="content-card">
+          <div className="section-header">
+            <i className="fas fa-route"></i>
+            Маршрут документа
+          </div>
+          
+          <div className="route-flow-container space-y-4">
+            <div className="route-start-icon flex items-center text-green-500">
+              <i className="fas fa-play-circle mr-3 text-xl"></i>
+              <span className="text-sm font-medium">Начало маршрута</span>
+            </div>
+            
+            <div className="route-steps-container space-y-4 ml-8">
+              {routeTitles.map((title, index) => {
+                const stepGuid = title.guid;
+                const searchTerm = searchTerms[stepGuid] || '';
+                const filteredUsers = getFilteredUsers(stepGuid);
+                const selectedUserGuid = selectedUsers[stepGuid] || '';
+                
+                return (
+                  <div 
+                    key={stepGuid} 
+                    className="route-step pending"
+                    data-index={index}
+                  >
+                    <div className="icon">
+                      <i className="fas fa-hourglass-half"></i>
+                    </div>
+                    <div className="route-step-info">
+                      <strong>{title.name || `Шаг ${index + 1}`}</strong>
+                      
+                      {/* User selection dropdown with search */}
+                      <div className="user-selection mt-2">
+                        <div className="search-container mb-2">
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Поиск пользователя..."
+                            value={searchTerm}
+                            onChange={(e) => handleSearchTermChange(stepGuid, e.target.value)}
+                          />
+                        </div>
+                        
+                        <select
+                          className="form-control"
+                          value={selectedUserGuid}
+                          onChange={(e) => handleUserSelection(stepGuid, e.target.value)}
+                        >
+                          <option value="">Выберите пользователя</option>
+                          {filteredUsers.map(user => (
+                            <option key={user.guid} value={user.guid}>
+                              {user.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div className="route-finish-icon flex items-center text-blue-500">
+              <i className="fas fa-flag-checkered mr-3 text-xl"></i>
+              <span className="text-sm font-medium">Завершение маршрута</span>
+            </div>
           </div>
         </div>
       );
@@ -817,6 +1034,9 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
   // Action button click handlers
   const handleActionButtonClick = (action) => {
     switch (action) {
+      case 'send-to-route':
+        handleSendToRoute();
+        break;
       case 'decline':
         setShowDeclineConfirmModal(true);
         break;
@@ -974,6 +1194,165 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
     }
   };
 
+  // Function to send document to route
+  const handleSendToRoute = async () => {
+    // Pre-send validation
+    if (!documentDetail) return;
+    
+    // Check if routeType is free
+    if (routeType === "free") {
+      // Check if route steps are filled
+      if (routeSteps.length === 0) {
+        // Check if all users are selected for free route
+        const allUsersSelected = Object.values(selectedUsers).every(userGuid => userGuid && userGuid.trim() !== '');
+        if (!allUsersSelected) {
+          alert('Пожалуйста, заполните маршрутные шаги');
+          return;
+        }
+      }
+    }
+    
+    // Check document state - only allow sending when document is prepared
+    if (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined')  {
+      setError('Document is not in a state that allows sending to route');
+      return;
+    }
+    
+    // Disable button after successful send
+    if (routeSent) return;
+    
+    try {
+      setSendingToRoute(true);
+      setError(null);
+      
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      let response;
+      
+      // Check if routeType is free
+      if (routeType === "free") {
+        // Check if all users are selected
+        const allUsersSelected = Object.values(selectedUsers).every(userGuid => userGuid && userGuid.trim() !== '');
+        if (!allUsersSelected) {
+          alert('Пожалуйста, выберите пользователей для всех шагов');
+          setSendingToRoute(false);
+          return;
+        }
+        
+        // Build routeSteps array
+        const routeStepsArray = Object.entries(selectedUsers).map(([stepGuid, userGuid]) => ({
+          step_guid: stepGuid,
+          user_guid: userGuid
+        }));
+        
+        // API Request for free route
+        response = await sendToFreeRoute(
+          token,
+          documentDetail.documentType,
+          documentDetail.id,
+          routeStepsArray
+        );
+      } else {
+        // API Request for fixed route
+        response = await sendDocumentToRoute(
+          token, 
+          documentDetail.documentType, 
+          documentDetail.id, 
+          "fixed"
+        );
+      }
+      
+      // Response handling
+      if (response && response.success === 1) {
+        // Success - update document status to on_approving
+        setRouteSent(true);
+        // Update document status in state
+        if (documentDetail) {
+          const updatedDocument = {
+            ...documentDetail,
+            status: 'on_approving'
+          };
+          setDocumentDetail(updatedDocument);
+          
+          // Check access to approve/decline
+          try {
+            const accessResponse = await checkAccessToApproveDecline(
+              token,
+              documentDetail.documentType,
+              documentDetail.id
+            );
+            
+            if (accessResponse && accessResponse.success === 1) {
+              // Update the document with access information
+              setDocumentDetail({
+                ...updatedDocument,
+                canApprove: accessResponse.canApprove,
+                canReject: accessResponse.canReject
+              });
+            }
+          } catch (accessError) {
+            console.error('Error checking access to approve/decline:', accessError);
+            // Continue even if access check fails
+          }
+        }
+        
+        // After success: fetch and re-render route steps
+        const routeData = await fetchDocumentRoutes(token, documentDetail.documentType, documentDetail.id);
+        if (routeData && routeData.data && Array.isArray(routeData.data)) {
+          // Transform the fetched route data to match our route steps structure
+          const transformedRoutes = routeData.data
+            .map((route, index) => {
+              // Find the current step based on status
+              let status = 'pending';
+              if (route.status === 'approved') {
+                status = 'approved';
+              } else if (route.status === 'rejected') {
+                status = 'rejected';
+              }
+              
+              // Extract users from the route data
+              let users = [''];
+              if (route.users && Array.isArray(route.users)) {
+                // Split each user by newlines and flatten into a single array
+                users = route.users.flatMap(user => 
+                  user.split('\n').filter(line => line.trim() !== '')
+                );
+                // If no valid users after splitting, use a default
+                if (users.length === 0) users = [''];
+              }
+              
+              return {
+                id: route.id || `step-${index}`,
+                stepNumber: route.order !== undefined ? route.order + 1 : index + 1,
+                title: route.step_title || `Шаг ${index + 1}`,
+                users: users,
+                status: status,
+                comment: route.info || ''
+              };
+            })
+            .sort((a, b) => a.stepNumber - b.stepNumber); // Sort by step number to ensure correct order
+          
+          setRouteSteps(transformedRoutes);
+        }
+        
+        // Show success message
+        alert('Document sent to route successfully');
+      } else {
+        // Error
+        throw new Error(response?.message || 'Failed to send document to route');
+      }
+    } catch (err) {
+      console.error('Error sending document to route:', err);
+      setError(err.message || 'Failed to send document to route');
+      alert('Failed to send document to route: ' + (err.message || 'Unknown error'));
+    } finally {
+      setSendingToRoute(false);
+    }
+  };
+
   // Function to handle SIGEX signing completion
   const handleSigningComplete = (signedDocuments) => {
     console.log('SIGEX signing completed with documents:', signedDocuments);
@@ -1091,6 +1470,32 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
     }
   };
 
+  // Function to handle user selection for a route step
+  const handleUserSelection = (stepGuid, userGuid) => {
+    setSelectedUsers(prev => ({
+      ...prev,
+      [stepGuid]: userGuid
+    }));
+  };
+
+  // Function to handle search term change for a route step
+  const handleSearchTermChange = (stepGuid, searchTerm) => {
+    setSearchTerms(prev => ({
+      ...prev,
+      [stepGuid]: searchTerm
+    }));
+  };
+
+  // Function to get filtered users for a step based on search term
+  const getFilteredUsers = (stepGuid) => {
+    const searchTerm = searchTerms[stepGuid] || '';
+    if (!searchTerm) return usersList;
+    
+    return usersList.filter(user => 
+      user.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
   return (
     <div className="document-detail-container">
       <div className="content-card">
@@ -1174,15 +1579,31 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
             <div className="action-buttons">
               <button 
                 type="button" 
-                className="btn btn-secondary"
+                className={`btn ${routeSent ? 'btn-secondary' : 'btn-primary'}`}
                 onClick={() => handleActionButtonClick('send-to-route')}
                 disabled={
+                  sendingToRoute || 
+                  routeSent || 
                   !documentDetail || 
-                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined')
+                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined') ||
+                  (routeType === 'free' && routeSteps.length === 0 && 
+                   Object.keys(selectedUsers).length !== routeTitles.length)
                 }
               >
-                <i className="fas fa-paper-plane"></i>
-                Отправить на маршрут
+                {sendingToRoute ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin"></i> Отправка...
+                  </>
+                ) : routeSent ? (
+                  <>
+                    <i className="fas fa-check"></i> Отправлено
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-paper-plane"></i>
+                    Отправить на маршрут
+                  </>
+                )}
               </button>
               <button 
                 type="button" 
