@@ -5,6 +5,7 @@ import DocumentList from './DocumentList';
 import DocumentDetail from './DocumentDetail';
 import MemoForm from './MemoForm';
 import ExpenditureForm from './ExpenditureForm';
+import PaymentCreationForm from './PaymentCreationForm';
 
 // Define the document counts interface
 const initialDocumentCounts = {
@@ -511,6 +512,20 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
             onSave={(formData) => {
               // Handle form submission
               console.log('Expenditure form submitted:', formData);
+              // In a real app, this would save to the backend
+              handleBackToList();
+              // Refresh the document list after creating a document
+              loadDashboardData();
+            }}
+          />
+        ) : showCreateForm === 'payment' ? (
+          // PaymentCreationForm component for creating payment documents
+          <PaymentCreationForm
+            currentUser={currentUser}
+            onBack={handleBackToList}
+            onSave={(formData) => {
+              // Handle form submission
+              console.log('Payment form submitted:', formData);
               // In a real app, this would save to the backend
               handleBackToList();
               // Refresh the document list after creating a document
