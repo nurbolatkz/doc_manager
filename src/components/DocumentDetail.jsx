@@ -1321,7 +1321,10 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         
         // Check if we have the required data
         if (!binaryData) {
-          throw new Error('Не удалось получить данные документа для подписания');
+          // Show custom alert message instead of throwing error
+          alert('Не удалось получить данные документа для подписания '+templateResponse?.message);
+          setSigningLoading(false);
+          return;
         }
         
         // Store template data in document state
@@ -1346,8 +1349,11 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
       }
     } catch (err) {
       console.error('Error getting signing template for approve:', err);
-      const errorMessage = err.message || 'Failed to get signing template for approve';
-      setError(errorMessage);
+      // Only show error in UI if it's not the binary data error (which is handled with alert)
+      if (err.message !== 'Не удалось получить данные документа для подписания') {
+        const errorMessage = err.message || 'Failed to get signing template for approve';
+        setError(errorMessage);
+      }
     } finally {
       setSigningLoading(false);
     }
@@ -1542,7 +1548,9 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
             
             console.log('Signed document saved:', saveResponse);
             
-            if (saveResponse && saveResponse.success !== 1) {
+            // Check if response has success flag (handle both 'success' and 'Success')
+            const isSuccess = saveResponse && (saveResponse.success === 1 || saveResponse.Success === 1);
+            if (!isSuccess) {
               throw new Error(saveResponse?.message || 'Failed to save signed document');
             }
           }
@@ -1557,8 +1565,9 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
           
           console.log('Signed document saved and approved:', response);
           
-          // Check if response has success flag
-          if (response && response.success === 1) {
+          // Check if response has success flag (handle both 'success' and 'Success')
+          const isResponseSuccess = response && (response.success === 1 || response.Success === 1);
+          if (isResponseSuccess) {
             // Update document status to approved
             setDocumentDetail({
               ...documentDetail,
