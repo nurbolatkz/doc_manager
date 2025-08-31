@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Dashboard_Restructured.css';
+import { showCustomMessage } from '../utils';
 
 const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, theme }) => {
   const [searchQuery, setSearchQuery] = useState(filter.searchQuery || '');

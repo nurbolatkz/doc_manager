@@ -3,6 +3,8 @@ import './Dashboard_Restructured.css';
 import { fetchDocuments, fetchDocumentCounts } from '../services/fetchManager';
 import DocumentList from './DocumentList';
 import DocumentDetail from './DocumentDetail';
+import MemoForm from './MemoForm';
+import ExpenditureForm from './ExpenditureForm';
 
 // Define the document counts interface
 const initialDocumentCounts = {
@@ -484,6 +486,34 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
             onBack={handleBackToList}
             onDelete={(documentId) => {
               // Refresh the document list after deleting a document
+              loadDashboardData();
+            }}
+          />
+        ) : showCreateForm === 'memo' ? (
+          // MemoForm component for creating memo documents
+          <MemoForm
+            currentUser={currentUser}
+            onBack={handleBackToList}
+            onSave={(formData) => {
+              // Handle form submission
+              console.log('Memo form submitted:', formData);
+              // In a real app, this would save to the backend
+              handleBackToList();
+              // Refresh the document list after creating a document
+              loadDashboardData();
+            }}
+          />
+        ) : showCreateForm === 'expenditure' ? (
+          // ExpenditureForm component for creating expenditure documents
+          <ExpenditureForm
+            currentUser={currentUser}
+            onBack={handleBackToList}
+            onSave={(formData) => {
+              // Handle form submission
+              console.log('Expenditure form submitted:', formData);
+              // In a real app, this would save to the backend
+              handleBackToList();
+              // Refresh the document list after creating a document
               loadDashboardData();
             }}
           />

@@ -15,6 +15,7 @@ import {
   sendToFreeRoute,
   getDocumentRouteType
 } from '../services/fetchManager';
+import { showCustomMessage } from '../utils';
 import ConfirmModal from './ConfirmModal';
 import SigexQRModal from './SigexQRModal';
 
@@ -157,7 +158,8 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
           try {
             const token = localStorage.getItem('authToken');
             if (!token) {
-              throw new Error('No authentication token found');
+              showCustomMessage('No authentication token found', 'danger');
+              return;
             }
             
             // Fetch document details based on document type and ID
@@ -184,9 +186,11 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
               };
               
               setDocumentDetail(transformedData);
+            } else {
+              showCustomMessage('Failed to load document details', 'danger');
             }
           } catch (err) {
-            setError('Failed to load document details');
+            showCustomMessage('Failed to load document details: ' + (err.message || 'Unknown error'), 'danger');
             console.error('Error fetching document details:', err);
           } finally {
             setLoading(false);
@@ -249,11 +253,13 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
           }));
         } else {
           console.error('Failed to fetch route type:', response?.message);
-          setError(response?.message || 'Failed to fetch route type');
+          // Show error as alert instead of blocking the document view
+          showCustomMessage(response?.message || 'Failed to fetch route type', 'warning');
         }
       } catch (err) {
         console.error('Error fetching route type:', err);
-        setError(err.message || 'Failed to fetch route type');
+        // Show error as alert instead of blocking the document view
+        //showCustomMessage(err.message || 'Failed to fetch route type', 'danger');
       } finally {
         setLoadingRouteType(false);
       }
@@ -310,10 +316,14 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
             .sort((a, b) => a.stepNumber - b.stepNumber); // Sort by step number to ensure correct order
           
           setRouteSteps(transformedRoutes);
+        } else {
+          // Show error as alert instead of setting error state
+         //showCustomMessage(routeData?.message || 'Failed to fetch document routes', 'warning');
         }
       } catch (err) {
         console.error('Error fetching document routes:', err);
-        // Continue even if route fetch fails
+        // Show error as alert instead of setting error state
+        //showCustomMessage(err.message || 'Failed to fetch document routes', 'danger');
       }
     };
 
@@ -343,10 +353,14 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
           initialSelectedUsers[title.guid] = '';
         });
         setSelectedUsers(initialSelectedUsers);
+      } else {
+        // Show error as alert instead of setting error state
+        //showCustomMessage(response?.message || 'Failed to fetch route titles', 'warning');
       }
     } catch (err) {
       console.error('Error fetching route titles:', err);
-      setError('Failed to fetch route titles');
+      // Show error as alert instead of setting error state
+      //showCustomMessage(err.message || 'Failed to fetch route titles', 'danger');
     } finally {
       setLoadingRouteTitles(false);
     }
@@ -364,10 +378,14 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         const response = await getUsersList(token);
         if (response && response.data && Array.isArray(response.data)) {
           setUsersList(response.data);
+        } else {
+          // Show error as alert instead of setting error state
+          //showCustomMessage(response?.message || 'Failed to fetch users list', 'warning');
         }
       } catch (err) {
         console.error('Error fetching users list:', err);
-        setError('Failed to fetch users list');
+        // Show error as alert instead of setting error state
+        //showCustomMessage(err.message || 'Failed to fetch users list', 'danger');
       }
     };
 
@@ -1106,11 +1124,12 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
     
     try {
       setDeclining(true);
-      setError(null);
       
       const token = localStorage.getItem('authToken');
       if (!token) {
-        throw new Error('No authentication token found');
+        showCustomMessage('No authentication token found', 'danger');
+        setDeclining(false);
+        return;
       }
       
       // Send the decline request to the backend
@@ -1131,16 +1150,13 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         });
         
         // Show success message
-        // Replace alert with a more elegant solution if needed
-        // For now, we'll use a simple alert as requested
-        alert('Document declined successfully');
+        showCustomMessage('Document declined successfully', 'success');
       } else {
-        throw new Error(response?.message || 'Failed to decline document');
+        showCustomMessage('Failed to decline document: ' + (response?.message || 'Unknown error'), 'danger');
       }
     } catch (err) {
       console.error('Error declining document:', err);
-      setError(err.message || 'Failed to decline document');
-      alert('Failed to decline document: ' + (err.message || 'Unknown error'));
+      showCustomMessage('Failed to decline document: ' + (err.message || 'Unknown error'), 'danger');
     } finally {
       setDeclining(false);
       setShowDeclineConfirmModal(false);
@@ -1153,11 +1169,12 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
     
     try {
       setDeleting(true);
-      setError(null);
       
       const token = localStorage.getItem('authToken');
       if (!token) {
-        throw new Error('No authentication token found');
+        showCustomMessage('No authentication token found', 'danger');
+        setDeleting(false);
+        return;
       }
       
       // Send the delete request to the backend
@@ -1172,18 +1189,17 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
       // Check if response has success flag
       if (response && response.success === 1) {
         // Show success message and notify parent component
-        alert('Document deleted successfully');
+        showCustomMessage('Document deleted successfully', 'success');
         if (onDelete) {
           onDelete(documentDetail.id);
         }
         onBack();
       } else {
-        throw new Error(response?.message || 'Failed to delete document');
+        showCustomMessage('Failed to delete document: ' + (response?.message || 'Unknown error'), 'danger');
       }
     } catch (err) {
       console.error('Error deleting document:', err);
-      setError(err.message || 'Failed to delete document');
-      alert('Failed to delete document: ' + (err.message || 'Unknown error'));
+      showCustomMessage('Failed to delete document: ' + (err.message || 'Unknown error'), 'danger');
     } finally {
       setDeleting(false);
       setShowDeleteConfirmModal(false);
@@ -1203,7 +1219,7 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         setShowDeleteConfirmModal(true);
         break;
       default:
-        alert(`Clicked button: ${action}`);
+        showCustomMessage(`Clicked button: ${action}`, 'info');
     }
   };
 
@@ -1229,45 +1245,18 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="document-detail-container">
-        <div className="content-card">
-          <div className="card-header">
-            <h2>Детали документа</h2>
-            <button 
-              className="back-button"
-              onClick={onBack}
-            >
-              <i className="fas fa-arrow-left"></i> Назад
-            </button>
-          </div>
-          <div className="error-container">
-            <i className="fas fa-exclamation-triangle fa-3x"></i>
-            <p>{error}</p>
-            <button 
-              className="btn btn-primary"
-              onClick={() => window.location.reload()}
-            >
-              Повторить попытку
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Function to handle approval with signing
   const handleApproveWithSigning = async () => {
     if (!documentDetail) return;
     
     try {
       setSigningLoading(true);
-      setError(null);
       
       const token = localStorage.getItem('authToken');
       if (!token) {
-        throw new Error('No authentication token found');
+        showCustomMessage('No authentication token found', 'danger');
+        setSigningLoading(false);
+        return;
       }
       
       console.log('Fetching signing template for document:', {
@@ -1322,7 +1311,7 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         // Check if we have the required data
         if (!binaryData) {
           // Show custom alert message instead of throwing error
-          alert('Не удалось получить данные документа для подписания '+templateResponse?.message);
+          showCustomMessage('Не удалось получить данные документа для подписания', 'danger');
           setSigningLoading(false);
           return;
         }
@@ -1345,14 +1334,13 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         setShowSigningModal(true);
         console.log('State update completed');
       } else {
-        throw new Error('Failed to get signing template for approve');
+        showCustomMessage('Failed to get signing template for approve', 'danger');
       }
     } catch (err) {
       console.error('Error getting signing template for approve:', err);
       // Only show error in UI if it's not the binary data error (which is handled with alert)
       if (err.message !== 'Не удалось получить данные документа для подписания') {
-        const errorMessage = err.message || 'Failed to get signing template for approve';
-        setError(errorMessage);
+        showCustomMessage('Failed to get signing template for approve: ' + (err.message || 'Unknown error'), 'danger');
       }
     } finally {
       setSigningLoading(false);
@@ -1371,7 +1359,7 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         // Check if all users are selected for free route
         const allUsersSelected = Object.values(selectedUsers).every(userGuid => userGuid && userGuid.trim() !== '');
         if (!allUsersSelected) {
-          alert('Пожалуйста, заполните маршрутные шаги');
+          showCustomMessage('Пожалуйста, заполните маршрутные шаги', 'warning');
           return;
         }
       }
@@ -1379,7 +1367,7 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
     
     // Check document state - only allow sending when document is prepared
     if (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined')  {
-      setError('Document is not in a state that allows sending to route');
+      showCustomMessage('Document is not in a state that allows sending to route', 'warning');
       return;
     }
     
@@ -1388,11 +1376,12 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
     
     try {
       setSendingToRoute(true);
-      setError(null);
       
       const token = localStorage.getItem('authToken');
       if (!token) {
-        throw new Error('No authentication token found');
+        showCustomMessage('No authentication token found', 'danger');
+        setSendingToRoute(false);
+        return;
       }
       
       let response;
@@ -1402,7 +1391,7 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         // Check if all users are selected
         const allUsersSelected = Object.values(selectedUsers).every(userGuid => userGuid && userGuid.trim() !== '');
         if (!allUsersSelected) {
-          alert('Пожалуйста, выберите пользователей для всех шагов');
+          showCustomMessage('Пожалуйста, выберите пользователей для всех шагов', 'warning');
           setSendingToRoute(false);
           return;
         }
@@ -1460,6 +1449,7 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
             }
           } catch (accessError) {
             console.error('Error checking access to approve/decline:', accessError);
+            showCustomMessage('Error checking access to approve/decline: ' + (accessError.message || 'Unknown error'), 'warning');
             // Continue even if access check fails
           }
         }
@@ -1504,15 +1494,14 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         }
         
         // Show success message
-        alert('Document sent to route successfully');
+        showCustomMessage('Document sent to route successfully', 'success');
       } else {
         // Error
-        throw new Error(response?.message || 'Failed to send document to route');
+        showCustomMessage('Failed to send document to route: ' + (response?.message || 'Unknown error'), 'danger');
       }
     } catch (err) {
       console.error('Error sending document to route:', err);
-      setError(err.message || 'Failed to send document to route');
-      alert('Failed to send document to route: ' + (err.message || 'Unknown error'));
+      showCustomMessage('Failed to send document to route: ' + (err.message || 'Unknown error'), 'danger');
     } finally {
       setSendingToRoute(false);
     }
@@ -1532,7 +1521,8 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         try {
           const token = localStorage.getItem('authToken');
           if (!token) {
-            throw new Error('No authentication token found');
+            showCustomMessage('No authentication token found', 'danger');
+            return;
           }
           
           // First, save the signed document data
@@ -1551,7 +1541,8 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
             // Check if response has success flag (handle both 'success' and 'Success')
             const isSuccess = saveResponse && (saveResponse.success === 1 || saveResponse.Success === 1);
             if (!isSuccess) {
-              throw new Error(saveResponse?.message || 'Failed to save signed document');
+              showCustomMessage(saveResponse?.message || 'Failed to save signed document', 'danger');
+              return;
             }
           }
           
@@ -1617,16 +1608,19 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
               }
             } catch (routeError) {
               console.error('Error refetching document routes:', routeError);
+              showCustomMessage('Error refetching document routes: ' + (routeError.message || 'Unknown error'), 'warning');
               // Continue even if route fetch fails
             }
+          } else {
+            showCustomMessage(response?.message || 'Failed to approve document', 'danger');
+            return;
           }
           
           // Show success message
-          alert('Document approved successfully');
+          showCustomMessage('Document approved successfully', 'success');
         } catch (err) {
           console.error('Error saving signed document:', err);
-          setError(err.message || 'Failed to save signed document');
-          alert('Failed to approve document: ' + (err.message || 'Unknown error'));
+          showCustomMessage('Failed to approve document: ' + (err.message || 'Unknown error'), 'danger');
         }
       };
       
@@ -1634,7 +1628,7 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
       sendSignedDocument();
     } catch (err) {
       console.error('Error handling signed document:', err);
-      setError(err.message || 'Failed to process signed document');
+      showCustomMessage('Failed to process signed document: ' + (err.message || 'Unknown error'), 'danger');
     }
   };
 
