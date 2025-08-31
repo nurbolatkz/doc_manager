@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './Dashboard_Restructured.css';
 import { showCustomMessage } from '../utils';
 
-const PaymentCreationForm = ({ currentUser, onBack, onSave }) => {
+const PaymentCreationForm = ({ currentUser, onBack, onSave, theme }) => {
   // Initialize with today's date
   const today = new Date();
   const formattedDate = `${String(today.getDate()).padStart(2, '0')}.${String(today.getMonth() + 1).padStart(2, '0')}.${today.getFullYear()}`;
@@ -77,7 +77,7 @@ const PaymentCreationForm = ({ currentUser, onBack, onSave }) => {
   };
 
   return (
-    <div className="document-detail-container">
+    <div className={`document-detail-container ${theme?.mode === 'dark' ? 'dark' : ''}`}>
       {/* Header - matching your HTML structure */}
       <header className="corporate-header">
         <div className="container header-inner">
@@ -93,7 +93,7 @@ const PaymentCreationForm = ({ currentUser, onBack, onSave }) => {
       </header>
 
       {/* Main Content */}
-      <main className="main-content">
+      <main className={`main-content ${theme?.mode === 'dark' ? 'dark' : 'light'}`}>
         <div className="container">
           <div className="page-header">
             <h1 className="page-title">Создание Платежного Документа</h1>

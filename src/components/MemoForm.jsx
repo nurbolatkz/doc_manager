@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './Dashboard_Restructured.css';
 import { showCustomMessage } from '../utils';
 
-const MemoForm = ({ currentUser, onBack, onSave }) => {
+const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     documentType: '',
@@ -140,7 +140,7 @@ const MemoForm = ({ currentUser, onBack, onSave }) => {
   };
 
   return (
-    <div className="document-detail-container">
+    <div className={`document-detail-container ${theme?.mode === 'dark' ? 'dark' : ''}`}>
       {/* Header */}
       <div className="content-card">
         <div className="card-header">

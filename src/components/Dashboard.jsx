@@ -503,6 +503,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
               // Refresh the document list after creating a document
               loadDashboardData();
             }}
+            theme={theme}
           />
         ) : showCreateForm === 'expenditure' ? (
           // ExpenditureForm component for creating expenditure documents
@@ -517,6 +518,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
               // Refresh the document list after creating a document
               loadDashboardData();
             }}
+            theme={theme}
           />
         ) : showCreateForm === 'payment' ? (
           // PaymentCreationForm component for creating payment documents
@@ -531,6 +533,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
               // Refresh the document list after creating a document
               loadDashboardData();
             }}
+            theme={theme}
           />
         ) : showCreateForm ? (
           // Empty DocumentForm component - will be implemented later
