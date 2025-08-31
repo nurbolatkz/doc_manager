@@ -691,6 +691,169 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
     }
   };
 
+  // Function to handle search term change for a route step
+  const handleSearchTermChange = (stepGuid, searchTerm) => {
+    setSearchTerms(prev => ({
+      ...prev,
+      [stepGuid]: searchTerm
+    }));
+  };
+
+  // Function to get filtered users for a step based on search term
+  const getFilteredUsers = (stepGuid) => {
+    const searchTerm = searchTerms[stepGuid] || '';
+    if (!searchTerm) return usersList;
+    
+    return usersList.filter(user => 
+      user.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
+  // Function to edit a route step
+  const editRouteStep = (stepGuid) => {
+    // Find the route title to edit
+    const routeTitle = routeTitles.find(title => title.guid === stepGuid);
+    if (!routeTitle) return;
+    
+    // For editing, we'll show a prompt for the new name
+    const newName = prompt('Введите новое название шага:', routeTitle.name);
+    if (newName && newName !== routeTitle.name) {
+      // Update the routeTitles state
+      setRouteTitles(prevTitles => 
+        prevTitles.map(title => 
+          title.guid === stepGuid ? { ...title, name: newName } : title
+        )
+      );
+    }
+  };
+
+  // Function to copy a route step
+  const copyRouteStep = (stepGuid) => {
+    // Find the route title to copy
+    const routeTitle = routeTitles.find(title => title.guid === stepGuid);
+    if (!routeTitle) return;
+    
+    // Create a new route title with a unique guid
+    const newGuid = `${stepGuid}_copy_${Date.now()}`;
+    const newTitle = {
+      ...routeTitle,
+      guid: newGuid,
+      name: `${routeTitle.name} (копия)`
+    };
+    
+    // Add the new route title to the list
+    setRouteTitles(prevTitles => [...prevTitles, newTitle]);
+    
+    // Initialize selected user for the new step
+    setSelectedUsers(prev => ({
+      ...prev,
+      [newGuid]: ''
+    }));
+    
+    // Initialize search term for the new step
+    setSearchTerms(prev => ({
+      ...prev,
+      [newGuid]: ''
+    }));
+  };
+
+  // Function to delete a route step
+  const deleteRouteStep = (stepGuid) => {
+    // Confirm deletion
+    if (!window.confirm('Вы уверены, что хотите удалить этот шаг?')) {
+      return;
+    }
+    
+    // Remove the route title from the list
+    setRouteTitles(prevTitles => 
+      prevTitles.filter(title => title.guid !== stepGuid)
+    );
+    
+    // Remove the selected user for this step
+    setSelectedUsers(prev => {
+      const newSelectedUsers = { ...prev };
+      delete newSelectedUsers[stepGuid];
+      return newSelectedUsers;
+    });
+    
+    // Remove the search term for this step
+    setSearchTerms(prev => {
+      const newSearchTerms = { ...prev };
+      delete newSearchTerms[stepGuid];
+      return newSearchTerms;
+    });
+  };
+
+  // Function to render user dropdown with search functionality
+  const renderUserDropdown = (stepGuid, title) => {
+    const searchTerm = searchTerms[stepGuid] || '';
+    const filteredUsers = getFilteredUsers(stepGuid);
+    const selectedUserGuid = selectedUsers[stepGuid] || '';
+    
+    // Find the selected user object to display the name
+    const selectedUser = usersList.find(user => user.guid === selectedUserGuid);
+    
+    return (
+      <div className="user-selection mt-2">
+        <div className="search-container mb-2">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Поиск пользователя..."
+            value={searchTerm}
+            onChange={(e) => handleSearchTermChange(stepGuid, e.target.value)}
+          />
+        </div>
+        
+        {/* Show filtered user list when there's a search term */}
+        {searchTerm && (
+          <div className="filtered-user-list">
+            {filteredUsers.length > 0 ? (
+              filteredUsers.map(user => (
+                <div
+                  key={user.guid}
+                  className={`filtered-user-item ${selectedUserGuid === user.guid ? 'selected' : ''}`}
+                  onClick={() => {
+                    handleUserSelection(stepGuid, user.guid);
+                    // Clear search term after selection
+                    handleSearchTermChange(stepGuid, '');
+                  }}
+                >
+                  {user.name}
+                </div>
+              ))
+            ) : (
+              <div className="filtered-user-item">
+                Пользователи не найдены
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Hidden select for form submission compatibility */}
+        <select
+          className="form-control hidden"
+          value={selectedUserGuid}
+          onChange={(e) => handleUserSelection(stepGuid, e.target.value)}
+        >
+          <option value="">Выберите пользователя</option>
+          {usersList.map(user => (
+            <option key={user.guid} value={user.guid}>
+              {user.name}
+            </option>
+          ))}
+        </select>
+        
+        {/* Display selected user */}
+        {selectedUser && (
+          <div className="selected-user-display mt-2">
+            <span>Выбран: {selectedUser.name}</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Render route steps component
   const renderRouteSteps = () => {
     // Check if we need to show free route steps
@@ -729,9 +892,6 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
             <div className="route-steps-container space-y-4 ml-8">
               {routeTitles.map((title, index) => {
                 const stepGuid = title.guid;
-                const searchTerm = searchTerms[stepGuid] || '';
-                const filteredUsers = getFilteredUsers(stepGuid);
-                const selectedUserGuid = selectedUsers[stepGuid] || '';
                 
                 return (
                   <div 
@@ -746,30 +906,29 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
                       <strong>{title.name || `Шаг ${index + 1}`}</strong>
                       
                       {/* User selection dropdown with search */}
-                      <div className="user-selection mt-2">
-                        <div className="search-container mb-2">
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Поиск пользователя..."
-                            value={searchTerm}
-                            onChange={(e) => handleSearchTermChange(stepGuid, e.target.value)}
-                          />
-                        </div>
-                        
-                        <select
-                          className="form-control"
-                          value={selectedUserGuid}
-                          onChange={(e) => handleUserSelection(stepGuid, e.target.value)}
-                        >
-                          <option value="">Выберите пользователя</option>
-                          {filteredUsers.map(user => (
-                            <option key={user.guid} value={user.guid}>
-                              {user.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                      {renderUserDropdown(stepGuid, title)}
+                    </div>
+                    
+                    {/* Action buttons for free route steps */}
+                    <div className="step-actions">
+                      <button 
+                        className="edit-step-btn text-blue-500 hover:text-blue-700 ml-2"
+                        onClick={() => editRouteStep(stepGuid)}
+                      >
+                        <i className="fas fa-edit"></i>
+                      </button>
+                      <button 
+                        className="copy-step-btn text-green-500 hover:text-green-700 ml-2"
+                        onClick={() => copyRouteStep(stepGuid)}
+                      >
+                        <i className="fas fa-copy"></i>
+                      </button>
+                      <button 
+                        className="delete-step-btn text-red-500 hover:text-red-700 ml-2"
+                        onClick={() => deleteRouteStep(stepGuid)}
+                      >
+                        <i className="fas fa-trash"></i>
+                      </button>
                     </div>
                   </div>
                 );
@@ -1476,24 +1635,6 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
       ...prev,
       [stepGuid]: userGuid
     }));
-  };
-
-  // Function to handle search term change for a route step
-  const handleSearchTermChange = (stepGuid, searchTerm) => {
-    setSearchTerms(prev => ({
-      ...prev,
-      [stepGuid]: searchTerm
-    }));
-  };
-
-  // Function to get filtered users for a step based on search term
-  const getFilteredUsers = (stepGuid) => {
-    const searchTerm = searchTerms[stepGuid] || '';
-    if (!searchTerm) return usersList;
-    
-    return usersList.filter(user => 
-      user.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
   };
 
   return (
