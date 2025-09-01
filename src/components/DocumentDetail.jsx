@@ -182,7 +182,9 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
                   parseFloat(detailData.data.amount) : documentDetail.amount,
                 currency: detailData.data.currency || documentDetail.currency,
                 uploadDate: detailData.data.date || documentDetail.uploadDate,
-                status: detailData.data.status || documentDetail.status
+                status: detailData.data.status || documentDetail.status,
+                // Include paymentLines for payment documents
+                paymentLines: detailData.data.paymentLines || documentDetail.paymentLines || []
               };
               
               setDocumentDetail(transformedData);
@@ -457,37 +459,29 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
                         <th>Заявка</th>
                         <th>Организация</th>
                         <th>Проект</th>
-                        <th>Вид операции</th>
-                        <th>Контрагент</th>
-                        <th>Форма оплаты</th>
                         <th>Валюта</th>
-                        <th>Дата по заявке</th>
                         <th>Сумма по заявке</th>
                         <th>Дата платежа</th>
                         <th>Сумма</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {documentDetail.payments && documentDetail.payments.length > 0 ? (
-                        documentDetail.payments.map((payment, index) => (
+                      {documentDetail.paymentLines && documentDetail.paymentLines.length > 0 ? (
+                        documentDetail.paymentLines.map((payment, index) => (
                           <tr key={index}>
                             <td>{index + 1}</td>
-                            <td>{payment.request || 'Не указано'}</td>
-                            <td>{payment.organization || 'Не указано'}</td>
-                            <td>{payment.project || 'Не указано'}</td>
-                            <td>{payment.operationType || 'Не указано'}</td>
-                            <td>{payment.counterparty || 'Не указано'}</td>
-                            <td>{payment.paymentForm || 'Не указано'}</td>
-                            <td>{payment.currency || 'Не указано'}</td>
-                            <td>{formatDate(payment.requestDate) || 'Не указано'}</td>
-                            <td>{payment.requestAmount?.toString() || 'Не указано'}</td>
-                            <td>{formatDate(payment.paymentDate) || 'Не указано'}</td>
-                            <td>{payment.amount?.toString() || 'Не указано'}</td>
+                            <td>{payment.Заявка || 'Не указано'}</td>
+                            <td>{payment.Организация || 'Не указано'}</td>
+                            <td>{payment.Проект || 'Не указано'}</td>
+                            <td>{payment.Валюта || 'Не указано'}</td>
+                            <td>{payment.СуммаПоЗаявке?.toString() || 'Не указано'}</td>
+                            <td>{formatDate(payment.ДатаПлатежа) || 'Не указано'}</td>
+                            <td>{payment.Сумма?.toString() || 'Не указано'}</td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={12} className="text-center">
+                          <td colSpan={8} className="text-center">
                             Нет запланированных платежей
                           </td>
                         </tr>
