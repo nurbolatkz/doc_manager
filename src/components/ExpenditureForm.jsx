@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Dashboard_Restructured.css';
 import { showCustomMessage } from '../utils';
+import { apiRequest, fetchOrganizations, fetchProjects, fetchCFOs, fetchDdsArticles, fetchBudgetArticles, fetchCounterparties, fetchContracts } from '../services/fetchManager';
 
 const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
   const [formData, setFormData] = useState({
@@ -30,16 +31,24 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
   const [modalSearchTerm, setModalSearchTerm] = useState('');
+  const [operationTypes, setOperationTypes] = useState([]);
+  const [organizations, setOrganizations] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [cfos, setCfos] = useState([]);
+  const [ddsArticles, setDdsArticles] = useState([]);
+  const [budgetArticles, setBudgetArticles] = useState([]);
+  const [counterparties, setCounterparties] = useState([]);
+  const [contracts, setContracts] = useState([]);
+  const [loadingOperationTypes, setLoadingOperationTypes] = useState(true);
+  const [loadingOrganizations, setLoadingOrganizations] = useState(true);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [loadingCfos, setLoadingCfos] = useState(true);
+  const [loadingDdsArticles, setLoadingDdsArticles] = useState(true);
+  const [loadingBudgetArticles, setLoadingBudgetArticles] = useState(true);
+  const [loadingCounterparties, setLoadingCounterparties] = useState(true);
+  const [loadingContracts, setLoadingContracts] = useState(false);
 
-  // Dummy data for demonstration
-  const dummyOrganizations = [
-    { id: 1, guid: 'org-001', name: 'ООО "Рога и копыта"' },
-    { id: 2, guid: 'org-002', name: 'ПАО "Газпром"' },
-    { id: 3, guid: 'org-003', name: 'АО "Российские железные дороги"' },
-    { id: 4, guid: 'org-004', name: 'ПАО "Сбербанк"' },
-    { id: 5, guid: 'org-005', name: 'ОАО "НК "Роснефть"' }
-  ];
-
+  // Dummy data for demonstration (keeping existing dummy data)
   const dummyDdsArticles = [
     { id: 1, guid: 'dds-001', name: 'Статья ДДС 1' },
     { id: 2, guid: 'dds-002', name: 'Статья ДДС 2' },
@@ -76,24 +85,371 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
     { id: 3, guid: 'contract-003', name: 'Договор 3' }
   ];
 
-  const operationTypes = [
-    'Возврат денежных средств покупателю',
-    'Выдача денежных средств подотчетнику',
-    'Перечисление заработной платы',
-    'Перечисление налога',
-    'Перечисление НДС с изменённым сроком уплаты',
-    'Перечисление пенсионных взносов',
-    'Перечисление по исполнительным листам',
-    'Перечисление социальных отчислений',
-    'Прочие расчёты с контрагентами',
-    'Расчёты по кредитам и займам с работниками',
-    'Прочий расход денежных средств',
-    'Расчёты по кредитам и займам с контрагентами',
-    'Расчёты по доходу от разовых выплат с контрагентами',
-    'Оплата структурному подразделению',
-    'Перевод на другой счёт',
-    'Оплата поставщику'
-  ];
+  // Fetch operation types from API
+  useEffect(() => {
+    const loadOperationTypes = async () => {
+      try {
+        setLoadingOperationTypes(true);
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        const requestBody = {
+          username: "Администратор",
+          type: "expenditure"
+        };
+
+        // Using the apiRequest function directly with the endpoint
+        const response = await apiRequest("operation-type", requestBody, token);
+        
+        if (response && response.data && Array.isArray(response.data)) {
+          setOperationTypes(response.data.map(item => item.name));
+        } else {
+          // Fallback to default options if API doesn't return expected data
+          setOperationTypes([
+            'Возврат денежных средств покупателю',
+            'Выдача денежных средств подотчетнику',
+            'Перечисление заработной платы',
+            'Перечисление налога',
+            'Перечисление НДС с изменённым сроком уплаты',
+            'Перечисление пенсионных взносов',
+            'Перечисление по исполнительным листам',
+            'Перечисление социальных отчислений',
+            'Прочие расчёты с контрагентами',
+            'Расчёты по кредитам и займам с работниками',
+            'Прочий расход денежных средств',
+            'Расчёты по кредитам и займам с контрагентами',
+            'Расчёты по доходу от разовых выплат с контрагентами',
+            'Оплата структурному подразделению',
+            'Перевод на другой счёт',
+            'Оплата поставщику'
+          ]);
+        }
+      } catch (err) {
+        console.error('Error fetching operation types:', err);
+        // Fallback to default options on error
+        setOperationTypes([
+          'Возврат денежных средств покупателю',
+          'Выдача денежных средств подотчетнику',
+          'Перечисление заработной платы',
+          'Перечисление налога',
+          'Перечисление НДС с изменённым сроком уплаты',
+          'Перечисление пенсионных взносов',
+          'Перечисление по исполнительным листам',
+          'Перечисление социальных отчислений',
+          'Прочие расчёты с контрагентами',
+          'Расчёты по кредитам и займам с работниками',
+          'Прочий расход денежных средств',
+          'Расчёты по кредитам и займам с контрагентами',
+          'Расчёты по доходу от разовых выплат с контрагентами',
+          'Оплата структурному подразделению',
+          'Перевод на другой счёт',
+          'Оплата поставщику'
+        ]);
+      } finally {
+        setLoadingOperationTypes(false);
+      }
+    };
+
+    loadOperationTypes();
+  }, []);
+
+  // Fetch organizations from API
+  useEffect(() => {
+    const loadOrganizations = async () => {
+      try {
+        setLoadingOrganizations(true);
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        // Using a sample document ID for the request
+        const sampleDocumentId = '7c779250-11f8-11f0-8dbb-fff1bb3bb704';
+        const response = await fetchOrganizations(token, sampleDocumentId);
+        
+        if (response && response.data && Array.isArray(response.data)) {
+          // Map the API response to match the expected format (guid -> id, GUID -> guid)
+          const formattedOrganizations = response.data.map(org => ({
+            id: org.guid || org.GUID,
+            guid: org.GUID || org.guid,
+            name: org.name
+          }));
+          setOrganizations(formattedOrganizations);
+        } else {
+          // Fallback to dummy data if API doesn't return expected data
+          setOrganizations([
+            { id: 1, guid: 'org-001', name: 'ООО "Рога и копыта"' },
+            { id: 2, guid: 'org-002', name: 'ПАО "Газпром"' },
+            { id: 3, guid: 'org-003', name: 'АО "Российские железные дороги"' },
+            { id: 4, guid: 'org-004', name: 'ПАО "Сбербанк"' },
+            { id: 5, guid: 'org-005', name: 'ОАО "НК "Роснефть"' }
+          ]);
+        }
+      } catch (err) {
+        console.error('Error fetching organizations:', err);
+        // Fallback to dummy data on error
+        setOrganizations([
+          { id: 1, guid: 'org-001', name: 'ООО "Рога и копыта"' },
+          { id: 2, guid: 'org-002', name: 'ПАО "Газпром"' },
+          { id: 3, guid: 'org-003', name: 'АО "Российские железные дороги"' },
+          { id: 4, guid: 'org-004', name: 'ПАО "Сбербанк"' },
+          { id: 5, guid: 'org-005', name: 'ОАО "НК "Роснефть"' }
+        ]);
+      } finally {
+        setLoadingOrganizations(false);
+      }
+    };
+
+    loadOrganizations();
+  }, []);
+
+  // Fetch projects from API
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        setLoadingProjects(true);
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        // Using a sample document ID for the request
+        const sampleDocumentId = '7c779250-11f8-11f0-8dbb-fff1bb3bb704';
+        const response = await fetchProjects(token, sampleDocumentId);
+        
+        if (response && response.data && Array.isArray(response.data)) {
+          setProjects(response.data);
+        } else {
+          // Fallback to dummy data if API doesn't return expected data
+          setProjects([
+            { id: 1, guid: 'proj-001', name: 'Проект "Альфа"' },
+            { id: 2, guid: 'proj-002', name: 'Проект "Бета"' },
+            { id: 3, guid: 'proj-003', name: 'Проект "Гамма"' }
+          ]);
+        }
+      } catch (err) {
+        console.error('Error fetching projects:', err);
+        // Fallback to dummy data on error
+        setProjects([
+          { id: 1, guid: 'proj-001', name: 'Проект "Альфа"' },
+          { id: 2, guid: 'proj-002', name: 'Проект "Бета"' },
+          { id: 3, guid: 'proj-003', name: 'Проект "Гамма"' }
+        ]);
+      } finally {
+        setLoadingProjects(false);
+      }
+    };
+
+    loadProjects();
+  }, []);
+
+  // Fetch CFOs from API
+  useEffect(() => {
+    const loadCFOs = async () => {
+      try {
+        setLoadingCfos(true);
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        // Using a sample document ID for the request
+        const sampleDocumentId = '7c779250-11f8-11f0-8dbb-fff1bb3bb704';
+        const response = await fetchCFOs(token, sampleDocumentId);
+        
+        if (response && response.data && Array.isArray(response.data)) {
+          setCfos(response.data);
+        } else {
+          // Fallback to dummy data if API doesn't return expected data
+          setCfos([
+            { id: 1, guid: 'cfo-001', name: 'ЦФО-001 - Центральный офис' },
+            { id: 2, guid: 'cfo-002', name: 'ЦФО-002 - Отдел продаж' },
+            { id: 3, guid: 'cfo-003', name: 'ЦФО-003 - Производственный отдел' }
+          ]);
+        }
+      } catch (err) {
+        console.error('Error fetching CFOs:', err);
+        // Fallback to dummy data on error
+        setCfos([
+          { id: 1, guid: 'cfo-001', name: 'ЦФО-001 - Центральный офис' },
+          { id: 2, guid: 'cfo-002', name: 'ЦФО-002 - Отдел продаж' },
+          { id: 3, guid: 'cfo-003', name: 'ЦФО-003 - Производственный отдел' }
+        ]);
+      } finally {
+        setLoadingCfos(false);
+      }
+    };
+
+    loadCFOs();
+  }, []);
+
+  // Fetch DDS articles from API
+  useEffect(() => {
+    const loadDdsArticles = async () => {
+      try {
+        setLoadingDdsArticles(true);
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        // Using a sample document ID for the request
+        const sampleDocumentId = 'f10c6dfe-84a4-11f0-8dd9-d8859d41b83b';
+        const response = await fetchDdsArticles(token, sampleDocumentId);
+        
+        if (response && response.data && Array.isArray(response.data)) {
+          setDdsArticles(response.data);
+        } else {
+          // Fallback to dummy data if API doesn't return expected data
+          setDdsArticles([
+            { id: 1, guid: 'dds-001', name: 'Статья ДДС 1' },
+            { id: 2, guid: 'dds-002', name: 'Статья ДДС 2' },
+            { id: 3, guid: 'dds-003', name: 'Статья ДДС 3' }
+          ]);
+        }
+      } catch (err) {
+        console.error('Error fetching DDS articles:', err);
+        // Fallback to dummy data on error
+        setDdsArticles([
+          { id: 1, guid: 'dds-001', name: 'Статья ДДС 1' },
+          { id: 2, guid: 'dds-002', name: 'Статья ДДС 2' },
+          { id: 3, guid: 'dds-003', name: 'Статья ДДС 3' }
+        ]);
+      } finally {
+        setLoadingDdsArticles(false);
+      }
+    };
+
+    loadDdsArticles();
+  }, []);
+
+  // Fetch budget articles from API
+  useEffect(() => {
+    const loadBudgetArticles = async () => {
+      try {
+        setLoadingBudgetArticles(true);
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        // Using a sample document ID for the request
+        const sampleDocumentId = 'f10c6dfe-84a4-11f0-8dd9-d8859d41b83b';
+        const response = await fetchBudgetArticles(token, sampleDocumentId);
+        
+        if (response && response.data && Array.isArray(response.data)) {
+          setBudgetArticles(response.data);
+        } else {
+          // Fallback to dummy data if API doesn't return expected data
+          setBudgetArticles([
+            { id: 1, guid: 'budget-001', name: 'Статья Бюджета 1' },
+            { id: 2, guid: 'budget-002', name: 'Статья Бюджета 2' },
+            { id: 3, guid: 'budget-003', name: 'Статья Бюджета 3' }
+          ]);
+        }
+      } catch (err) {
+        console.error('Error fetching budget articles:', err);
+        // Fallback to dummy data on error
+        setBudgetArticles([
+          { id: 1, guid: 'budget-001', name: 'Статья Бюджета 1' },
+          { id: 2, guid: 'budget-002', name: 'Статья Бюджета 2' },
+          { id: 3, guid: 'budget-003', name: 'Статья Бюджета 3' }
+        ]);
+      } finally {
+        setLoadingBudgetArticles(false);
+      }
+    };
+
+    loadBudgetArticles();
+  }, []);
+
+  // Fetch counterparties from API
+  useEffect(() => {
+    const loadCounterparties = async () => {
+      try {
+        setLoadingCounterparties(true);
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        // Using a sample document ID for the request
+        const sampleDocumentId = 'f10c6dfe-84a4-11f0-8dd9-d8859d41b83b';
+        const response = await fetchCounterparties(token, sampleDocumentId);
+        
+        if (response && response.data && Array.isArray(response.data)) {
+          setCounterparties(response.data);
+        } else {
+          // Fallback to dummy data if API doesn't return expected data
+          setCounterparties([
+            { id: 1, guid: 'counter-001', name: 'Контрагент 1' },
+            { id: 2, guid: 'counter-002', name: 'Контрагент 2' },
+            { id: 3, guid: 'counter-003', name: 'Контрагент 3' }
+          ]);
+        }
+      } catch (err) {
+        console.error('Error fetching counterparties:', err);
+        // Fallback to dummy data on error
+        setCounterparties([
+          { id: 1, guid: 'counter-001', name: 'Контрагент 1' },
+          { id: 2, guid: 'counter-002', name: 'Контрагент 2' },
+          { id: 3, guid: 'counter-003', name: 'Контрагент 3' }
+        ]);
+      } finally {
+        setLoadingCounterparties(false);
+      }
+    };
+
+    loadCounterparties();
+  }, []);
+
+  // Fetch contracts when counterparty is selected
+  useEffect(() => {
+    const loadContracts = async () => {
+      // Only fetch contracts if a counterparty is selected
+      if (formData.counterpartyGuid) {
+        try {
+          setLoadingContracts(true);
+          const token = localStorage.getItem('authToken');
+          if (!token) {
+            throw new Error('No authentication token found');
+          }
+
+          // Using a sample document ID for the request
+          const sampleDocumentId = 'f10c6dfe-84a4-11f0-8dd9-d8859d41b83b';
+          const response = await fetchContracts(token, sampleDocumentId, formData.counterpartyGuid);
+          
+          if (response && response.data && Array.isArray(response.data)) {
+            setContracts(response.data);
+          } else {
+            // Fallback to dummy data if API doesn't return expected data
+            setContracts([
+              { id: 1, guid: 'contract-001', name: 'Договор 1' },
+              { id: 2, guid: 'contract-002', name: 'Договор 2' },
+              { id: 3, guid: 'contract-003', name: 'Договор 3' }
+            ]);
+          }
+        } catch (err) {
+          console.error('Error fetching contracts:', err);
+          // Fallback to dummy data on error
+          setContracts([
+            { id: 1, guid: 'contract-001', name: 'Договор 1' },
+            { id: 2, guid: 'contract-002', name: 'Договор 2' },
+            { id: 3, guid: 'contract-003', name: 'Договор 3' }
+          ]);
+        } finally {
+          setLoadingContracts(false);
+        }
+      } else {
+        // Clear contracts when no counterparty is selected
+        setContracts([]);
+      }
+    };
+
+    loadContracts();
+  }, [formData.counterpartyGuid]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -195,25 +551,25 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
     let data = [];
     switch (modalType) {
       case 'organization':
-        data = dummyOrganizations;
+        data = organizations;
         break;
       case 'ddsArticle':
-        data = dummyDdsArticles;
+        data = ddsArticles;
         break;
       case 'budgetArticle':
-        data = dummyBudgetArticles;
+        data = budgetArticles;
         break;
       case 'project':
-        data = dummyProjects;
+        data = projects;
         break;
       case 'cfo':
-        data = dummyCfos;
+        data = cfos;
         break;
       case 'counterparty':
-        data = dummyCounterparties;
+        data = counterparties;
         break;
       case 'contract':
-        data = dummyContracts;
+        data = contracts;
         break;
       default:
         break;
@@ -354,8 +710,7 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
               className="form-control"
             >
               <option value="Наличные">Наличные</option>
-              <option value="Безналичный расчет">Безналичный расчет</option>
-              <option value="Электронные деньги">Электронные деньги</option>
+              <option value="Безналичный расчет">Безналичные</option>
             </select>
           </div>
 
@@ -367,11 +722,17 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
               value={formData.operationType}
               onChange={(e) => handleInputChange('operationType', e.target.value)}
               className="form-control"
+              disabled={loadingOperationTypes}
             >
               {operationTypes.map((type, index) => (
                 <option key={index} value={type}>{type}</option>
               ))}
             </select>
+            {loadingOperationTypes && (
+              <div className="loading-indicator">
+                <i className="fas fa-spinner fa-spin"></i> Загрузка типов операций...
+              </div>
+            )}
           </div>
 
           <div className="form-group">
@@ -664,48 +1025,46 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
       </div>
 
       {/* Universal Selection Modal */}
-      {showModal && (
-        <div className="modal-overlay" style={{ display: 'flex' }}>
-          <div className="modal-content">
-            <div className="modal-header">
-              <h3>
-                {modalType === 'organization' ? 'Выбрать Организацию' :
-                 modalType === 'ddsArticle' ? 'Выбрать Статью ДДС' :
-                 modalType === 'budgetArticle' ? 'Выбрать Статью Бюджета' :
-                 modalType === 'project' ? 'Выбрать Проект' :
-                 modalType === 'cfo' ? 'Выбрать ЦФО' :
-                 modalType === 'counterparty' ? 'Выбрать Контрагента' :
-                 modalType === 'contract' ? 'Выбрать Договор' : 'Выбрать элемент'}
-              </h3>
-              <button 
-                type="button" 
-                className="modal-close-button"
-                onClick={closeModal}
+      <div className={`modal-overlay ${showModal ? 'active' : ''}`}>
+        <div className="modal-content">
+          <div className="modal-header">
+            <h3>
+              {modalType === 'organization' ? 'Выбрать Организацию' :
+               modalType === 'ddsArticle' ? 'Выбрать Статью ДДС' :
+               modalType === 'budgetArticle' ? 'Выбрать Статью Бюджета' :
+               modalType === 'project' ? 'Выбрать Проект' :
+               modalType === 'cfo' ? 'Выбрать ЦФО' :
+               modalType === 'counterparty' ? 'Выбрать Контрагента' :
+               modalType === 'contract' ? 'Выбрать Договор' : 'Выбрать элемент'}
+            </h3>
+            <button 
+              type="button" 
+              className="modal-close-button"
+              onClick={closeModal}
+            >
+              &times;
+            </button>
+          </div>
+          <input 
+            type="text" 
+            className="modal-search-input" 
+            placeholder="Поиск..."
+            value={modalSearchTerm}
+            onChange={(e) => handleModalSearch(e.target.value)}
+          />
+          <div className="modal-results-list">
+            {getFilteredModalData().map(item => (
+              <div 
+                key={item.guid || item.id}
+                onClick={() => handleModalSelect(item)}
+                className="modal-result-item"
               >
-                &times;
-              </button>
-            </div>
-            <input 
-              type="text" 
-              className="modal-search-input" 
-              placeholder="Поиск..."
-              value={modalSearchTerm}
-              onChange={(e) => handleModalSearch(e.target.value)}
-            />
-            <div className="modal-results-list">
-              {getFilteredModalData().map(item => (
-                <div 
-                  key={item.guid}
-                  onClick={() => handleModalSelect(item)}
-                  className="modal-result-item"
-                >
-                  {item.name}
-                </div>
-              ))}
-            </div>
+                {item.name}
+              </div>
+            ))}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

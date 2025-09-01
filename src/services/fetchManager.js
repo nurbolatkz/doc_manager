@@ -361,4 +361,89 @@ export async function saveSignedDocument(token, documentId, documentType, signed
   }
 }
 
+// Function to fetch document types
+export async function fetchDocumentTypes(token, documentId) {
+  const requestBody = {
+    username: "Администратор",
+    documentId: documentId
+  };
+
+  return apiRequest("type-documents", requestBody, token);
+}
+
+// Function to fetch organizations
+export async function fetchOrganizations(token, documentId) {
+  const requestBody = {
+    username: "Администратор",
+    documentId: documentId
+  };
+
+  return apiRequest("organization", requestBody, token);
+}
+
+// Function to fetch projects
+export async function fetchProjects(token, documentId) {
+  const requestBody = {
+    username: "Администратор",
+    documentId: documentId
+  };
+
+  return apiRequest("project", requestBody, token);
+}
+
+// Function to fetch CFO data
+export async function fetchCFOs(token, documentId) {
+  const requestBody = {
+    username: "Администратор",
+    documentId: documentId
+  };
+
+  return apiRequest("cfo", requestBody, token);
+}
+
+// Function to fetch DDS articles
+export async function fetchDdsArticles(token, documentId) {
+  const requestBody = {
+    username: "Администратор",
+    documentId: documentId,
+    type: "expenditure"
+  };
+
+  return apiRequest("ddsArticle", requestBody, token);
+}
+
+// Function to fetch budget articles
+export async function fetchBudgetArticles(token, documentId) {
+  const requestBody = {
+    username: "Администратор",
+    documentId: documentId,
+    type: "expenditure"
+  };
+
+  return apiRequest("budget-article", requestBody, token);
+}
+
+// Function to fetch counterparties
+export async function fetchCounterparties(token, documentId) {
+  const requestBody = {
+    username: "Администратор",
+    documentId: documentId,
+    type: "expenditure"
+  };
+
+  return apiRequest("counterparty-list", requestBody, token);
+}
+
+// Function to fetch contracts for a specific counterparty
+export async function fetchContracts(token, documentId, counterpartyGuid) {
+  const requestBody = {
+    username: "Администратор",
+    documentId: documentId,
+    type: "expenditure",
+    counterparty_guid: counterpartyGuid
+  };
+
+  return apiRequest("contract-list", requestBody, token);
+}
+
 export default apiRequest;

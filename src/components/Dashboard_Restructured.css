@@ -277,6 +277,8 @@ body.dark .autocomplete-item:hover {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  opacity: 1;
+  visibility: visible;
 }
 
 .modal-content {
@@ -287,6 +289,7 @@ body.dark .autocomplete-item:hover {
   max-height: 80vh;
   overflow: hidden;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
 }
 
 body.dark .modal-content {
@@ -308,6 +311,7 @@ body.dark .modal-header {
 .modal-header h3 {
   color: #1a4f72;
   font-weight: 600;
+  margin: 0;
 }
 
 body.dark .modal-header h3 {
@@ -320,6 +324,9 @@ body.dark .modal-header h3 {
   font-size: 1.5rem;
   cursor: pointer;
   color: #6b7280;
+  width: auto;
+  height: auto;
+  padding: 0;
 }
 
 body.dark .modal-close-button {
@@ -1794,7 +1801,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 50;
+  z-index: 1000;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.2s, visibility 0.2s;
