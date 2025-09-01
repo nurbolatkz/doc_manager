@@ -79,18 +79,18 @@ const PaymentCreationForm = ({ currentUser, onBack, onSave, theme }) => {
   return (
     <div className={`document-detail-container ${theme?.mode === 'dark' ? 'dark' : ''}`}>
       {/* Header - matching your HTML structure */}
-      <header className="corporate-header">
-        <div className="container header-inner">
-          <div className="logo">
-            <div className="logo-text">CORPORATE PORTAL</div>
-          </div>
-          <div className="user-menu">
-            <a href="#" style={{ color: 'white', textDecoration: 'none' }}><i className="fas fa-bell"></i></a>
-            <a href="#" style={{ color: 'white', textDecoration: 'none' }}><i className="fas fa-cog"></i></a>
-            <div className="user-avatar">IP</div>
-          </div>
+        {/* Header */}
+      <div className="content-card">
+        <div className="card-header">
+          <h2>Создать План платежей</h2>
+          <button 
+            className="back-button"
+            onClick={onBack}
+          >
+            <i className="fas fa-arrow-left"></i> Назад
+          </button>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <main className={`main-content ${theme?.mode === 'dark' ? 'dark' : 'light'}`}>

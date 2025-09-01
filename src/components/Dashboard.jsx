@@ -125,10 +125,6 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
     }
   };
 
-  const handleDocumentAction = (documentId, action) => {
-    // Placeholder for document actions
-    console.log(`Action ${action} triggered for document ${documentId}`);
-  };
 
   const handleDocumentSelect = (document) => {
     setSelectedDocument(document);
@@ -389,18 +385,9 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                     }}
                   >
                     <i className="fas fa-money-bill-wave nav-item-icon"></i>
-                    <span className="nav-item-text">Заявка на оплату</span>
+                    <span className="nav-item-text">План Платежей</span>
                   </button>
-                  <button 
-                    className="nav-button"
-                    onClick={() => {
-                      handleCreateDocument('leave');
-                      setOpenDropdown(null);
-                    }}
-                  >
-                    <i className="fas fa-plane-departure nav-item-icon"></i>
-                    <span className="nav-item-text">Заявка на отпуск</span>
-                  </button>
+          
                   <button 
                     className="nav-button"
                     onClick={() => {

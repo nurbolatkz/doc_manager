@@ -7,6 +7,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     documentType: '',
+    documentTypeGuid:'',
     text: '',
     organization: '', // Organization name
     organizationGuid: '', // Organization GUID
@@ -215,7 +216,27 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
   }, []);
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    // Handle document type GUID when document type is selected
+    if (field === 'documentType') {
+      if (value) {
+        const selectedDocType = documentTypes.find(type => type.guid === value);
+        setFormData(prev => ({ 
+          ...prev, 
+          [field]: value,
+          documentTypeGuid: selectedDocType ? selectedDocType.guid : value
+        }));
+      } else {
+        // Clear document type GUID when document type is cleared
+        setFormData(prev => ({ 
+          ...prev, 
+          [field]: value,
+          documentTypeGuid: ''
+        }));
+      }
+    } else {
+      // Handle all other fields normally
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const openModal = (type) => {
@@ -306,6 +327,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
         token: token,
         action: "save_document_memo",
         type: "memo",
+        documentTypeGuid: formData.documentTypeGuid,
         projectGuid: formData.projectGuid,
         organizationGuid: formData.organizationGuid,
         cfoGuid: formData.cfoGuid,

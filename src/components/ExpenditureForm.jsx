@@ -50,7 +50,7 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
 
   // Dummy data for demonstration (keeping existing dummy data)
   const dummyDdsArticles = [
-    { id: 1, guid: 'dds-001', name: 'Статья ДДС 1' },
+    { id: 1, guid: 'dds-001', name: 'Статья ДДС 1' }, 
     { id: 2, guid: 'dds-002', name: 'Статья ДДС 2' },
     { id: 3, guid: 'dds-003', name: 'Статья ДДС 3' }
   ];
@@ -220,7 +220,13 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
         const response = await fetchProjects(token, sampleDocumentId);
         
         if (response && response.data && Array.isArray(response.data)) {
-          setProjects(response.data);
+          // Map the API response to match the expected format (guid -> id, GUID -> guid)
+          const formattedProjects = response.data.map(project => ({
+            id: project.guid || project.GUID,
+            guid: project.GUID || project.guid,
+            name: project.name
+          }));
+          setProjects(formattedProjects);
         } else {
           // Fallback to dummy data if API doesn't return expected data
           setProjects([
@@ -260,7 +266,13 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
         const response = await fetchCFOs(token, sampleDocumentId);
         
         if (response && response.data && Array.isArray(response.data)) {
-          setCfos(response.data);
+          // Map the API response to match the expected format (guid -> id, GUID -> guid)
+          const formattedCFOs = response.data.map(cfo => ({
+            id: cfo.guid || cfo.GUID,
+            guid: cfo.GUID || cfo.guid,
+            name: cfo.name
+          }));
+          setCfos(formattedCFOs);
         } else {
           // Fallback to dummy data if API doesn't return expected data
           setCfos([
@@ -300,7 +312,13 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
         const response = await fetchDdsArticles(token, sampleDocumentId);
         
         if (response && response.data && Array.isArray(response.data)) {
-          setDdsArticles(response.data);
+          // Map the API response to match the expected format (guid -> id, GUID -> guid)
+          const formattedDdsArticles = response.data.map(article => ({
+            id: article.guid || article.GUID,
+            guid: article.GUID || article.guid,
+            name: article.name
+          }));
+          setDdsArticles(formattedDdsArticles);
         } else {
           // Fallback to dummy data if API doesn't return expected data
           setDdsArticles([
@@ -340,7 +358,13 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
         const response = await fetchBudgetArticles(token, sampleDocumentId);
         
         if (response && response.data && Array.isArray(response.data)) {
-          setBudgetArticles(response.data);
+          // Map the API response to match the expected format (guid -> id, GUID -> guid)
+          const formattedBudgetArticles = response.data.map(article => ({
+            id: article.guid || article.GUID,
+            guid: article.GUID || article.guid,
+            name: article.name
+          }));
+          setBudgetArticles(formattedBudgetArticles);
         } else {
           // Fallback to dummy data if API doesn't return expected data
           setBudgetArticles([
@@ -380,7 +404,13 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
         const response = await fetchCounterparties(token, sampleDocumentId);
         
         if (response && response.data && Array.isArray(response.data)) {
-          setCounterparties(response.data);
+          // Map the API response to match the expected format (guid -> id, GUID -> guid)
+          const formattedCounterparties = response.data.map(counterparty => ({
+            id: counterparty.guid || counterparty.GUID,
+            guid: counterparty.GUID || counterparty.guid,
+            name: counterparty.name
+          }));
+          setCounterparties(formattedCounterparties);
         } else {
           // Fallback to dummy data if API doesn't return expected data
           setCounterparties([
@@ -422,7 +452,13 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
           const response = await fetchContracts(token, sampleDocumentId, formData.counterpartyGuid);
           
           if (response && response.data && Array.isArray(response.data)) {
-            setContracts(response.data);
+            // Map the API response to match the expected format (guid -> id, GUID -> guid)
+            const formattedContracts = response.data.map(contract => ({
+              id: contract.guid || contract.GUID,
+              guid: contract.GUID || contract.guid,
+              name: contract.name
+            }));
+            setContracts(formattedContracts);
           } else {
             // Fallback to dummy data if API doesn't return expected data
             setContracts([
@@ -451,11 +487,15 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
     loadContracts();
   }, [formData.counterpartyGuid]);
 
+  // Debugging: Log formData changes
+  useEffect(() => {
+    console.log('formData updated:', formData);
+  }, [formData]);
+
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
     // Enable contract field when counterparty is selected
     if (field === 'counterparty' && value) {
+      setFormData(prev => ({ ...prev, [field]: value }));
       const contractField = document.getElementById('expenditure-contract');
       const contractButton = document.getElementById('open-contract-modal');
       if (contractField && contractButton) {
@@ -464,13 +504,16 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
       }
     } else if (field === 'counterparty' && !value) {
       // Disable contract field when counterparty is cleared
-      setFormData(prev => ({ ...prev, contract: '', contractGuid: '' }));
+      setFormData(prev => ({ ...prev, [field]: value, contract: '', contractGuid: '' }));
       const contractField = document.getElementById('expenditure-contract');
       const contractButton = document.getElementById('open-contract-modal');
       if (contractField && contractButton) {
         contractField.disabled = true;
         contractButton.disabled = true;
       }
+    } else {
+      // Handle all other fields normally
+      setFormData(prev => ({ ...prev, [field]: value }));
     }
   };
 
@@ -603,7 +646,7 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validate required fields
@@ -612,22 +655,85 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
       return;
     }
     
-    if (!formData.organization) {
+    if (!formData.organizationGuid) {
       showCustomMessage('Пожалуйста, выберите организацию', 'danger');
       return;
     }
     
-    if (!formData.counterparty) {
+    if (!formData.counterpartyGuid) {
       showCustomMessage('Пожалуйста, выберите контрагента', 'danger');
       return;
     }
     
-    // In a real app, this would save to the backend
-    showCustomMessage('Заявка на расходы успешно создана!', 'success');
+    if (!formData.cfoGuid) {
+      showCustomMessage('Пожалуйста, выберите ЦФО', 'danger');
+      return;
+    }
     
-    // Call onSave with the form data
-    if (onSave) {
-      onSave({ ...formData, files: uploadedFiles });
+    if (!formData.projectGuid) {
+      showCustomMessage('Пожалуйста, выберите проект', 'danger');
+      return;
+    }
+    
+    if (!formData.ddsArticleGuid) {
+      showCustomMessage('Пожалуйста, выберите статью ДДС', 'danger');
+      return;
+    }
+    
+    if (!formData.budgetArticleGuid) {
+      showCustomMessage('Пожалуйста, выберите статью бюджета', 'danger');
+      return;
+    }
+    
+    if (!formData.contractGuid) {
+      showCustomMessage('Пожалуйста, выберите договор', 'danger');
+      return;
+    }
+    
+    try {
+      // Get auth token
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      // Prepare request body according to specification
+      const requestBody = {
+        username: "Администратор",
+        token: token,
+        action: "save_document_expenditure", // Fixed typo
+        type: "expenditure", // Fixed typo
+        organizationGuid: formData.organizationGuid,
+        cfoGuid: formData.cfoGuid,
+        projectGuid: formData.projectGuid,
+        counterpartyGuid: formData.counterpartyGuid,
+        date: formData.date,
+        amount: formData.amount,
+        currency: formData.currency,
+        paymentForm: formData.paymentForm,
+        budgetArticleGuid: formData.budgetArticleGuid,
+        ddsArticleGuid: formData.ddsArticleGuid,
+        contractGuid: formData.contractGuid
+      };
+      
+      // Send request to backend
+      const response = await apiRequest("register_document_action", requestBody, token);
+      
+      if (response && response.success === 1) {
+        showCustomMessage('Заявка на расходы успешно создана!', 'success');
+        // Call onSave with the form data and created document ID
+        if (onSave) {
+          onSave(formData, response.guid);
+        }
+        // Close the form after successful submission
+        onBack();
+      } else {
+        const errorMessage = response && response.message ? response.message : 'Неизвестная ошибка при создании документа';
+        showCustomMessage(errorMessage, 'danger');
+      }
+    } catch (error) {
+      console.error('Error creating expenditure:', error);
+      showCustomMessage('Ошибка при создании заявки на расходы: ' + error.message, 'danger');
     }
   };
 
