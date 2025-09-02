@@ -82,6 +82,11 @@ const ConfirmModal = ({
           transition: transform 0.3s ease;
         }
         
+        /* Dark theme support */
+        body.dark .confirm-modal {
+          background: #374151;
+        }
+        
         .confirm-overlay.active .confirm-modal {
           transform: translateY(0);
         }
@@ -94,12 +99,22 @@ const ConfirmModal = ({
           border-bottom: 1px solid #e5e7eb;
         }
         
+        /* Dark theme support */
+        body.dark .confirm-header {
+          border-bottom-color: #4b5563;
+        }
+        
         .confirm-title {
           font-size: 24px;
           font-weight: 700;
           color: #1f2937;
           margin: 0;
           flex: 1;
+        }
+        
+        /* Dark theme support */
+        body.dark .confirm-title {
+          color: #f9fafb;
         }
         
         .confirm-close {
@@ -113,13 +128,34 @@ const ConfirmModal = ({
           transition: all 0.2s ease;
         }
         
+        /* Dark theme support */
+        body.dark .confirm-close {
+          color: #d1d5db;
+        }
+        
         .confirm-close:hover {
           background: #f3f4f6;
           color: #374151;
         }
         
+        /* Dark theme support */
+        body.dark .confirm-close:hover {
+          background: #4b5563;
+          color: #f9fafb;
+        }
+        
         .confirm-body {
           padding: 24px;
+        }
+        
+        .confirm-body p {
+          color: #374151;
+          margin: 0 0 24px 0;
+        }
+        
+        /* Dark theme support */
+        body.dark .confirm-body p {
+          color: #d1d5db;
         }
         
         .confirm-buttons {
@@ -129,6 +165,11 @@ const ConfirmModal = ({
           margin-top: 24px;
           padding-top: 20px;
           border-top: 1px solid #e5e7eb;
+        }
+        
+        /* Dark theme support */
+        body.dark .confirm-buttons {
+          border-top-color: #4b5563;
         }
         
         .confirm-button {
@@ -158,8 +199,19 @@ const ConfirmModal = ({
           color: #374151;
         }
         
+        /* Dark theme support */
+        body.dark .confirm-button.secondary {
+          background: #4b5563;
+          color: #f9fafb;
+        }
+        
         .confirm-button.secondary:hover {
           background: #e5e7eb;
+        }
+        
+        /* Dark theme support */
+        body.dark .confirm-button.secondary:hover {
+          background: #6b7280;
         }
         
         @media (max-width: 640px) {

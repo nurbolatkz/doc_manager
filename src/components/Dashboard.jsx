@@ -476,6 +476,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
               // Refresh the document list after deleting a document
               loadDashboardData();
             }}
+            theme={theme}
           />
         ) : showCreateForm === 'memo' ? (
           // MemoForm component for creating memo documents

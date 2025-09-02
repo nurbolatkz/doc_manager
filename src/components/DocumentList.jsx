@@ -1,10 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Dashboard_Restructured.css';
 import { showCustomMessage } from '../utils';
 
 const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, theme }) => {
   const [searchQuery, setSearchQuery] = useState(filter.searchQuery || '');
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [uniqueOrganizations, setUniqueOrganizations] = useState([]);
+  const [uniqueCounterparties, setUniqueCounterparties] = useState([]);
+
+  // Extract unique organizations and counterparties from documents
+  useEffect(() => {
+    const orgs = new Set();
+    const cps = new Set();
+    
+    documents.forEach(doc => {
+      // Extract organizations
+      if (doc.organization) {
+        const orgName = typeof doc.organization === 'string' 
+          ? doc.organization 
+          : doc.organization?.name;
+        if (orgName) orgs.add(orgName);
+      }
+      
+      // Extract counterparties
+      if (doc.counterparty) {
+        const cpName = typeof doc.counterparty === 'string' 
+          ? doc.counterparty 
+          : doc.counterparty?.name;
+        if (cpName) cps.add(cpName);
+      }
+    });
+    
+    setUniqueOrganizations(Array.from(orgs).sort());
+    setUniqueCounterparties(Array.from(cps).sort());
+  }, [documents]);
 
   // Function to parse date strings in format "dd.mm.yyyy hh:mm:ss"
   const parseDateString = (dateString) => {
@@ -129,13 +158,16 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
       const orgName = typeof doc.organization === 'string' 
         ? doc.organization 
         : doc.organization?.name;
-      if (orgName && !orgName.includes(filter.organization)) return false;
+      if (orgName && orgName !== filter.organization) return false;
     }
     if (filter.counterparty) {
       const cpName = typeof doc.counterparty === 'string' 
         ? doc.counterparty 
         : doc.counterparty?.name;
-      if (cpName && !cpName.includes(filter.counterparty)) return false;
+      if (cpName && cpName !== filter.counterparty) return false;
+    }
+    if (filter.documentNumber) {
+      if (doc.number && !doc.number.includes(filter.documentNumber)) return false;
     }
     if (filter.searchQuery) {
       const query = filter.searchQuery.toLowerCase();
@@ -150,6 +182,7 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
         (doc.title && doc.title.toLowerCase().includes(query)) ||
         (doc.description && doc.description.toLowerCase().includes(query)) ||
         (doc.id && doc.id.toLowerCase().includes(query)) ||
+        (doc.number && doc.number.toLowerCase().includes(query)) ||
         orgName.toLowerCase().includes(query) ||
         cpName.toLowerCase().includes(query)
       );
@@ -173,7 +206,7 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
         <div className="document-card-body">
           <div className="document-card-row">
             <span className="document-card-label">Номер документа:</span>
-            <span className="document-card-value">{document.id || '-'}</span>
+            <span className="document-card-value">{document.number || document.id || '-'}</span>
           </div>
           <div className="document-card-row">
             <span className="document-card-label">Тип:</span>
@@ -234,7 +267,8 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
       documentType: filter.documentType || '',
       status: filter.status || '',
       organization: filter.organization || '',
-      counterparty: filter.counterparty || ''
+      counterparty: filter.counterparty || '',
+      documentNumber: filter.documentNumber || ''
     });
 
     const handleLocalFilterChange = (field, value) => {
@@ -265,11 +299,9 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
                 onChange={(e) => handleLocalFilterChange('documentType', e.target.value)}
               >
                 <option value="">Все типы документов</option>
+                {/* Only show 3 types of payment documents */}
                 <option value="payment">Заявки на оплату</option>
-                <option value="memo">Служебные записки</option>
-                <option value="invoice">Счета-фактуры</option>
                 <option value="expenditure">Авансовые отчеты</option>
-                <option value="leave">Заявления на отпуск</option>
                 <option value="payment_request">Запросы на оплату</option>
               </select>
             </div>
@@ -298,8 +330,11 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
                 onChange={(e) => handleLocalFilterChange('organization', e.target.value)}
               >
                 <option value="">Все организации</option>
-                <option value="org1">Организация 1</option>
-                <option value="org2">Организация 2</option>
+                {uniqueOrganizations.map((org, index) => (
+                  <option key={index} value={org}>
+                    {org}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -311,9 +346,23 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
                 onChange={(e) => handleLocalFilterChange('counterparty', e.target.value)}
               >
                 <option value="">Все контрагенты</option>
-                <option value="cp1">Контрагент 1</option>
-                <option value="cp2">Контрагент 2</option>
+                {uniqueCounterparties.map((cp, index) => (
+                  <option key={index} value={cp}>
+                    {cp}
+                  </option>
+                ))}
               </select>
+            </div>
+
+            <div className="filter-group">
+              <h4>Номер документа</h4>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Введите номер документа"
+                value={localFilters.documentNumber}
+                onChange={(e) => handleLocalFilterChange('documentNumber', e.target.value)}
+              />
             </div>
           </div>
           <div className="modal-footer">
@@ -358,6 +407,16 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
               />
               <i className="fas fa-search search-icon"></i>
             </div>
+          </div>
+
+          {/* Search Button */}
+          <div>
+            <button
+              className="btn btn-primary"
+              onClick={handleSearch}
+            >
+              <i className="fas fa-search"></i> Поиск
+            </button>
           </div>
 
           {/* Filter Button */}

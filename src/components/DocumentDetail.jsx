@@ -19,7 +19,7 @@ import { showCustomMessage } from '../utils';
 import ConfirmModal from './ConfirmModal';
 import SigexQRModal from './SigexQRModal';
 
-const DocumentDetail = ({ document, onBack, onDelete }) => {
+const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
   const [documentDetail, setDocumentDetail] = useState(document);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -917,7 +917,7 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         <div className="search-container mb-2">
           <input
             type="text"
-            className="form-control"
+            className={`form-control ${theme && theme.mode === 'dark' ? 'dark' : 'light'}`}
             placeholder="Поиск пользователя..."
             value={searchTerm}
             onChange={(e) => handleSearchTermChange(stepGuid, e.target.value)}
@@ -926,7 +926,7 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         
         {/* Show filtered user list when there's a search term */}
         {searchTerm && (
-          <div className="filtered-user-list">
+          <div className={`filtered-user-list ${theme && theme.mode === 'dark' ? 'dark' : 'light'}`}>
             {filteredUsers.length > 0 ? (
               filteredUsers.map(user => (
                 <div
@@ -951,7 +951,7 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         
         {/* Hidden select for form submission compatibility */}
         <select
-          className="form-control hidden"
+          className={`form-control hidden ${theme && theme.mode === 'dark' ? 'dark' : 'light'}`}
           value={selectedUserGuid}
           onChange={(e) => handleUserSelection(stepGuid, e.target.value)}
         >
@@ -965,7 +965,7 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         
         {/* Display selected user */}
         {selectedUser && (
-          <div className="selected-user-display mt-2">
+          <div className={`selected-user-display ${theme && theme.mode === 'dark' ? 'dark' : 'light'} mt-2`}>
             <span>Выбран: {selectedUser.name}</span>
           </div>
         )}
@@ -1279,12 +1279,12 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
         documentDetail.id
       );
       
-      console.log('Document deleted:', response);
+      //console.log('Document deleted:', response);
       
       // Check if response has success flag
       if (response && response.success === 1) {
         // Show success message and notify parent component
-        showCustomMessage('Document deleted successfully', 'success');
+        showCustomMessage('Документ успешно удален', 'success');
         if (onDelete) {
           onDelete(documentDetail.id);
         }
