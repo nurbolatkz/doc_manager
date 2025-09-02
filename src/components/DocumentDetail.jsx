@@ -841,16 +841,9 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
     const routeTitle = routeTitles.find(title => title.guid === stepGuid);
     if (!routeTitle) return;
     
-    // For editing, we'll show a prompt for the new name
-    const newName = prompt('Введите новое название шага:', routeTitle.name);
-    if (newName && newName !== routeTitle.name) {
-      // Update the routeTitles state
-      setRouteTitles(prevTitles => 
-        prevTitles.map(title => 
-          title.guid === stepGuid ? { ...title, name: newName } : title
-        )
-      );
-    }
+    // Just reselect users without asking for new name
+    // The functionality is now just to allow reselection of users
+    console.log('Reselecting users for step:', routeTitle.name);
   };
 
   // Function to copy a route step
@@ -1035,14 +1028,8 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
                       {renderUserDropdown(stepGuid, title)}
                     </div>
                     
-                    {/* Action buttons for free route steps */}
+                    {/* Action buttons for free route steps - removed edit button */}
                     <div className="step-actions">
-                      <button 
-                        className="edit-step-btn text-blue-500 hover:text-blue-700 ml-2"
-                        onClick={() => editRouteStep(stepGuid)}
-                      >
-                        <i className="fas fa-edit"></i>
-                      </button>
                       <button 
                         className="copy-step-btn text-green-500 hover:text-green-700 ml-2"
                         onClick={() => copyRouteStep(stepGuid)}
