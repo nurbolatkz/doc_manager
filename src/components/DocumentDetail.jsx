@@ -516,307 +516,366 @@ const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
   }, [documentDetail, routeType]);
 
   // Render specific fields based on document type
-  const renderDocumentSpecificFields = () => {
-    if (!documentDetail) return null;
+ const renderDocumentSpecificFields = () => {
+  if (!documentDetail) return null;
 
-    switch (documentDetail.documentType) {
-      case 'payment':
-        return (
-          <>
-            <div className="content-card">
-              <div className="section-header">
-                <i className="fas fa-info-circle"></i>
-                Информация о документе
-              </div>
-              
-              <div className="info-grid">
-                <div className="detail-card">
-                  <div className="detail-item">
-                    <span className="detail-label">Номер:</span>
-                    <span className="detail-value">{documentDetail.number || 'Не указано'}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Дата:</span>
-                    <span className="detail-value">{formatDate(documentDetail.date) || 'Не указано'}</span>
-                  </div>
-                </div>
-                
-                <div className="detail-card">
-                  <div className="detail-item">
-                    <span className="detail-label">Ответственный:</span>
-                    <span className="detail-value">{documentDetail.responsible || 'Не указано'}</span>
-                  </div>
-                </div>
-                
-                <div className="detail-card">
-                  <div className="detail-item">
-                    <span className="detail-label">Комментарий:</span>
-                    <span className="detail-value">{documentDetail.comment || 'Не указано'}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+  const getDocumentTypeText = (type) => {
+    switch(type) {
+      case 'payment': return 'Заявка на оплату';
+      case 'memo': return 'Служебная записка';
+      case 'expenditure': return 'Заявка на расходы';
+      case 'payment_request': return 'Запрос на оплату';
+      default: return 'Документ';
+    }
+  };
 
-            {/* Payments Table */}
-            <div className="content-card">
-              <div className="table-section">
-                <div className="section-header">
-                  <i className="fas fa-table"></i>
-                  Запланированные платежи
-                </div>
-                
-                <div className="table-container">
-                  <table className="payment-table">
-                    <thead>
-                      <tr>
-                        <th>№</th>
-                        <th>Заявка</th>
-                        <th>Организация</th>
-                        <th>Проект</th>
-                        <th>Валюта</th>
-                        <th>Сумма по заявке</th>
-                        <th>Дата платежа</th>
-                        <th>Сумма</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {documentDetail.paymentLines && documentDetail.paymentLines.length > 0 ? (
-                        documentDetail.paymentLines.map((payment, index) => (
-                          <tr key={index}>
-                            <td>{index + 1}</td>
-                            <td>{payment.Заявка || 'Не указано'}</td>
-                            <td>{payment.Организация || 'Не указано'}</td>
-                            <td>{payment.Проект || 'Не указано'}</td>
-                            <td>{payment.Валюта || 'Не указано'}</td>
-                            <td>{payment.СуммаПоЗаявке?.toString() || 'Не указано'}</td>
-                            <td>{formatDate(payment.ДатаПлатежа) || 'Не указано'}</td>
-                            <td>{payment.Сумма?.toString() || 'Не указано'}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={8} className="text-center">
-                            Нет запланированных платежей
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </>
-        );
-      
-      case 'memo':
-        return (
-          <div className="content-card">
-            <div className="section-header">
+  const getStatusText = (status) => {
+    switch(status) {
+      case 'approved': return 'Утверждено';
+      case 'on_approving': return 'На согласовании';
+      case 'rejected': return 'Отклонено';
+      case 'prepared': return 'Подготовлено';
+      default: return 'На рассмотрении';
+    }
+  };
+
+  const getStatusBadgeClass = (status) => {
+    switch(status) {
+      case 'approved': return 'status-approved';
+      case 'on_approving': return 'status-on_approving';
+      case 'rejected': return 'status-rejected';
+      case 'prepared': return 'status-prepared';
+      default: return 'status-on_approving';
+    }
+  };
+
+  switch (documentDetail.documentType) {
+    case 'payment':
+      return (
+        <>
+          {/* Document Header */}
+         
+
+          {/* Basic Information Section */}
+          <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
               <i className="fas fa-info-circle"></i>
-              Информация о документе
+              Основная информация
             </div>
-            
             <div className="info-grid">
-              <div className="detail-card">
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
-                  <span className="detail-label">Дата:</span>
-                  <span className="detail-value">{formatDate(documentDetail.date) || 'Не указано'}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Автор:</span>
-                  <span className="detail-value">{documentDetail.author || 'Не указано'}</span>
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Ответственный:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.responsible || 'Не указано'}</span>
                 </div>
               </div>
-              
-              <div className="detail-card">
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
-                  <span className="detail-label">Ответственный:</span>
-                  <span className="detail-value">{documentDetail.responsible || 'Не указано'}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Проект:</span>
-                  <span className="detail-value">{documentDetail.project || 'Не указано'}</span>
-                </div>
-              </div>
-              
-              <div className="detail-card">
-                <div className="detail-item">
-                  <span className="detail-label">Сообщение:</span>
-                  <span className="detail-value">{documentDetail.message || 'Не указано'}</span>
-                </div>
-              </div>
-              
-              <div className="detail-card">
-                <div className="detail-item hidden">
-                  <span className="detail-label">Тип документа:</span>
-                  <span className="detail-value">{documentDetail.documentType || 'Не указано'}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">ЦФО:</span>
-                  <span className="detail-value">{documentDetail.cfo || 'Не указано'}</span>
-                </div>
-              </div>
-
-              <div className="detail-card" style={{ gridColumn: 'span 3' }}>
-                <div className="detail-item">
-                  <span className="detail-label">Заголовок:</span>
-                  <span className="detail-value">{documentDetail.title || 'Не указано'}</span>
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Комментарий:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.comment || 'Не указано'}</span>
                 </div>
               </div>
             </div>
           </div>
-        );
-      
-      case 'expenditure':
-      case 'payment_request':
-        return (
-          <div className="content-card">
-            <div className="section-header">
-              <i className="fas fa-info-circle"></i>
-              Информация о документе
+
+          {/* Payments Table */}
+          <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <div className="table-section">
+              <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                <i className="fas fa-table"></i>
+                Запланированные платежи
+              </div>
+              <div className="table-container">
+                <table className={`payment-table ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                  <thead>
+                    <tr>
+                      <th className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>№</th>
+                      <th className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>Заявка</th>
+                      <th className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>Организация</th>
+                      <th className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>Проект</th>
+                      <th className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>Валюта</th>
+                      <th className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>Сумма по заявке</th>
+                      <th className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>Дата платежа</th>
+                      <th className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>Сумма</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {documentDetail.paymentLines && documentDetail.paymentLines.length > 0 ? (
+                      documentDetail.paymentLines.map((payment, index) => (
+                        <tr key={index}>
+                          <td className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{index + 1}</td>
+                          <td className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{payment.Заявка || 'Не указано'}</td>
+                          <td className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{payment.Организация || 'Не указано'}</td>
+                          <td className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{payment.Проект || 'Не указано'}</td>
+                          <td className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{payment.Валюта || 'Не указано'}</td>
+                          <td className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{payment.СуммаПоЗаявке?.toString() || 'Не указано'}</td>
+                          <td className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{formatDate(payment.ДатаПлатежа) || 'Не указано'}</td>
+                          <td className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{payment.Сумма?.toString() || 'Не указано'}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={8} className={`text-center ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                          Нет запланированных платежей
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-            
+          </div>
+        </>
+      );
+    
+    case 'memo':
+      return (
+        <>
+          {/* Document Header */}
+          
+          {/* Basic Information Section */}
+          <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <i className="fas fa-info-circle"></i>
+              Основная информация
+            </div>
             <div className="info-grid">
-              {/* Group 1: Дата Дата Расхода Вид Операции */}
-              <div className="detail-card">
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
-                  <span className="detail-label">Дата:</span>
-                  <span className="detail-value">{formatDate(documentDetail.date) || 'Не указано'}</span>
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Автор:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.author || 'Не указано'}</span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Дата Расхода:</span>
-                  <span className="detail-value">{formatDate(documentDetail.expenseDate) || 'Не указано'}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Вид Операции:</span>
-                  <span className="detail-value">{documentDetail.operationType || 'Не указано'}</span>
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Ответственный:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.responsible || 'Не указано'}</span>
                 </div>
               </div>
-              
-              {/* Group 2: Контрагент Договор Контрагента */}
-              <div className="detail-card">
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
-                  <span className="detail-label">Контрагент:</span>
-                  <span className="detail-value">{documentDetail.counterparty || 'Не указано'}</span>
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Проект:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.project || 'Не указано'}</span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Договор Контрагента:</span>
-                  <span className="detail-value">{documentDetail.contract || 'Не указано'}</span>
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>ЦФО:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.cfo || 'Не указано'}</span>
                 </div>
               </div>
-              
-              {/* Group 3: Проект ЦФО */}
-              <div className="detail-card">
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`} style={{ gridColumn: 'span 3' }}>
                 <div className="detail-item">
-                  <span className="detail-label">Проект:</span>
-                  <span className="detail-value">{documentDetail.project || 'Не указано'}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">ЦФО:</span>
-                  <span className="detail-value">{documentDetail.cfo || 'Не указано'}</span>
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Сообщение:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.message || 'Не указано'}</span>
                 </div>
               </div>
-              
-              {/* Group 4: Валюта Документа Форма Оплаты Сумма Взаиморасчетов Сумма Документа Ставка НДС */}
-              <div className="detail-card">
+            </div>
+          </div>
+        </>
+      );
+    
+    case 'expenditure':
+    case 'payment_request':
+      return (
+        <>
+          {/* Document Header */}
+          
+
+          {/* Basic Information Section */}
+          <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <i className="fas fa-calendar-alt"></i>
+              Основная информация
+            </div>
+            <div className="info-grid">
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
-                  <span className="detail-label">Валюта Документа:</span>
-                  <span className="detail-value">{documentDetail.currency || 'Не указано'}</span>
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Дата расхода:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{formatDate(documentDetail.expenseDate) || 'Не указано'}</span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Форма Оплаты:</span>
-                  <span className="detail-value">{documentDetail.paymentForm || 'Не указано'}</span>
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Вид операции:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.operationType || 'Не указано'}</span>
+                </div>
+              </div>
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                <div className="detail-item">
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Ответственный:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.responsible || 'Не указано'}</span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Сумма Взаиморасчетов:</span>
-                  <span className="detail-value">{documentDetail.amountOfSettlements || 'Не указано'}</span>
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Проект:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.project || 'Не указано'}</span>
                 </div>
-                <div className="detail-item hidden">
-                  <span className="detail-label">Сумма Документа:</span>
-                  <span className="detail-value">
+              </div>
+            </div>
+          </div>
+
+          {/* Financial Information Section */}
+          <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <i className="fas fa-dollar-sign"></i>
+              Финансовая информация
+            </div>
+            <div className="info-grid">
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                <div className="detail-item">
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Сумма документа:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                     {documentDetail.amount ? formatCurrency(documentDetail.amount) : 'Не указано'}
                   </span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Ставка НДС:</span>
-                  <span className="detail-value">{documentDetail.VATRate || 'Не указано'}</span>
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Валюта:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.currency || 'Не указано'}</span>
                 </div>
               </div>
-              
-              {/* Group 5: Организационная Структура Статья Движения Денежных Средств Статья Бюджет */}
-              <div className="detail-card">
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
-                  <span className="detail-label">Организационная Структура:</span>
-                  <span className="detail-value">{documentDetail.orgStructure || 'Не указано'}</span>
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Форма оплаты:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.paymentForm || 'Не указано'}</span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Статья Движения Денежных Средств:</span>
-                  <span className="detail-value">{documentDetail.ddsArticle || 'Не указано'}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Статья Бюджет:</span>
-                  <span className="detail-value">{documentDetail.budgetArticle || 'Не указано'}</span>
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Сумма взаиморасчетов:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.amountOfSettlements || 'Не указано'}</span>
                 </div>
               </div>
-              
-              {/* Group 6: Комментарий Ответственный Автор */}
-              <div className="detail-card" style={{ gridColumn: 'span 3' }}>
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
-                  <span className="detail-label">Комментарий:</span>
-                  <span className="detail-value">{documentDetail.comment || 'Не указано'}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Ответственный:</span>
-                  <span className="detail-value">{documentDetail.responsible || 'Не указано'}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Автор:</span>
-                  <span className="detail-value">{documentDetail.author || 'Не указано'}</span>
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Ставка НДС:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.VATRate || 'Не указано'}</span>
                 </div>
               </div>
             </div>
           </div>
-        );
-      
-      default:
-        return (
-          <div className="content-card">
-            <div className="section-header">
+
+          {/* Counterparty Information Section */}
+          <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <i className="fas fa-handshake"></i>
+              Контрагент и договоры
+            </div>
+            <div className="info-grid">
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                <div className="detail-item">
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Контрагент:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.counterparty || 'Не указано'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Договор контрагента:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.contract || 'Не указано'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Organizational Structure Section */}
+          <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <i className="fas fa-sitemap"></i>
+              Организационная структура
+            </div>
+            <div className="info-grid">
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                <div className="detail-item">
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>ЦФО:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.cfo || 'Не указано'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Организационная структура:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.orgStructure || 'Не указано'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Budget and Accounting Section */}
+          <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <i className="fas fa-chart-pie"></i>
+              Бюджет и учет
+            </div>
+            <div className="info-grid">
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                <div className="detail-item">
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Статья движения денежных средств:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.ddsArticle || 'Не указано'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Статья бюджета:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.budgetArticle || 'Не указано'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Additional Information Section */}
+          <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <i className="fas fa-comment"></i>
+              Дополнительная информация
+            </div>
+            <div className="info-grid">
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`} style={{ gridColumn: 'span 3' }}>
+                <div className="detail-item">
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Комментарий:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.comment || 'Не указано'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      );
+    
+    default:
+      return (
+        <>
+          {/* Document Header */}
+          <div className={`document-detail-header mb-6 ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <div className="flex justify-between items-center">
+              <h1 className={`text-2xl font-bold text-gray-900 ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                {documentDetail.title || 'Документ'}
+              </h1>
+              <span className="document-type-badge badge-default">
+                {getDocumentTypeText(documentDetail.documentType)}
+              </span>
+            </div>
+            <div className="mt-2 flex items-center">
+              <span className={`status-badge ${getStatusBadgeClass(documentDetail.status)}`}>
+                {getStatusText(documentDetail.status)}
+              </span>
+              <span className={`ml-3 text-sm text-gray-500 ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                {formatDate(documentDetail.date) || 'Не указано'}
+              </span>
+            </div>
+          </div>
+
+          {/* Basic Information Section */}
+          <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
               <i className="fas fa-info-circle"></i>
               Информация о документе
             </div>
-            
             <div className="info-grid">
-              <div className="detail-card">
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
-                  <span className="detail-label">Дата:</span>
-                  <span className="detail-value">{formatDate(documentDetail.date) || 'Не указано'}</span>
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Автор:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.author || 'Не указано'}</span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Автор:</span>
-                  <span className="detail-value">{documentDetail.author || 'Не указано'}</span>
-                </div>
-              </div>
-              
-              <div className="detail-card">
-                <div className="detail-item">
-                  <span className="detail-label">Ответственный:</span>
-                  <span className="detail-value">{documentDetail.responsible || 'Не указано'}</span>
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Ответственный:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.responsible || 'Не указано'}</span>
                 </div>
               </div>
-              
-              <div className="detail-card">
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
-                  <span className="detail-label">Комментарий:</span>
-                  <span className="detail-value">{documentDetail.comment || 'Не указано'}</span>
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Комментарий:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.comment || 'Не указано'}</span>
                 </div>
               </div>
             </div>
           </div>
-        );
-    }
-  };
-
+        </>
+      );
+  }
+};
   // Function to handle search term change for a route step
   const handleSearchTermChange = (stepGuid, searchTerm) => {
     setSearchTerms(prev => ({
@@ -980,14 +1039,14 @@ const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
     
     if (!routeSteps || (routeSteps.length === 0 && !showFreeRouteSteps)) {
       return (
-        <div className="content-card">
-          <div className="section-header">
+        <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+          <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
             <i className="fas fa-route"></i>
             Маршрут документа
           </div>
-          <div className="text-gray-500 dark:text-gray-400 text-center py-8">
-            <i className="fas fa-route text-3xl mb-2"></i>
-            <p>Маршрут документа не настроен</p>
+          <div className="text-center py-8">
+            <i className={`fas fa-route text-3xl mb-2 ${theme?.mode === 'dark' ? 'dark' : ''}`}></i>
+            <p className={`text-gray-500 ${theme?.mode === 'dark' ? 'dark' : ''}`}>Маршрут документа не настроен</p>
           </div>
         </div>
       );
@@ -996,14 +1055,14 @@ const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
     // Render free route steps
     if (showFreeRouteSteps) {
       return (
-        <div className="content-card">
-          <div className="section-header">
+        <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+          <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
             <i className="fas fa-route"></i>
             Маршрут документа
           </div>
           
           <div className="route-flow-container space-y-4">
-            <div className="route-start-icon flex items-center text-green-500">
+            <div className={`route-start-icon flex items-center text-green-500 ${theme?.mode === 'dark' ? 'dark' : ''}`}>
               <i className="fas fa-play-circle mr-3 text-xl"></i>
               <span className="text-sm font-medium">Начало маршрута</span>
             </div>
@@ -1015,29 +1074,31 @@ const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
                 return (
                   <div 
                     key={stepGuid} 
-                    className="route-step pending"
+                    className={`route-step pending ${theme?.mode === 'dark' ? 'dark' : ''}`}
                     data-index={index}
                   >
-                    <div className="icon">
+                    <div className={`icon ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                       <i className="fas fa-hourglass-half"></i>
                     </div>
-                    <div className="route-step-info">
-                      <strong>{title.name || `Шаг ${index + 1}`}</strong>
+                    <div className={`route-step-info ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                      <strong className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{title.name || `Шаг ${index + 1}`}</strong>
                       
                       {/* User selection dropdown with search */}
-                      {renderUserDropdown(stepGuid, title)}
+                      <div className={`user-dropdown ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                        {renderUserDropdown(stepGuid, title)}
+                      </div>
                     </div>
                     
-                    {/* Action buttons for free route steps - removed edit button */}
+                    {/* Action buttons for free route steps */}
                     <div className="step-actions">
                       <button 
-                        className="copy-step-btn text-green-500 hover:text-green-700 ml-2"
+                        className="copy-step-btn"
                         onClick={() => copyRouteStep(stepGuid)}
                       >
                         <i className="fas fa-copy"></i>
                       </button>
                       <button 
-                        className="delete-step-btn text-red-500 hover:text-red-700 ml-2"
+                        className="delete-step-btn"
                         onClick={() => deleteRouteStep(stepGuid)}
                       >
                         <i className="fas fa-trash"></i>
@@ -1048,7 +1109,7 @@ const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
               })}
             </div>
             
-            <div className="route-finish-icon flex items-center text-blue-500">
+            <div className={`route-finish-icon flex items-center text-blue-500 ${theme?.mode === 'dark' ? 'dark' : ''}`}>
               <i className="fas fa-flag-checkered mr-3 text-xl"></i>
               <span className="text-sm font-medium">Завершение маршрута</span>
             </div>
@@ -1060,7 +1121,6 @@ const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
     const getStepStatusClass = (index, status) => {
       if (status === 'approved') return 'approved';
       if (status === 'rejected') return 'rejected';
-      // We don't have currentStep info in our current implementation, so we'll just use pending for all other cases
       return 'pending';
     };
 
@@ -1073,14 +1133,14 @@ const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
     };
 
     return (
-      <div className="content-card">
-        <div className="section-header">
+      <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+        <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
           <i className="fas fa-route"></i>
           Маршрут документа
         </div>
         
         <div className="route-flow-container space-y-4">
-          <div className="route-start-icon flex items-center text-green-500">
+          <div className={`route-start-icon flex items-center text-green-500 ${theme?.mode === 'dark' ? 'dark' : ''}`}>
             <i className="fas fa-play-circle mr-3 text-xl"></i>
             <span className="text-sm font-medium">Начало маршрута</span>
           </div>
@@ -1093,41 +1153,39 @@ const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
               // Get users for this step and flatten any multi-line users into separate users
               let users = [''];
               if (step.users && step.users.length > 0) {
-                // Split each user by newlines and flatten into a single array
                 users = step.users.flatMap(user => 
                   user.split('\n').filter(line => line.trim() !== '')
                 );
-                // If no valid users after splitting, use a default
                 if (users.length === 0) users = [''];
               }
               
               return (
                 <div 
                   key={step.id} 
-                  className={`route-step ${statusClass}`}
+                  className={`route-step ${statusClass} ${theme?.mode === 'dark' ? 'dark' : ''}`}
                   data-index={index}
                 >
-                  <div className="icon">
+                  <div className={`icon ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                     <i className={statusIcon}></i>
                   </div>
-                  <div className="route-step-info">
-                    <strong>{step.title || `Шаг ${index + 1}`}</strong>
-                    <ul className="user-list">
+                  <div className={`route-step-info ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                    <strong className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{step.title || `Шаг ${index + 1}`}</strong>
+                    <ul className={`user-list ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                       {users.map((user, userIndex) => (
-                        <li key={userIndex}>
-                          <i className="far fa-user mr-1"></i>
+                        <li key={userIndex} className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                          <i className={`far fa-user mr-1 ${theme?.mode === 'dark' ? 'dark' : ''}`}></i>
                           {user}
                         </li>
                       ))}
                     </ul>
-                    {step.comment && <span>{step.comment}</span>}
+                    {step.comment && <span className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{step.comment}</span>}
                   </div>
                 </div>
               );
             })}
           </div>
           
-          <div className="route-finish-icon flex items-center text-blue-500">
+          <div className={`route-finish-icon flex items-center text-blue-500 ${theme?.mode === 'dark' ? 'dark' : ''}`}>
             <i className="fas fa-flag-checkered mr-3 text-xl"></i>
             <span className="text-sm font-medium">Завершение маршрута</span>
           </div>
@@ -1135,15 +1193,14 @@ const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
       </div>
     );
   };
-
   // Render attachments component
   const renderAttachments = () => {
     const attachments = documentDetail?.attachments || [];
     
     return (
-      <div className="content-card">
-        <div className="section-header">
-          <i className="fas fa-paperclip"></i>
+      <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+        <div className='section-header'>
+          <i className='fas fa-paperclip'></i>
           Вложения
         </div>
         
@@ -1153,8 +1210,8 @@ const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
             <p>Нет вложений</p>
           </div>
         ) : (
-          <div className="table-container">
-            <table className="payment-table">
+          <div className='table-container'>
+            <table className={`payment-table ${theme?.mode === 'dark' ? 'dark' : ''}`}>
               <thead>
                 <tr>
                   <th>Файл</th>
@@ -1320,9 +1377,9 @@ const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
 
   if (loading) {
     return (
-      <div className="document-detail-container">
-        <div className="content-card">
-          <div className="card-header">
+      <div className={`document-detail-container ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+        <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+          <div className='card-header'>
             <h2>Детали документа</h2>
             <button 
               className="back-button"
@@ -1736,9 +1793,9 @@ const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
   };
 
   return (
-    <div className="document-detail-container">
-      <div className="content-card">
-        <div className="card-header">
+    <div className={`document-detail-container ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+      <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+        <div className='card-header'>
           <h2>Детали документа</h2>
           <button 
             className="back-button"
@@ -1749,72 +1806,28 @@ const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
         </div>
         
         <div className="document-detail">
-          {/* Common Document Information */}
-          <div className="content-card">
-            <div className="section-header">
-              <i className="fas fa-file-alt"></i>
-              Основная информация
+          {/* Document Header with Title, Type Badge, Status, Number, Date */}
+          <div className={`document-detail-header mb-6 ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <div className='flex justify-between items-center'>
+              <h1 className={`text-2xl font-bold text-gray-900 ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                {documentDetail?.title || 'Без названия'}
+              </h1>
+              <span className={`document-type-badge badge-${documentDetail?.documentType}`}>
+                {getDocumentTypeText(documentDetail?.documentType)}
+              </span>
             </div>
-            
-            <div className="info-grid">
-              <div className="detail-card">
-                <div className="detail-item">
-                  <span className="detail-label">Название</span>
-                  <span className="detail-value">{documentDetail?.title || 'Без названия'}</span>
-                </div>
-                <div className="detail-item hidden">
-                  <span className="detail-label">ID</span>
-                  <span className="detail-value">{documentDetail?.id || 'Не указан'}</span>
-                </div>
-                <div className="detail-item hidden">
-                  <span className="detail-label">Тип документа</span>
-                  <span className="detail-value">{getDocumentTypeText(documentDetail?.documentType)}</span>
-                </div>
-              </div>
-              
-              <div className="detail-card">
-                <div className="detail-item">
-                  <span className="detail-label">Сумма</span>
-                  <span className="detail-value">
-                    {documentDetail?.amount ? formatCurrency(documentDetail.amount, documentDetail.currency) : '-'}
-                  </span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Дата создания</span>
-                  <span className="detail-value">{formatDate(documentDetail?.uploadDate)}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Автор</span>
-                  <span className="detail-value">
-                    {documentDetail?.uploadedBy ? documentDetail.uploadedBy.name : '-'}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="detail-card">
-                <div className="detail-item">
-                  <span className="detail-label">Статус</span>
-                  <span className="detail-value">
-                    <span className={`status-badge ${getStatusBadgeClass(documentDetail?.status)}`}>
-                      {getStatusText(documentDetail?.status)}
-                    </span>
-                  </span>
-                </div>
-              </div>
+            <div className='mt-2 flex items-center'>
+              <span className={`status-badge ${getStatusBadgeClass(documentDetail?.status)}`}>
+                {getStatusText(documentDetail?.status)}
+              </span>
+              <span className={`ml-3 text-sm text-gray-500 ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                № {documentDetail?.number || 'Не указан'} от {formatDate(documentDetail?.uploadDate)}
+              </span>
             </div>
-            
-            {documentDetail?.description && (
-              <div className="detail-card mt-3">
-                <div className="detail-item">
-                  <span className="detail-label">Описание</span>
-                  <span className="detail-value">{documentDetail.description}</span>
-                </div>
-              </div>
-            )}
           </div>
           
           {/* Document Action Buttons */}
-          <div className="content-card">
+          <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
             <div className="action-buttons">
               <button 
                 type="button" 
