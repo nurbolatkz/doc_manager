@@ -286,7 +286,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                     <button 
                       className="nav-button"
                       onClick={() => {
-                        handleFilterChange({ documentType: 'payment' });
+                        handleFilterChange({ documentType: 'expenditure' });
                         setOpenDropdown(null);
                       }}
                     >
