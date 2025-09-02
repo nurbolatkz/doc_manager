@@ -145,11 +145,16 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
       // If we already have detailed data, no need to fetch
       if (documentDetail && documentDetail.documentType && documentDetail.id && !fetchAttempted) {
         // Check if we have basic info but not detailed info
-        const hasBasicInfo = (documentDetail.title || documentDetail.number) && documentDetail.uploadDate;
+        const hasBasicInfo = !!(documentDetail.title || documentDetail.number) && !!documentDetail.uploadDate;
         const hasDetailedFields = documentDetail.hasOwnProperty('payments') || 
                                   documentDetail.hasOwnProperty('project') || 
+                                  documentDetail.hasOwnProperty('paymentLines') ||
                                   documentDetail.hasOwnProperty('expenseDate') ||
                                   documentDetail.hasOwnProperty('author');
+        console.log('Has basic info:', hasBasicInfo);
+        console.log('Has detailed fields:', hasDetailedFields);
+        console.log('Document type:', documentDetail.documentType);
+        console.log('Current paymentLines:', documentDetail.paymentLines || 'No paymentLines');
         
         // Only fetch if we don't have detailed fields yet
         if (hasBasicInfo && !hasDetailedFields) {
@@ -168,7 +173,7 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
               documentDetail.documentType, 
               documentDetail.id
             );
-            
+            console.log('Detail Data:', detailData);
             if (detailData && detailData.data) {
               // Transform the fetched data to match our Document type
               const transformedData = {
@@ -187,6 +192,10 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
                 paymentLines: detailData.data.paymentLines || documentDetail.paymentLines || []
               };
               
+              // Log paymentLines to console when fetched, regardless of content
+              console.log('Document type:', documentDetail.documentType);
+              console.log('paymentLines fetched:', transformedData.paymentLines);
+              
               setDocumentDetail(transformedData);
             } else {
               showCustomMessage('Failed to load document details', 'danger');
@@ -199,7 +208,112 @@ const DocumentDetail = ({ document, onBack, onDelete }) => {
           }
         } else if (hasDetailedFields) {
           // If we already have detailed fields, mark fetch as attempted to prevent future attempts
-          setFetchAttempted(true);
+          console.log('Skipping fetch - already has detailed fields');
+          // Let's still attempt to fetch if it's a payment document without paymentLines
+          if (documentDetail.documentType === 'payment' && !documentDetail.hasOwnProperty('paymentLines')) {
+            console.log('Forcing fetch for payment document without paymentLines');
+            setFetchAttempted(true); // Mark that we've attempted to fetch
+            setLoading(true);
+            try {
+              const token = localStorage.getItem('authToken');
+              if (!token) {
+                showCustomMessage('No authentication token found', 'danger');
+                return;
+              }
+              
+              // Fetch document details based on document type and ID
+              const detailData = await fetchDocumentDetailsByType(
+                token, 
+                documentDetail.documentType, 
+                documentDetail.id
+              );
+              console.log('Detail Data (forced fetch):', detailData);
+              if (detailData && detailData.data) {
+                // Transform the fetched data to match our Document type
+                const transformedData = {
+                  ...documentDetail,
+                  ...detailData.data,
+                  // Ensure we keep existing properties that might not be in the response
+                  id: documentDetail.id,
+                  documentType: documentDetail.documentType,
+                  title: detailData.data.title || documentDetail.title,
+                  amount: detailData.data.amount !== undefined ? 
+                    parseFloat(detailData.data.amount) : documentDetail.amount,
+                  currency: detailData.data.currency || documentDetail.currency,
+                  uploadDate: detailData.data.date || documentDetail.uploadDate,
+                  status: detailData.data.status || documentDetail.status,
+                  // Include paymentLines for payment documents
+                  paymentLines: detailData.data.paymentLines || documentDetail.paymentLines || []
+                };
+                
+                // Log paymentLines to console when fetched, regardless of content
+                console.log('Document type:', documentDetail.documentType);
+                console.log('paymentLines fetched (forced):', transformedData.paymentLines);
+                
+                setDocumentDetail(transformedData);
+              } else {
+                showCustomMessage('Failed to load document details', 'danger');
+              }
+            } catch (err) {
+              showCustomMessage('Failed to load document details: ' + (err.message || 'Unknown error'), 'danger');
+              console.error('Error fetching document details:', err);
+            } finally {
+              setLoading(false);
+            }
+          } else {
+            setFetchAttempted(true);
+          }
+        } else {
+          // If we don't have basic info, we should still try to fetch
+          console.log('Attempting fetch - missing basic info');
+          setFetchAttempted(true); // Mark that we've attempted to fetch
+          setLoading(true);
+          try {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+              showCustomMessage('No authentication token found', 'danger');
+              return;
+            }
+            
+            // Fetch document details based on document type and ID
+            const detailData = await fetchDocumentDetailsByType(
+              token, 
+              documentDetail.documentType, 
+              documentDetail.id
+            );
+            console.log('Detail Data (missing basic info):', detailData);
+            if (detailData && detailData.data) {
+              // Transform the fetched data to match our Document type
+              const transformedData = {
+                ...documentDetail,
+                ...detailData.data,
+                // Ensure we keep existing properties that might not be in the response
+                id: documentDetail.id,
+                documentType: documentDetail.documentType,
+                title: detailData.data.title || documentDetail.title,
+                amount: detailData.data.amount !== undefined ? 
+                  parseFloat(detailData.data.amount) : documentDetail.amount,
+                currency: detailData.data.currency || documentDetail.currency,
+                uploadDate: detailData.data.date || documentDetail.uploadDate,
+                status: detailData.data.status || documentDetail.status,
+                // Include paymentLines for payment documents
+                paymentLines: detailData.data.paymentLines || documentDetail.paymentLines || []
+              };
+              
+              // Log paymentLines to console when fetched, regardless of content
+              console.log('Document type:', documentDetail.documentType);
+              console.log('paymentLines fetched (missing basic info):', transformedData.paymentLines);
+              
+              setDocumentDetail(transformedData);
+            } else {
+              showCustomMessage('Failed to load document details', 'danger');
+            }
+          } catch (err) {
+            showCustomMessage('Failed to load document details: ' + (err.message || 'Unknown error'), 'danger');
+            console.error('Error fetching document details:', err);
+          } finally {
+            setLoading(false);
+          }
         }
       }
     };

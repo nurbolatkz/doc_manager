@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Plus, Save, X, FileText, Calendar, Hash, Building2, CreditCard, Eye, EyeOff, CheckCircle, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Plus, Save, X, FileText, Calendar, Hash, Building2, CreditCard, CheckCircle, AlertTriangle } from 'lucide-react';
 import { apiRequest } from '../services/fetchManager';
 
 const PaymentCreationForm = ({ currentUser, onBack, onSave, theme = { mode: 'light' } }) => {
@@ -290,17 +290,7 @@ const PaymentCreationForm = ({ currentUser, onBack, onSave, theme = { mode: 'lig
                 </h2>
               </div>
               <div className="flex items-center space-x-3">
-                <button
-                  onClick={() => setShowAmounts(!showAmounts)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
-                    theme?.mode === 'dark' 
-                      ? 'bg-gray-700 hover:bg-gray-600 text-white' 
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  {showAmounts ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                  <span className="text-sm">{showAmounts ? 'Скрыть' : 'Показать'} суммы</span>
-                </button>
+              
                 <button 
                   onClick={fetchPaymentLines}
                   disabled={isLoading}
