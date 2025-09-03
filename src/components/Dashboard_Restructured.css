@@ -467,6 +467,16 @@ button {
   cursor: not-allowed;
 }
 
+.btn-primary {
+  background: linear-gradient(to right, #5d43ee, #a04dc7);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(to right, #4a34d9, #8a3db2);
+  transform: translateY(-1px);
+}
+
 .btn-success {
   background-color: #10b981;
   color: white;
@@ -652,16 +662,18 @@ button {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(to right, #5d43ee, #a04dc7);
 }
 
 .sidebar.dark .sidebar-header {
   border-bottom-color: #374151;
+  background: linear-gradient(to right, #5d43ee, #a04dc7);
 }
 
 .sidebar-title {
   font-weight: bold;
   font-size: 1.25rem;
-  color: #2563eb;
+  color: white;
   display: flex;
   align-items: center;
 }
@@ -987,8 +999,27 @@ button {
 }
 
 .text-gray-500 {
+}
+
+/* Filter button styles */
+.filter-controls .btn {
+  background: linear-gradient(to right, #5d43ee, #a04dc7);
+  color: white;
+  border: none;
+}
+
+.filter-controls .btn:hover:not(:disabled) {
+  background: linear-gradient(to right, #4a34d9, #8a3db2);
+  transform: translateY(-1px);
+}
+
+.filter-controls .btn:disabled {
+  opacity: 0.7;
+  background: linear-gradient(to right, #5d43ee, #a04dc7);
   color: #7f8c8d;
 }
+
+  
 
 .main-content.dark .text-gray-500,
 .text-gray-500.dark {

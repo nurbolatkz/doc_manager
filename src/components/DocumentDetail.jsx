@@ -19,7 +19,7 @@ import { showCustomMessage } from '../utils';
 import ConfirmModal from './ConfirmModal';
 import SigexQRModal from './SigexQRModal';
 
-const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
+const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
   const [documentDetail, setDocumentDetail] = useState(document);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -519,6 +519,23 @@ const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
  const renderDocumentSpecificFields = () => {
   if (!documentDetail) return null;
 
+  // Function to get document type text by GUID
+  const getDocumentTypeTextByGuid = (guid) => {
+    // This would ideally come from a fetched list of document types
+    // For now, we'll use a mapping based on common document types
+    const documentTypeMap = {
+      'internal': 'Внутренний',
+      'external': 'Внешний',
+      'official': 'Официальное письмо',
+      'memo': 'Служебная записка',
+      'order': 'Приказ',
+      'contract': 'Договор',
+      'report': 'Отчёт'
+    };
+    
+    return documentTypeMap[guid] || guid || 'Не указано';
+  };
+
   const getDocumentTypeText = (type) => {
     switch(type) {
       case 'payment': return 'Заявка на оплату';
@@ -650,6 +667,20 @@ const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
                   <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.responsible || 'Не указано'}</span>
                 </div>
               </div>
+              
+              {/* Document Type and Organization Section */}
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                <div className="detail-item">
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Тип документа:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.documentTypeText || getDocumentTypeTextByGuid(documentDetail.documentTypeGuid) || 'Не указано'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Организация:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.organization || 'Не указано'}</span>
+                </div>
+              </div>
+              
+              {/* CFO and Project Section */}
               <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Проект:</span>
@@ -660,6 +691,8 @@ const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
                   <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.cfo || 'Не указано'}</span>
                 </div>
               </div>
+              
+              {/* Message Section */}
               <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`} style={{ gridColumn: 'span 3' }}>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Сообщение:</span>
@@ -1369,6 +1402,12 @@ const DocumentDetail = ({ document, onBack, onDelete, theme }) => {
         break;
       case 'delete':
         setShowDeleteConfirmModal(true);
+        break;
+      case 'edit':
+        // Call the onEdit callback to switch to edit mode in the parent component
+        if (onEdit) {
+          onEdit();
+        }
         break;
       default:
         showCustomMessage(`Clicked button: ${action}`, 'info');

@@ -6,6 +6,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  background: linear-gradient(to right, #5d43ee, #a04dc7);
 }
 
 .login-card {

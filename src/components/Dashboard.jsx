@@ -3,9 +3,11 @@ import './Dashboard_Restructured.css';
 import { fetchDocuments, fetchDocumentCounts } from '../services/fetchManager';
 import DocumentList from './DocumentList';
 import DocumentDetail from './DocumentDetail';
+import DocumentEdit from './DocumentEdit'; // Add this import
 import MemoForm from './MemoForm';
 import ExpenditureForm from './ExpenditureForm';
 import PaymentCreationForm from './PaymentCreationForm';
+import { showCustomMessage } from '../utils';
 
 // Define the document counts interface
 const initialDocumentCounts = {
@@ -20,13 +22,15 @@ const initialDocumentCounts = {
 
 const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
   const [documents, setDocuments] = useState([]);
-  const [documentCounts, setDocumentCounts] = useState(initialDocumentCounts);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [documentCounts, setDocumentCounts] = useState({});
+  const [filter, setFilter] = useState({ type: 'all', status: 'all' });
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [filter, setFilter] = useState({});
-  const [openDropdown, setOpenDropdown] = useState(null);
+  const [isEditingDocument, setIsEditingDocument] = useState(false); // Add this state
+  const [openDropdown, setOpenDropdown] = useState(null); // Add this state for dropdowns
 
   // Fetch documents and counts from 1C backend on component mount
   useEffect(() => {
@@ -467,7 +471,24 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
 
       {/* Main Content */}
       <div className={`main-content ${theme.mode === 'dark' ? 'dark' : 'light'}`} style={{ marginLeft: sidebarOpen ? undefined : '0' }}>
-        {selectedDocument ? (
+        {isEditingDocument && selectedDocument ? (
+          // DocumentEdit component
+          <DocumentEdit 
+            document={selectedDocument}
+            onBack={() => {
+              setIsEditingDocument(false);
+              // Reload document data to reflect changes
+              loadDashboardData();
+            }}
+            onSave={(updatedDocument) => {
+              setIsEditingDocument(false);
+              setSelectedDocument(updatedDocument);
+              // Reload document data to reflect changes
+              loadDashboardData();
+            }}
+            theme={theme}
+          />
+        ) : selectedDocument ? (
           // DocumentDetail component
           <DocumentDetail 
             document={selectedDocument}
@@ -476,6 +497,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
               // Refresh the document list after deleting a document
               loadDashboardData();
             }}
+            onEdit={() => setIsEditingDocument(true)} // Add this callback
             theme={theme}
           />
         ) : showCreateForm === 'memo' ? (
