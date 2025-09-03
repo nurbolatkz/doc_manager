@@ -189,7 +189,8 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 currency: detailData.data.currency || documentDetail.currency,
                  documentTypeValue: detailData.data.documentTypeValue || documentDetail.documentTypeValue,
                 uploadDate: detailData.data.date || documentDetail.uploadDate,
-                status: detailData.data.status || documentDetail.status,
+                // Use documentState if available (English key), otherwise fallback to status
+                status: detailData.data.documentState || detailData.data.status || documentDetail.status,
                 // Include paymentLines for payment documents
                 paymentLines: detailData.data.paymentLines || documentDetail.paymentLines || []
               };
@@ -243,7 +244,8 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                     parseFloat(detailData.data.amount) : documentDetail.amount,
                   currency: detailData.data.currency || documentDetail.currency,
                   uploadDate: detailData.data.date || documentDetail.uploadDate,
-                  status: detailData.data.status || documentDetail.status,
+                  // Use documentState if available (English key), otherwise fallback to status
+                  status: detailData.data.documentState || detailData.data.status || documentDetail.status,
                   // Include paymentLines for payment documents
                   paymentLines: detailData.data.paymentLines || documentDetail.paymentLines || []
                 };
@@ -297,11 +299,11 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                   parseFloat(detailData.data.amount) : documentDetail.amount,
                 currency: detailData.data.currency || documentDetail.currency,
                 uploadDate: detailData.data.date || documentDetail.uploadDate,
-                status: detailData.data.status || documentDetail.status,
+                // Use documentState if available (English key), otherwise fallback to status
+                status: detailData.data.documentState || detailData.data.status || documentDetail.status,
                 // Include paymentLines for payment documents
                 paymentLines: detailData.data.paymentLines || documentDetail.paymentLines || []
               };
-              
               // Log paymentLines to console when fetched, regardless of content
               console.log('Document type:', documentDetail.documentType);
               console.log('paymentLines fetched (missing basic info):', transformedData.paymentLines);
