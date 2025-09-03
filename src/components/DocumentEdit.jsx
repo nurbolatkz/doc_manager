@@ -362,9 +362,23 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
             projectGuid: formData.projectGuid,
             cfo: formData.cfo,
             project: formData.project,
-            documentType: formData.documentType,
+            documentType: document.documentType,
+            documentTypeValue: formData.documentType,
             documentTypeGuid: formData.documentTypeGuid,
-            organizationGuid: formData.organizationGuid
+            organizationGuid: formData.organizationGuid,
+            // Preserve the document ID and other important properties
+            id: document.id,
+            title: document.title,
+            date: document.date,
+            author: document.author,
+            responsible: document.responsible,
+            CanEdit: document.CanEdit,
+            canApprove: document.canApprove,
+            canReject: document.canReject,
+            CanSendToRoute: document.CanSendToRoute,
+            documentState: document.documentState,
+            routeType: document.routeType,
+            SubDivsions: document.SubDivsions
           });
         }
         onBack();

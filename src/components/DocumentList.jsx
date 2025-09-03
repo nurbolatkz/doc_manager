@@ -300,9 +300,9 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
               >
                 <option value="">Все типы документов</option>
                 {/* Only show 3 types of payment documents */}
-                <option value="payment">Заявки на оплату</option>
-                <option value="expenditure">Авансовые отчеты</option>
-                <option value="payment_request">Запросы на оплату</option>
+                <option value="payment">План Платежей</option>
+                <option value="expenditure">Заявка на расходование</option>
+                <option value="memo">Служебная записка</option>
               </select>
             </div>
 

@@ -146,8 +146,9 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       if (documentDetail && documentDetail.documentType && documentDetail.id && !fetchAttempted) {
         // Check if we have basic info but not detailed info
         const hasBasicInfo = !!(documentDetail.title || documentDetail.number) && !!documentDetail.uploadDate;
-        const hasDetailedFields = documentDetail.hasOwnProperty('payments') || 
+        let hasDetailedFields = documentDetail.hasOwnProperty('payments') || 
                                   documentDetail.hasOwnProperty('project') || 
+                                  documentDetail.hasOwnProperty('documentType') || 
                                   documentDetail.hasOwnProperty('paymentLines') ||
                                   documentDetail.hasOwnProperty('expenseDate') ||
                                   documentDetail.hasOwnProperty('author');
@@ -155,7 +156,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         console.log('Has detailed fields:', hasDetailedFields);
         console.log('Document type:', documentDetail.documentType);
         console.log('Current paymentLines:', documentDetail.paymentLines || 'No paymentLines');
-        
+        hasDetailedFields = false; 
         // Only fetch if we don't have detailed fields yet
         if (hasBasicInfo && !hasDetailedFields) {
           setFetchAttempted(true); // Mark that we've attempted to fetch
@@ -186,6 +187,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 amount: detailData.data.amount !== undefined ? 
                   parseFloat(detailData.data.amount) : documentDetail.amount,
                 currency: detailData.data.currency || documentDetail.currency,
+                 documentTypeValue: detailData.data.documentTypeValue || documentDetail.documentTypeValue,
                 uploadDate: detailData.data.date || documentDetail.uploadDate,
                 status: detailData.data.status || documentDetail.status,
                 // Include paymentLines for payment documents
@@ -520,22 +522,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
   if (!documentDetail) return null;
 
   // Function to get document type text by GUID
-  const getDocumentTypeTextByGuid = (guid) => {
-    // This would ideally come from a fetched list of document types
-    // For now, we'll use a mapping based on common document types
-    const documentTypeMap = {
-      'internal': 'Внутренний',
-      'external': 'Внешний',
-      'official': 'Официальное письмо',
-      'memo': 'Служебная записка',
-      'order': 'Приказ',
-      'contract': 'Договор',
-      'report': 'Отчёт'
-    };
-    
-    return documentTypeMap[guid] || guid || 'Не указано';
-  };
-
+ 
   const getDocumentTypeText = (type) => {
     switch(type) {
       case 'payment': return 'Заявка на оплату';
@@ -672,7 +659,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Тип документа:</span>
-                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.documentTypeText || getDocumentTypeTextByGuid(documentDetail.documentTypeGuid) || 'Не указано'}</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.documentTypeValue  || 'Не указано'}</span>
                 </div>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Организация:</span>
@@ -866,9 +853,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               <h1 className={`text-2xl font-bold text-gray-900 ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 {documentDetail.title || 'Документ'}
               </h1>
-              <span className="document-type-badge badge-default">
-                {getDocumentTypeText(documentDetail.documentType)}
-              </span>
+            
             </div>
             <div className="mt-2 flex items-center">
               <span className={`status-badge ${getStatusBadgeClass(documentDetail.status)}`}>

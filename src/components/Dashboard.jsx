@@ -482,6 +482,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
             }}
             onSave={(updatedDocument) => {
               setIsEditingDocument(false);
+              // Update the selected document with the updated data
               setSelectedDocument(updatedDocument);
               // Reload document data to reflect changes
               loadDashboardData();
