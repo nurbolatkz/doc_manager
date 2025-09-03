@@ -25,7 +25,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [documentCounts, setDocumentCounts] = useState({});
-  const [filter, setFilter] = useState({ type: 'all', status: 'all' });
+  const [filter, setFilter] = useState({});
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(null);

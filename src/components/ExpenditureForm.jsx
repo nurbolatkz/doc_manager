@@ -220,29 +220,15 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
         const response = await fetchProjects(token, sampleDocumentId);
         
         if (response && response.data && Array.isArray(response.data)) {
-          // Map the API response to match the expected format (guid -> id, GUID -> guid)
-          const formattedProjects = response.data.map(project => ({
-            id: project.guid || project.GUID,
-            guid: project.GUID || project.guid,
-            name: project.name
-          }));
-          setProjects(formattedProjects);
+          setProjects(response.data);
         } else {
           // Fallback to dummy data if API doesn't return expected data
-          setProjects([
-            { id: 1, guid: 'proj-001', name: 'Проект "Альфа"' },
-            { id: 2, guid: 'proj-002', name: 'Проект "Бета"' },
-            { id: 3, guid: 'proj-003', name: 'Проект "Гамма"' }
-          ]);
+          setProjects(dummyProjects);
         }
       } catch (err) {
         console.error('Error fetching projects:', err);
         // Fallback to dummy data on error
-        setProjects([
-          { id: 1, guid: 'proj-001', name: 'Проект "Альфа"' },
-          { id: 2, guid: 'proj-002', name: 'Проект "Бета"' },
-          { id: 3, guid: 'proj-003', name: 'Проект "Гамма"' }
-        ]);
+        setProjects(dummyProjects);
       } finally {
         setLoadingProjects(false);
       }
@@ -266,29 +252,15 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
         const response = await fetchCFOs(token, sampleDocumentId);
         
         if (response && response.data && Array.isArray(response.data)) {
-          // Map the API response to match the expected format (guid -> id, GUID -> guid)
-          const formattedCFOs = response.data.map(cfo => ({
-            id: cfo.guid || cfo.GUID,
-            guid: cfo.GUID || cfo.guid,
-            name: cfo.name
-          }));
-          setCfos(formattedCFOs);
+          setCfos(response.data);
         } else {
           // Fallback to dummy data if API doesn't return expected data
-          setCfos([
-            { id: 1, guid: 'cfo-001', name: 'ЦФО-001 - Центральный офис' },
-            { id: 2, guid: 'cfo-002', name: 'ЦФО-002 - Отдел продаж' },
-            { id: 3, guid: 'cfo-003', name: 'ЦФО-003 - Производственный отдел' }
-          ]);
+          setCfos(dummyCfos);
         }
       } catch (err) {
         console.error('Error fetching CFOs:', err);
         // Fallback to dummy data on error
-        setCfos([
-          { id: 1, guid: 'cfo-001', name: 'ЦФО-001 - Центральный офис' },
-          { id: 2, guid: 'cfo-002', name: 'ЦФО-002 - Отдел продаж' },
-          { id: 3, guid: 'cfo-003', name: 'ЦФО-003 - Производственный отдел' }
-        ]);
+        setCfos(dummyCfos);
       } finally {
         setLoadingCfos(false);
       }
@@ -321,20 +293,12 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
           setDdsArticles(formattedDdsArticles);
         } else {
           // Fallback to dummy data if API doesn't return expected data
-          setDdsArticles([
-            { id: 1, guid: 'dds-001', name: 'Статья ДДС 1' },
-            { id: 2, guid: 'dds-002', name: 'Статья ДДС 2' },
-            { id: 3, guid: 'dds-003', name: 'Статья ДДС 3' }
-          ]);
+          setDdsArticles(dummyDdsArticles);
         }
       } catch (err) {
         console.error('Error fetching DDS articles:', err);
         // Fallback to dummy data on error
-        setDdsArticles([
-          { id: 1, guid: 'dds-001', name: 'Статья ДДС 1' },
-          { id: 2, guid: 'dds-002', name: 'Статья ДДС 2' },
-          { id: 3, guid: 'dds-003', name: 'Статья ДДС 3' }
-        ]);
+        setDdsArticles(dummyDdsArticles);
       } finally {
         setLoadingDdsArticles(false);
       }
@@ -367,20 +331,12 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
           setBudgetArticles(formattedBudgetArticles);
         } else {
           // Fallback to dummy data if API doesn't return expected data
-          setBudgetArticles([
-            { id: 1, guid: 'budget-001', name: 'Статья Бюджета 1' },
-            { id: 2, guid: 'budget-002', name: 'Статья Бюджета 2' },
-            { id: 3, guid: 'budget-003', name: 'Статья Бюджета 3' }
-          ]);
+          setBudgetArticles(dummyBudgetArticles);
         }
       } catch (err) {
         console.error('Error fetching budget articles:', err);
         // Fallback to dummy data on error
-        setBudgetArticles([
-          { id: 1, guid: 'budget-001', name: 'Статья Бюджета 1' },
-          { id: 2, guid: 'budget-002', name: 'Статья Бюджета 2' },
-          { id: 3, guid: 'budget-003', name: 'Статья Бюджета 3' }
-        ]);
+        setBudgetArticles(dummyBudgetArticles);
       } finally {
         setLoadingBudgetArticles(false);
       }
@@ -413,20 +369,12 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
           setCounterparties(formattedCounterparties);
         } else {
           // Fallback to dummy data if API doesn't return expected data
-          setCounterparties([
-            { id: 1, guid: 'counter-001', name: 'Контрагент 1' },
-            { id: 2, guid: 'counter-002', name: 'Контрагент 2' },
-            { id: 3, guid: 'counter-003', name: 'Контрагент 3' }
-          ]);
+          setCounterparties(dummyCounterparties);
         }
       } catch (err) {
         console.error('Error fetching counterparties:', err);
         // Fallback to dummy data on error
-        setCounterparties([
-          { id: 1, guid: 'counter-001', name: 'Контрагент 1' },
-          { id: 2, guid: 'counter-002', name: 'Контрагент 2' },
-          { id: 3, guid: 'counter-003', name: 'Контрагент 3' }
-        ]);
+        setCounterparties(dummyCounterparties);
       } finally {
         setLoadingCounterparties(false);
       }
@@ -461,20 +409,12 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
             setContracts(formattedContracts);
           } else {
             // Fallback to dummy data if API doesn't return expected data
-            setContracts([
-              { id: 1, guid: 'contract-001', name: 'Договор 1' },
-              { id: 2, guid: 'contract-002', name: 'Договор 2' },
-              { id: 3, guid: 'contract-003', name: 'Договор 3' }
-            ]);
+            setContracts(dummyContracts);
           }
         } catch (err) {
           console.error('Error fetching contracts:', err);
           // Fallback to dummy data on error
-          setContracts([
-            { id: 1, guid: 'contract-001', name: 'Договор 1' },
-            { id: 2, guid: 'contract-002', name: 'Договор 2' },
-            { id: 3, guid: 'contract-003', name: 'Договор 3' }
-          ]);
+          setContracts(dummyContracts);
         } finally {
           setLoadingContracts(false);
         }
@@ -701,8 +641,8 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
       const requestBody = {
         username: "Администратор",
         token: token,
-        action: "save_document_expenditure", // Fixed typo
-        type: "expenditure", // Fixed typo
+        action: "save_document_expenditure",
+        type: "expenditure",
         organizationGuid: formData.organizationGuid,
         cfoGuid: formData.cfoGuid,
         projectGuid: formData.projectGuid,
@@ -711,8 +651,10 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
         amount: formData.amount,
         currency: formData.currency,
         paymentForm: formData.paymentForm,
-        budgetArticleGuid: formData.budgetArticleGuid,
+        operationType: formData.operationType,
+        purposeText: formData.purposeText,
         ddsArticleGuid: formData.ddsArticleGuid,
+        budgetArticleGuid: formData.budgetArticleGuid,
         contractGuid: formData.contractGuid
       };
       
@@ -758,377 +700,443 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
         </div>
       </div>
 
+      {/* Success/Error Message Box */}
+      {/* This will be handled by showCustomMessage */}
+
       {/* Form */}
-      <div className="content-card">
-        <form onSubmit={handleSubmit}>
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="expenditure-date">Дата Создания:</label>
-              <input 
-                type="date" 
-                id="expenditure-date" 
-                name="date" 
-                value={formData.date}
-                onChange={(e) => handleInputChange('date', e.target.value)}
-                className="form-control"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="expenditure-currency">Валюта:</label>
-              <select 
-                id="expenditure-currency" 
-                name="currency" 
-                value={formData.currency}
-                onChange={(e) => handleInputChange('currency', e.target.value)}
-                className="form-control"
-              >
-                <option value="KZT">KZT</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="RUB">RUB</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="expenditure-amount">Сумма:</label>
-              <input 
-                type="number" 
-                id="expenditure-amount" 
-                name="amount" 
-                value={formData.amount}
-                onChange={(e) => handleInputChange('amount', e.target.value)}
-                className="form-control" 
-                placeholder="Введите сумму..."
-                min="0"
-                step="0.01"
-              />
-            </div>
+      <form onSubmit={handleSubmit}>
+        {/* Basic Information Section */}
+        <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+          <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <i className="fas fa-calendar-alt"></i>
+            Основная информация
           </div>
-
-          <div className="form-group">
-            <label htmlFor="expenditure-payment-form">Форма Оплаты:</label>
-            <select 
-              id="expenditure-payment-form" 
-              name="paymentForm" 
-              value={formData.paymentForm}
-              onChange={(e) => handleInputChange('paymentForm', e.target.value)}
-              className="form-control"
-            >
-              <option value="Наличные">Наличные</option>
-              <option value="Безналичный расчет">Безналичные</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="expenditure-operation-type">Тип Операции:</label>
-            <select 
-              id="expenditure-operation-type" 
-              name="operationType" 
-              value={formData.operationType}
-              onChange={(e) => handleInputChange('operationType', e.target.value)}
-              className="form-control"
-              disabled={loadingOperationTypes}
-            >
-              {operationTypes.map((type, index) => (
-                <option key={index} value={type}>{type}</option>
-              ))}
-            </select>
-            {loadingOperationTypes && (
-              <div className="loading-indicator">
-                <i className="fas fa-spinner fa-spin"></i> Загрузка типов операций...
-              </div>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="expenditure-organization">Организация:</label>
-            <div className="input-with-button">
-              <input 
-                type="text" 
-                id="expenditure-organization" 
-                name="organization" 
-                value={formData.organization}
-                readOnly
-                className="form-control" 
-                placeholder="Выберите Организацию..."
-              />
-              <button 
-                type="button" 
-                id="open-organization-modal" 
-                className="search-button"
-                onClick={() => openModal('organization')}
-              >
-                <i className="fas fa-search"></i>
-              </button>
-            </div>
-            <input 
-              type="hidden" 
-              id="expenditure-organization-guid" 
-              name="organizationGuid" 
-              value={formData.organizationGuid}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="expenditure-purpose-text">Назначение Платежа:</label>
-            <textarea 
-              id="expenditure-purpose-text" 
-              name="purposeText" 
-              value={formData.purposeText}
-              onChange={(e) => handleInputChange('purposeText', e.target.value)}
-              className="form-control" 
-              placeholder="Введите назначение платежа..."
-              rows="3"
-            />
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="expenditure-dds-article">Статья ДДС:</label>
-              <div className="input-with-button">
+          <div className="info-grid">
+            <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Дата расхода:</span>
                 <input 
-                  type="text" 
-                  id="expenditure-dds-article" 
-                  name="ddsArticle" 
-                  value={formData.ddsArticle}
-                  readOnly
-                  className="form-control" 
-                  placeholder="Выберите Статью ДДС..."
+                  type="date" 
+                  id="expenditure-date" 
+                  name="date" 
+                  value={formData.date}
+                  onChange={(e) => handleInputChange('date', e.target.value)}
+                  className="form-control"
                 />
-                <button 
-                  type="button" 
-                  id="open-dds-article-modal" 
-                  className="search-button"
-                  onClick={() => openModal('ddsArticle')}
-                >
-                  <i className="fas fa-search"></i>
-                </button>
               </div>
-              <input 
-                type="hidden" 
-                id="expenditure-dds-article-guid" 
-                name="ddsArticleGuid" 
-                value={formData.ddsArticleGuid}
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="expenditure-budget-article">Статья Бюджета:</label>
-              <div className="input-with-button">
-                <input 
-                  type="text" 
-                  id="expenditure-budget-article" 
-                  name="budgetArticle" 
-                  value={formData.budgetArticle}
-                  readOnly
-                  className="form-control" 
-                  placeholder="Выберите Статью Бюджета..."
-                />
-                <button 
-                  type="button" 
-                  id="open-budget-article-modal" 
-                  className="search-button"
-                  onClick={() => openModal('budgetArticle')}
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Вид операции:</span>
+                <select 
+                  id="expenditure-operation-type" 
+                  name="operationType" 
+                  value={formData.operationType}
+                  onChange={(e) => handleInputChange('operationType', e.target.value)}
+                  className="form-control"
+                  disabled={loadingOperationTypes}
                 >
-                  <i className="fas fa-search"></i>
-                </button>
+                  {operationTypes.map((type, index) => (
+                    <option key={index} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+                {loadingOperationTypes && (
+                  <div className="loading-indicator">
+                    <i className="fas fa-spinner fa-spin"></i> Загрузка видов операций...
+                  </div>
+                )}
               </div>
-              <input 
-                type="hidden" 
-                id="expenditure-budget-article-guid" 
-                name="budgetArticleGuid" 
-                value={formData.budgetArticleGuid}
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="expenditure-project">Проект:</label>
-            <div className="input-with-button">
-              <input 
-                type="text" 
-                id="expenditure-project" 
-                name="project" 
-                value={formData.project}
-                readOnly
-                className="form-control" 
-                placeholder="Выберите Проект..."
-              />
-              <button 
-                type="button" 
-                id="open-project-modal" 
-                className="search-button"
-                onClick={() => openModal('project')}
-              >
-                <i className="fas fa-search"></i>
-              </button>
-            </div>
-            <input 
-              type="hidden" 
-              id="expenditure-project-guid" 
-              name="projectGuid" 
-              value={formData.projectGuid}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="expenditure-cfo">ЦФО (Центр Финансовой Ответственности):</label>
-            <div className="input-with-button">
-              <input 
-                type="text" 
-                id="expenditure-cfo" 
-                name="cfo" 
-                value={formData.cfo}
-                readOnly
-                className="form-control" 
-                placeholder="Выберите ЦФО..."
-              />
-              <button 
-                type="button" 
-                id="open-cfo-modal" 
-                className="search-button"
-                onClick={() => openModal('cfo')}
-              >
-                <i className="fas fa-search"></i>
-              </button>
-            </div>
-            <input 
-              type="hidden" 
-              id="expenditure-cfo-guid" 
-              name="cfoGuid" 
-              value={formData.cfoGuid}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="expenditure-counterparty">Контрагент:</label>
-            <div className="input-with-button">
-              <input 
-                type="text" 
-                id="expenditure-counterparty" 
-                name="counterparty" 
-                value={formData.counterparty}
-                readOnly
-                className="form-control" 
-                placeholder="Выберите Контрагента..."
-              />
-              <button 
-                type="button" 
-                id="open-counterparty-modal" 
-                className="search-button"
-                onClick={() => openModal('counterparty')}
-              >
-                <i className="fas fa-search"></i>
-              </button>
-            </div>
-            <input 
-              type="hidden" 
-              id="expenditure-counterparty-guid" 
-              name="counterpartyGuid" 
-              value={formData.counterpartyGuid}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="expenditure-contract">Договор:</label>
-            <div className="input-with-button">
-              <input 
-                type="text" 
-                id="expenditure-contract" 
-                name="contract" 
-                value={formData.contract}
-                readOnly
-                className="form-control" 
-                placeholder="Выберите Договор..."
-                disabled={!formData.counterparty}
-              />
-              <button 
-                type="button" 
-                id="open-contract-modal" 
-                className="search-button"
-                onClick={() => openModal('contract')}
-                disabled={!formData.counterparty}
-              >
-                <i className="fas fa-search"></i>
-              </button>
-            </div>
-            <input 
-              type="hidden" 
-              id="expenditure-contract-guid" 
-              name="contractGuid" 
-              value={formData.contractGuid}
-            />
-          </div>
-
-          {/* File Upload Section */}
-          <div className="form-group">
-            <label>Прикрепленные файлы:</label>
-            <div className="file-upload-container">
-              <input 
-                type="file" 
-                id="file-upload" 
-                className="file-input"
-                onChange={handleFileUpload}
-                multiple
-              />
-              <label htmlFor="file-upload" className="file-upload-label">
-                <i className="fas fa-cloud-upload-alt"></i> Выберите файлы или перетащите их сюда
-              </label>
             </div>
             
-            {uploadedFiles.length > 0 && (
-              <div className="uploaded-files-table">
-                <table className="table table-bordered">
-                  <thead>
-                    <tr>
-                      <th>Имя файла</th>
-                      <th>Размер</th>
-                      <th>Действия</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {uploadedFiles.map((file) => (
-                      <tr key={file.id}>
-                        <td>{file.name}</td>
-                        <td>{formatFileSize(file.size)}</td>
-                        <td>
-                          <button 
-                            type="button" 
-                            className="btn btn-danger btn-sm"
-                            onClick={() => removeFile(file.id)}
-                          >
-                            <i className="fas fa-trash"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Организация:</span>
+                <select 
+                  id="expenditure-organization" 
+                  name="organization" 
+                  value={formData.organizationGuid}
+                  onChange={(e) => {
+                    const selectedOrg = organizations.find(org => org.guid === e.target.value);
+                    handleInputChange('organizationGuid', e.target.value);
+                    handleInputChange('organization', selectedOrg ? selectedOrg.name : '');
+                  }}
+                  className="form-control"
+                  disabled={loadingOrganizations}
+                >
+                  <option value="">-- Выберите организацию --</option>
+                  {organizations.map((org) => (
+                    <option key={org.guid} value={org.guid}>
+                      {org.name}
+                    </option>
+                  ))}
+                </select>
+                {loadingOrganizations && (
+                  <div className="loading-indicator">
+                    <i className="fas fa-spinner fa-spin"></i> Загрузка организаций...
+                  </div>
+                )}
+                <input 
+                  type="hidden" 
+                  id="expenditure-organization-name" 
+                  name="organization" 
+                  value={formData.organization}
+                />
               </div>
-            )}
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Проект:</span>
+                <div className="input-with-button">
+                  <input 
+                    type="text" 
+                    id="expenditure-project" 
+                    name="project" 
+                    value={formData.project}
+                    readOnly
+                    className="form-control" 
+                    placeholder="Выберите Проект..."
+                  />
+                  <button 
+                    type="button" 
+                    id="open-project-modal" 
+                    className="search-button"
+                    onClick={() => openModal('project')}
+                  >
+                    <i className="fas fa-search"></i>
+                  </button>
+                </div>
+                <input 
+                  type="hidden" 
+                  id="expenditure-project-guid" 
+                  name="projectGuid" 
+                  value={formData.projectGuid}
+                />
+              </div>
+            </div>
           </div>
+        </div>
 
-          {/* Form Actions */}
-          <div className="action-buttons">
-            <button 
-              type="button" 
-              id="close-expenditure-button" 
-              className="btn btn-secondary"
-              onClick={handleCancel}
-            >
-              <i className="fas fa-times"></i> Закрыть
-            </button>
-            <button 
-              type="submit" 
-              id="save-expenditure-button" 
-              className="btn btn-primary"
-            >
-              <i className="fas fa-save"></i> Сохранить
-            </button>
+        {/* Financial Information Section */}
+        <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+          <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <i className="fas fa-dollar-sign"></i>
+            Финансовая информация
           </div>
-        </form>
-      </div>
+          <div className="info-grid">
+            <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Сумма документа:</span>
+                <input 
+                  type="number" 
+                  id="expenditure-amount" 
+                  name="amount" 
+                  value={formData.amount}
+                  onChange={(e) => handleInputChange('amount', e.target.value)}
+                  className="form-control"
+                  placeholder="Введите сумму"
+                />
+              </div>
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Валюта:</span>
+                <select 
+                  id="expenditure-currency" 
+                  name="currency" 
+                  value={formData.currency}
+                  onChange={(e) => handleInputChange('currency', e.target.value)}
+                  className="form-control"
+                >
+                  <option value="KZT">KZT</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="RUB">RUB</option>
+                </select>
+              </div>
+            </div>
+            <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Форма оплаты:</span>
+                <select 
+                  id="expenditure-payment-form" 
+                  name="paymentForm" 
+                  value={formData.paymentForm}
+                  onChange={(e) => handleInputChange('paymentForm', e.target.value)}
+                  className="form-control"
+                >
+                  <option value="Наличные">Наличные</option>
+                  <option value="Безналичный расчёт">Безналичный расчёт</option>
+                </select>
+              </div>
+            </div>
+            <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Назначение платежа:</span>
+                <textarea 
+                  id="expenditure-purpose-text" 
+                  name="purposeText" 
+                  value={formData.purposeText}
+                  onChange={(e) => handleInputChange('purposeText', e.target.value)}
+                  className="form-control" 
+                  placeholder="Введите назначение платежа..."
+                  rows="3"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Counterparty Information Section */}
+        <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+          <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <i className="fas fa-handshake"></i>
+            Контрагент и договоры
+          </div>
+          <div className="info-grid">
+            <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Контрагент:</span>
+                <div className="input-with-button">
+                  <input 
+                    type="text" 
+                    id="expenditure-counterparty" 
+                    name="counterparty" 
+                    value={formData.counterparty}
+                    readOnly
+                    className="form-control" 
+                    placeholder="Выберите Контрагента..."
+                  />
+                  <button 
+                    type="button" 
+                    id="open-counterparty-modal" 
+                    className="search-button"
+                    onClick={() => openModal('counterparty')}
+                  >
+                    <i className="fas fa-search"></i>
+                  </button>
+                </div>
+                <input 
+                  type="hidden" 
+                  id="expenditure-counterparty-guid" 
+                  name="counterpartyGuid" 
+                  value={formData.counterpartyGuid}
+                />
+              </div>
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Договор:</span>
+                <div className="input-with-button">
+                  <input 
+                    type="text" 
+                    id="expenditure-contract" 
+                    name="contract" 
+                    value={formData.contract}
+                    readOnly
+                    className="form-control" 
+                    placeholder="Выберите Договор..."
+                    disabled={!formData.counterparty}
+                  />
+                  <button 
+                    type="button" 
+                    id="open-contract-modal" 
+                    className="search-button"
+                    onClick={() => openModal('contract')}
+                    disabled={!formData.counterparty}
+                  >
+                    <i className="fas fa-search"></i>
+                  </button>
+                </div>
+                <input 
+                  type="hidden" 
+                  id="expenditure-contract-guid" 
+                  name="contractGuid" 
+                  value={formData.contractGuid}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Organizational Structure Section */}
+        <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+          <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <i className="fas fa-sitemap"></i>
+            Организационная структура
+          </div>
+          <div className="info-grid">
+            <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>ЦФО (Центр Финансовой Ответственности):</span>
+                <div className="input-with-button">
+                  <input 
+                    type="text" 
+                    id="expenditure-cfo" 
+                    name="cfo" 
+                    value={formData.cfo}
+                    readOnly
+                    className="form-control" 
+                    placeholder="Выберите ЦФО..."
+                  />
+                  <button 
+                    type="button" 
+                    id="open-cfo-modal" 
+                    className="search-button"
+                    onClick={() => openModal('cfo')}
+                  >
+                    <i className="fas fa-search"></i>
+                  </button>
+                </div>
+                <input 
+                  type="hidden" 
+                  id="expenditure-cfo-guid" 
+                  name="cfoGuid" 
+                  value={formData.cfoGuid}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Budget and Accounting Section */}
+        <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+          <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <i className="fas fa-chart-pie"></i>
+            Бюджет и учет
+          </div>
+          <div className="info-grid">
+            <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Статья движения денежных средств:</span>
+                <div className="input-with-button">
+                  <input 
+                    type="text" 
+                    id="expenditure-dds-article" 
+                    name="ddsArticle" 
+                    value={formData.ddsArticle}
+                    readOnly
+                    className="form-control" 
+                    placeholder="Выберите Статью ДДС..."
+                  />
+                  <button 
+                    type="button" 
+                    id="open-dds-article-modal" 
+                    className="search-button"
+                    onClick={() => openModal('ddsArticle')}
+                  >
+                    <i className="fas fa-search"></i>
+                  </button>
+                </div>
+                <input 
+                  type="hidden" 
+                  id="expenditure-dds-article-guid" 
+                  name="ddsArticleGuid" 
+                  value={formData.ddsArticleGuid}
+                />
+              </div>
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Статья бюджета:</span>
+                <div className="input-with-button">
+                  <input 
+                    type="text" 
+                    id="expenditure-budget-article" 
+                    name="budgetArticle" 
+                    value={formData.budgetArticle}
+                    readOnly
+                    className="form-control" 
+                    placeholder="Выберите Статью Бюджета..."
+                  />
+                  <button 
+                    type="button" 
+                    id="open-budget-article-modal" 
+                    className="search-button"
+                    onClick={() => openModal('budgetArticle')}
+                  >
+                    <i className="fas fa-search"></i>
+                  </button>
+                </div>
+                <input 
+                  type="hidden" 
+                  id="expenditure-budget-article-guid" 
+                  name="budgetArticleGuid" 
+                  value={formData.budgetArticleGuid}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* File Upload Section */}
+        <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+          <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <i className="fas fa-paperclip"></i>
+            Прикрепленные файлы
+          </div>
+          <div className="info-grid">
+            <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`} style={{ gridColumn: 'span 3' }}>
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Файлы:</span>
+                <div className="file-upload-container">
+                  <input 
+                    type="file" 
+                    id="file-upload" 
+                    className="file-input"
+                    onChange={handleFileUpload}
+                    multiple
+                  />
+                  <label htmlFor="file-upload" className="file-upload-label">
+                    <i className="fas fa-cloud-upload-alt"></i> Выберите файлы или перетащите их сюда
+                  </label>
+                </div>
+                
+                {uploadedFiles.length > 0 && (
+                  <div className="uploaded-files-table">
+                    <table className="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th>Имя файла</th>
+                          <th>Размер</th>
+                          <th>Действия</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {uploadedFiles.map((file) => (
+                          <tr key={file.id}>
+                            <td>{file.name}</td>
+                            <td>{formatFileSize(file.size)}</td>
+                            <td>
+                              <button 
+                                type="button" 
+                                className="btn btn-danger btn-sm"
+                                onClick={() => removeFile(file.id)}
+                              >
+                                <i className="fas fa-trash"></i>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Form Actions */}
+        <div className="action-buttons">
+          <button 
+            type="button" 
+            id="close-expenditure-button" 
+            className="btn btn-secondary"
+            onClick={handleCancel}
+          >
+            <i className="fas fa-times"></i> Закрыть
+          </button>
+          <button 
+            type="submit" 
+            id="save-expenditure-button" 
+            className="btn btn-primary"
+          >
+            <i className="fas fa-save"></i> Сохранить
+          </button>
+        </div>
+      </form>
 
       {/* Universal Selection Modal */}
       <div className={`modal-overlay ${showModal ? 'active' : ''}`}>

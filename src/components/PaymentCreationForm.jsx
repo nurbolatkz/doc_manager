@@ -291,18 +291,32 @@ const PaymentCreationForm = ({ currentUser, onBack, onSave, theme = { mode: 'lig
               </div>
               <div className="flex items-center space-x-3">
               
-                <button 
-                  onClick={fetchPaymentLines}
-                  disabled={isLoading}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50"
-                >
-                  {isLoading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  ) : (
-                    <Plus className="w-4 h-4" />
-                  )}
-                  <span>Заполнить</span>
-                </button>
+              <button 
+                onClick={fetchPaymentLines}
+                disabled={isLoading}
+                className="flex items-center space-x-2 px-4 py-2 text-white rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50"
+                style={{
+                  background: 'linear-gradient(to right, #5d43ee, #a04dc7)',
+                  backgroundSize: '100% 100%'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isLoading) {
+                    e.target.style.background = 'linear-gradient(to right, #4c35d1, #8b3fa8)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isLoading) {
+                    e.target.style.background = 'linear-gradient(to right, #5d43ee, #a04dc7)';
+                  }
+                }}
+              >
+                {isLoading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                ) : (
+                  <Plus className="w-4 h-4" />
+                )}
+                <span>Заполнить</span>
+              </button>
               </div>
             </div>
 
@@ -481,26 +495,40 @@ const PaymentCreationForm = ({ currentUser, onBack, onSave, theme = { mode: 'lig
             <span>Отмена</span>
           </button>
           <button 
-            onClick={handleSave}
-            disabled={isLoading}
-            className={`flex items-center justify-center space-x-2 px-8 py-3 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg ${
-              isLoading
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white'
-            }`}
-          >
-            {isLoading ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                <span>Сохранение...</span>
-              </>
-            ) : (
-              <>
-                <Save className="w-5 h-5" />
-                <span>Сохранить документ</span>
-              </>
-            )}
-          </button>
+  onClick={handleSave}
+  disabled={isLoading}
+  className={`flex items-center justify-center space-x-2 px-8 py-3 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg ${
+    isLoading
+      ? 'bg-gray-400 cursor-not-allowed'
+      : 'text-white'
+  }`}
+  style={!isLoading ? {
+    background: 'linear-gradient(to right, #5d43ee, #a04dc7)',
+    backgroundSize: '100% 100%'
+  } : {}}
+  onMouseEnter={(e) => {
+    if (!isLoading) {
+      e.target.style.background = 'linear-gradient(to right, #4c35d1, #8b3fa8)';
+    }
+  }}
+  onMouseLeave={(e) => {
+    if (!isLoading) {
+      e.target.style.background = 'linear-gradient(to right, #5d43ee, #a04dc7)';
+    }
+  }}
+>
+  {isLoading ? (
+    <>
+      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+      <span>Сохранение...</span>
+    </>
+  ) : (
+    <>
+      <Save className="w-5 h-5" />
+      <span>Сохранить документ</span>
+    </>
+  )}
+</button>
         </div>
       </div>
     </div>

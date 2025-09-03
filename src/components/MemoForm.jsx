@@ -380,173 +380,189 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
       {/* This will be handled by showCustomMessage */}
 
       {/* Form */}
-      <div className="content-card">
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="memo-date">Дата Создания:</label>
-            <input 
-              type="date" 
-              id="memo-date" 
-              name="date" 
-              value={formData.date}
-              onChange={(e) => handleInputChange('date', e.target.value)}
-              className="form-control"
-            />
+      <form onSubmit={handleSubmit}>
+        {/* Basic Information Section */}
+        <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+          <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <i className="fas fa-info-circle"></i>
+            Основная информация
           </div>
-
-          {/* Document Type Field */}
-          <div className="form-group">
-            <label htmlFor="memo-document-type">Тип Документа:</label>
-            <select 
-              id="memo-document-type" 
-              name="documentType" 
-              value={formData.documentType}
-              onChange={(e) => handleInputChange('documentType', e.target.value)}
-              className="form-control"
-              disabled={loadingDocumentTypes}
-            >
-              <option value="">-- Выберите тип документа --</option>
-              {documentTypes.map((type) => (
-                <option key={type.guid} value={type.guid}>
-                  {type.name}
-                </option>
-              ))}
-            </select>
-            {loadingDocumentTypes && (
-              <div className="loading-indicator">
-                <i className="fas fa-spinner fa-spin"></i> Загрузка типов документов...
+          <div className="info-grid">
+            <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              {/* Date Field */}
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Дата Создания:</span>
+                <input 
+                  type="date" 
+                  id="memo-date" 
+                  name="date" 
+                  value={formData.date}
+                  onChange={(e) => handleInputChange('date', e.target.value)}
+                  className="form-control"
+                />
               </div>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="memo-text">Текст Обращения:</label>
-            <textarea 
-              id="memo-text" 
-              name="text" 
-              value={formData.text}
-              onChange={(e) => handleInputChange('text', e.target.value)}
-              className="form-control" 
-              placeholder="Введите основной текст служебной записки..."
-              rows="6"
-            />
-          </div>
-
-          {/* Organization Field as Select */}
-          <div className="form-group">
-            <label htmlFor="memo-organization">Организация:</label>
-            <select 
-              id="memo-organization" 
-              name="organization" 
-              value={formData.organizationGuid}
-              onChange={(e) => {
-                const selectedOrg = organizations.find(org => org.guid === e.target.value);
-                handleInputChange('organizationGuid', e.target.value);
-                handleInputChange('organization', selectedOrg ? selectedOrg.name : '');
-              }}
-              className="form-control"
-              disabled={loadingOrganizations}
-            >
-              <option value="">-- Выберите организацию --</option>
-              {organizations.map((org) => (
-                <option key={org.guid} value={org.guid}>
-                  {org.name}
-                </option>
-              ))}
-            </select>
-            {loadingOrganizations && (
-              <div className="loading-indicator">
-                <i className="fas fa-spinner fa-spin"></i> Загрузка организаций...
+              
+              {/* Document Type Field */}
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Тип Документа:</span>
+                <select 
+                  id="memo-document-type" 
+                  name="documentType" 
+                  value={formData.documentType}
+                  onChange={(e) => handleInputChange('documentType', e.target.value)}
+                  className="form-control"
+                  disabled={loadingDocumentTypes}
+                >
+                  <option value="">-- Выберите тип документа --</option>
+                  {documentTypes.map((type) => (
+                    <option key={type.guid} value={type.guid}>
+                      {type.name}
+                    </option>
+                  ))}
+                </select>
+                {loadingDocumentTypes && (
+                  <div className="loading-indicator">
+                    <i className="fas fa-spinner fa-spin"></i> Загрузка типов документов...
+                  </div>
+                )}
               </div>
-            )}
-            <input 
-              type="hidden" 
-              id="memo-organization-name" 
-              name="organization" 
-              value={formData.organization}
-            />
-          </div>
-
-          {/* CFO Field with Modal */}
-          <div className="form-group">
-            <label htmlFor="memo-cfo">ЦФО (Центр Финансовой Ответственности):</label>
-            <div className="input-with-button">
-              <input 
-                type="text" 
-                id="memo-cfo" 
-                name="cfo" 
-                value={formData.cfo}
-                readOnly
-                className="form-control" 
-                placeholder="Выберите ЦФО..."
-              />
-              <button 
-                type="button" 
-                id="open-cfo-modal" 
-                className="search-button"
-                onClick={() => openModal('cfo')}
-              >
-                <i className="fas fa-search"></i>
-              </button>
             </div>
-            <input 
-              type="hidden" 
-              id="memo-cfo-guid" 
-              name="cfoGuid" 
-              value={formData.cfoGuid}
-            />
-          </div>
-
-          {/* Project Field with Modal */}
-          <div className="form-group">
-            <label htmlFor="memo-project">Проект:</label>
-            <div className="input-with-button">
-              <input 
-                type="text" 
-                id="memo-project" 
-                name="project" 
-                value={formData.project}
-                readOnly
-                className="form-control" 
-                placeholder="Выберите Проект..."
-              />
-              <button 
-                type="button" 
-                id="open-project-modal" 
-                className="search-button"
-                onClick={() => openModal('project')}
-              >
-                <i className="fas fa-search"></i>
-              </button>
+            
+            {/* Document Type and Organization Section */}
+            <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Организация:</span>
+                <select 
+                  id="memo-organization" 
+                  name="organization" 
+                  value={formData.organizationGuid}
+                  onChange={(e) => {
+                    const selectedOrg = organizations.find(org => org.guid === e.target.value);
+                    handleInputChange('organizationGuid', e.target.value);
+                    handleInputChange('organization', selectedOrg ? selectedOrg.name : '');
+                  }}
+                  className="form-control"
+                  disabled={loadingOrganizations}
+                >
+                  <option value="">-- Выберите организацию --</option>
+                  {organizations.map((org) => (
+                    <option key={org.guid} value={org.guid}>
+                      {org.name}
+                    </option>
+                  ))}
+                </select>
+                {loadingOrganizations && (
+                  <div className="loading-indicator">
+                    <i className="fas fa-spinner fa-spin"></i> Загрузка организаций...
+                  </div>
+                )}
+                <input 
+                  type="hidden" 
+                  id="memo-organization-name" 
+                  name="organization" 
+                  value={formData.organization}
+                />
+              </div>
             </div>
-            <input 
-              type="hidden" 
-              id="memo-project-guid" 
-              name="projectGuid" 
-              value={formData.projectGuid}
-            />
+            
+            {/* CFO and Project Section */}
+            <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>ЦФО (Центр Финансовой Ответственности):</span>
+                <div className="input-with-button">
+                  <input 
+                    type="text" 
+                    id="memo-cfo" 
+                    name="cfo" 
+                    value={formData.cfo}
+                    readOnly
+                    className="form-control" 
+                    placeholder="Выберите ЦФО..."
+                  />
+                  <button 
+                    type="button" 
+                    id="open-cfo-modal" 
+                    className="search-button"
+                    onClick={() => openModal('cfo')}
+                  >
+                    <i className="fas fa-search"></i>
+                  </button>
+                </div>
+                <input 
+                  type="hidden" 
+                  id="memo-cfo-guid" 
+                  name="cfoGuid" 
+                  value={formData.cfoGuid}
+                />
+              </div>
+              
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Проект:</span>
+                <div className="input-with-button">
+                  <input 
+                    type="text" 
+                    id="memo-project" 
+                    name="project" 
+                    value={formData.project}
+                    readOnly
+                    className="form-control" 
+                    placeholder="Выберите Проект..."
+                  />
+                  <button 
+                    type="button" 
+                    id="open-project-modal" 
+                    className="search-button"
+                    onClick={() => openModal('project')}
+                  >
+                    <i className="fas fa-search"></i>
+                  </button>
+                </div>
+                <input 
+                  type="hidden" 
+                  id="memo-project-guid" 
+                  name="projectGuid" 
+                  value={formData.projectGuid}
+                />
+              </div>
+            </div>
+            
+            {/* Message Section */}
+            <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`} style={{ gridColumn: 'span 3' }}>
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Текст Обращения:</span>
+                <textarea 
+                  id="memo-text" 
+                  name="text" 
+                  value={formData.text}
+                  onChange={(e) => handleInputChange('text', e.target.value)}
+                  className="form-control" 
+                  placeholder="Введите основной текст служебной записки..."
+                  rows="6"
+                />
+              </div>
+            </div>
           </div>
+        </div>
 
-          {/* Form Actions */}
-          <div className="action-buttons">
-            <button 
-              type="button" 
-              id="close-memo-button" 
-              className="btn btn-secondary"
-              onClick={handleCancel}
-            >
-              <i className="fas fa-times"></i> Закрыть
-            </button>
-            <button 
-              type="submit" 
-              id="save-memo-button" 
-              className="btn btn-primary"
-            >
-              <i className="fas fa-save"></i> Сохранить
-            </button>
-          </div>
-        </form>
-      </div>
+        {/* Form Actions */}
+        <div className="action-buttons">
+          <button 
+            type="button" 
+            id="close-memo-button" 
+            className="btn btn-secondary"
+            onClick={handleCancel}
+          >
+            <i className="fas fa-times"></i> Закрыть
+          </button>
+          <button 
+            type="submit" 
+            id="save-memo-button" 
+            className="btn btn-primary"
+          >
+            <i className="fas fa-save"></i> Сохранить
+          </button>
+        </div>
+      </form>
 
       {/* Universal Selection Modal */}
       <div className={`modal-overlay ${showModal ? 'active' : ''}`}>
