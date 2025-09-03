@@ -421,11 +421,9 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
         {/* User Section */}
         <div className="user-section">
           <div className="user-info">
-            <img
-              src={currentUser.avatar || 'https://via.placeholder.com/32'}
-              alt="Avatar"
-              className="user-avatar"
-            />
+            <div className="user-avatar" style={{display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#3b82f6', color: 'white'}}>
+              <i className="fas fa-user"></i>
+            </div>
             {sidebarOpen ? (
               // When sidebar is open, show user details and logout button separately
               <>
