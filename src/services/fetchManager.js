@@ -78,9 +78,6 @@ export async function apiRequest(endpoint, requestBody, token) {
       credentials: 'include',
     };
 
-    console.log("Sending request to 1C backend with request body:", fullRequestBody);
-    console.log("Backend URL:", config.backend_1c_url);
-
     // Use the full URL with endpoint
     const response = await fetch(config.backend_1c_url, fetchOptions);
 
@@ -89,7 +86,6 @@ export async function apiRequest(endpoint, requestBody, token) {
     }
 
     const data = await response.json();
-    console.log("Response from 1C backend:", data);
 
     // Check if the response indicates success
     if (data.hasOwnProperty('success') && data.success === 0) {
@@ -98,7 +94,7 @@ export async function apiRequest(endpoint, requestBody, token) {
 
     return data;
   } catch (err) {
-    console.error("API request error:", err);
+    console.error(`API request error for endpoint ${endpoint}:`, err);
     throw err;
   }
 }
@@ -389,6 +385,27 @@ export async function fetchProjects(token, documentId) {
   };
 
   return apiRequest("project", requestBody, token);
+}
+
+// Function to update document files
+export async function updateDocumentFiles(token, username, arrayToRemove, arrayToUpload, documentId, documentType) {
+  const requestBody = {
+    username: username,
+    action: "update_document_files",
+    type: documentType,
+    documentId: documentId,
+    array_to_remove: arrayToRemove,
+    array_to_upload: arrayToUpload
+   };
+
+  console.log('Sending update_document_files request');
+  console.log('Request body:', requestBody);
+  console.log('Array to remove:', arrayToRemove);
+  console.log('Array to upload:', arrayToUpload);
+  
+  const response = await apiRequest("document_files", requestBody, token);
+  console.log('Received response:', response);
+  return response;
 }
 
 // Function to fetch CFO data

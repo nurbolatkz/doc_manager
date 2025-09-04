@@ -9,7 +9,8 @@ import {
   fetchBudgetArticles,
   fetchCounterparties,
   fetchContracts,
-  apiRequest
+  apiRequest,
+  updateDocumentFiles as updateDocumentFilesAPI
 } from '../services/fetchManager';
 import { showCustomMessage } from '../utils';
 import MemoEdit from './MemoEdit';
@@ -84,7 +85,9 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
 
   // Function to fetch existing attachments
   const fetchExistingAttachments = async () => {
-    if (!document.id || !document.documentType) return;
+    if (!document.id || !document.documentType) {
+      return;
+    }
     
     setLoadingAttachments(true);
     
@@ -100,12 +103,12 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       
       const response = await apiRequest("document_files", requestBody, token);
       
-      if (response.success === 1 && Array.isArray(response.files)) {
+      if (response && response.success === 1 && Array.isArray(response.files)) {
         // Transform the response to match the existing attachment structure
         const transformedAttachments = response.files.map((file, index) => ({
           id: index + 1,
           name: file.name,
-          guid: file.guid || file.id,
+          guid: file.guid || file.id || `file-${index}`,
           uploadDate: file.uploadDate || new Date().toISOString()
         }));
         setExistingAttachments(transformedAttachments);
@@ -171,6 +174,8 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   // Initialize form data with document data
   useEffect(() => {
     if (document) {
+      console.log('Initializing form with', document.documentType, 'document');
+      
       if (document.documentType === 'memo') {
         setFormData(prev => ({
           ...prev,
@@ -239,6 +244,14 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       fetchCounterpartiesForEdit()
     ]);
   }, [document]);
+
+  // Add useEffect to monitor when document ID or type changes for attachments
+  useEffect(() => {
+    if (document && document.id && document.documentType) {
+      console.log('Document changed, fetching attachments for', document.documentType, document.id);
+      fetchExistingAttachments();
+    }
+  }, [document?.id, document?.documentType]);
 
   // Fetch organizations for edit form
   const fetchOrganizationsForEdit = async () => {
@@ -724,7 +737,18 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
     
     try {
       const fileObjects = await Promise.all(filePromises);
-      setArrayToUpload(prev => [...prev, ...fileObjects]);
+      
+      // Remove the data URL prefix from the base64 string
+      const cleanedFileObjects = fileObjects.map(file => ({
+        name: file.name,
+        fileObject: file.fileObject.split(',')[1] || file.fileObject // Remove 'data:*/*;base64,' prefix
+      }));
+      
+      setArrayToUpload(prev => {
+        const newArray = [...prev, ...cleanedFileObjects];
+        console.log('Added', cleanedFileObjects.length, 'files to arrayToUpload. New length:', newArray.length);
+        return newArray;
+      });
       
       // Also keep track of uploaded files for display
       const newFiles = files.map(file => ({
@@ -734,6 +758,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         type: file.type
       }));
       setUploadedFiles(prev => [...prev, ...newFiles]);
+      console.log('Added', newFiles.length, 'files to uploadedFiles');
     } catch (error) {
       console.error('Error converting files to base64:', error);
       showCustomMessage('Ошибка при загрузке файлов: ' + error.message, 'danger');
@@ -741,17 +766,26 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   };
 
   const removeFile = (fileId) => {
+    console.log('Removing file with ID:', fileId);
+    console.log('Current arrayToUpload length:', arrayToUpload.length);
+    console.log('Current arrayToRemove length:', arrayToRemove.length);
+    
     // Check if it's an existing attachment or a newly uploaded file
     const existingAttachment = existingAttachments.find(attachment => attachment.id === fileId);
     
     if (existingAttachment) {
+      console.log('Removing existing attachment:', existingAttachment);
       // For existing attachments, ask for confirmation before adding to arrayToRemove
       if (window.confirm(`Вы уверены, что хотите удалить файл "${existingAttachment.name}"?`)) {
         // Add to arrayToRemove
-        setArrayToRemove(prev => [...prev, {
-          name: existingAttachment.name,
-          guid: existingAttachment.guid
-        }]);
+        setArrayToRemove(prev => {
+          const newArray = [...prev, {
+            name: existingAttachment.name,
+            guid: existingAttachment.guid
+          }];
+          console.log('Added to arrayToRemove. New length:', newArray.length);
+          return newArray;
+        });
         
         // Remove from existing attachments display
         setExistingAttachments(prev => prev.filter(attachment => attachment.id !== fileId));
@@ -760,11 +794,45 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       // For newly uploaded files, remove from arrayToUpload and uploadedFiles
       const fileToRemove = uploadedFiles.find(file => file.id === fileId);
       if (fileToRemove) {
-        setArrayToUpload(prev => prev.filter(file => file.name !== fileToRemove.name));
+        console.log('Removing newly uploaded file:', fileToRemove);
+        // Store a reference to the file in uploadedFiles when adding it to arrayToUpload
+        // This will help us identify which file to remove later
+        setArrayToUpload(prev => {
+          // Find the index of the file to remove by matching the name
+          // Note: This is not ideal as files can have the same name
+          const fileIndex = prev.findIndex(file => file.name === fileToRemove.name);
+          if (fileIndex !== -1) {
+            const newArray = [...prev];
+            newArray.splice(fileIndex, 1);
+            console.log('Removed file from arrayToUpload. New length:', newArray.length);
+            console.log('Remaining files in arrayToUpload:', newArray.map(f => f.name));
+            return newArray;
+          }
+          console.log('File not found in arrayToUpload');
+          return prev;
+        });
         setUploadedFiles(prev => prev.filter(file => file.id !== fileId));
+        console.log('File removed from uploadedFiles:', fileToRemove.name);
       }
     }
+    
+    // Log the updated arrays
+    setTimeout(() => {
+      console.log('After removal - arrayToUpload length:', arrayToUpload.length);
+      console.log('After removal - arrayToRemove length:', arrayToRemove.length);
+    }, 0);
   };
+
+  // Add useEffect to monitor state changes
+  useEffect(() => {
+    console.log('File arrays updated - ToUpload:', arrayToUpload.length, 'ToRemove:', arrayToRemove.length);
+    if (arrayToUpload.length > 0) {
+      console.log('First item in arrayToUpload:', arrayToUpload[0].name);
+    }
+    if (arrayToRemove.length > 0) {
+      console.log('First item in arrayToRemove:', arrayToRemove[0].name);
+    }
+  }, [arrayToUpload, arrayToRemove]);
 
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
@@ -776,6 +844,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('handleSubmit called');
     
     // Validate based on document type
     if (document.documentType === 'memo') {
@@ -1082,14 +1151,23 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   // Function to update document files
   const updateDocumentFiles = async (token) => {
     try {
-      const requestBody = {
-        token: token,
-        username: "Администратор",
-        array_to_remove: arrayToRemove,
-        array_to_upload: arrayToUpload
-      };
+      console.log('Updating document files');
+      console.log('Document ID:', document.id);
+      console.log('Document type:', document.documentType);
+      console.log('Array to remove:', arrayToRemove);
+      console.log('Array to upload:', arrayToUpload);
       
-      const response = await apiRequest("update_document_files", requestBody, token);
+      // Only proceed if there are files to update
+      if (arrayToRemove.length === 0 && arrayToUpload.length === 0) {
+        console.log('No files to update');
+        return { success: 1, message: "No files to update" };
+      }
+      
+      console.log('Sending request with arrayToRemove length:', arrayToRemove.length);
+      console.log('Sending request with arrayToUpload length:', arrayToUpload.length);
+      
+      const response = await updateDocumentFilesAPI(token, "Администратор", arrayToRemove, arrayToUpload, document.id, document.documentType);
+      console.log('File update response:', response);
       return response;
     } catch (error) {
       console.error('Error updating document files:', error);
@@ -1210,7 +1288,10 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
 
       {/* Form */}
       <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={(e) => {
+          console.log('Form submit event triggered');
+          handleSubmit(e);
+        }}>
           {document.documentType === 'memo' ? (
             // Memo form
             <MemoEdit
@@ -1284,6 +1365,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
             <button 
               type="submit" 
               className="btn btn-primary"
+              onClick={() => console.log('Save button clicked')}
             >
               <i className="fas fa-save"></i> Сохранить
             </button>
