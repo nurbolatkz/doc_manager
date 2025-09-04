@@ -468,13 +468,26 @@ button {
 }
 
 .btn-primary {
-  background: linear-gradient(to right, #5d43ee, #a04dc7);
+  background: linear-gradient(to right, #10b981, #059669);
   color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  transform: scale(1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: none;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(to right, #4a34d9, #8a3db2);
-  transform: translateY(-1px);
+  background: linear-gradient(to right, #059669, #047857);
+  transform: scale(1.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .btn-success {
@@ -2663,6 +2676,18 @@ button {
   
   .documents-table-container {
     display: block !important;
+  }
+}
+
+/* Responsive styles for detail cards */
+@media (max-width: 768px) {
+  .info-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  
+  .detail-card {
+    min-width: 0;
   }
 }
 

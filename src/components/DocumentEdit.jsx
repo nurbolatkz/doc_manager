@@ -1324,12 +1324,6 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
               toggleSelectAllPayments={toggleSelectAllPayments}
               updatePaymentAmount={updatePaymentAmount}
               updatePaymentDate={updatePaymentDate}
-              handleFileUpload={handleFileUpload}
-              uploadedFiles={uploadedFiles}
-              removeFile={removeFile}
-              formatFileSize={formatFileSize}
-              existingAttachments={existingAttachments}
-              loadingAttachments={loadingAttachments}
             />
           ) : (
             // Expenditure form
@@ -1365,7 +1359,6 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
             <button 
               type="submit" 
               className="btn btn-primary"
-              onClick={() => console.log('Save button clicked')}
             >
               <i className="fas fa-save"></i> Сохранить
             </button>

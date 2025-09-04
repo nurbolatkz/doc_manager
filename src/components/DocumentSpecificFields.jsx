@@ -169,7 +169,7 @@ const DocumentSpecificFields = ({ documentDetail, theme, formatDate, formatCurre
               </div>
               
               {/* Message Section */}
-              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`} style={{ gridColumn: 'span 3' }}>
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Сообщение:</span>
                   <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.message || 'Не указано'}</span>
@@ -322,7 +322,7 @@ const DocumentSpecificFields = ({ documentDetail, theme, formatDate, formatCurre
               Дополнительная информация
             </div>
             <div className="info-grid" style={infoGridStyle}>
-              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`} style={{ gridColumn: 'span 3' }}>
+              <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Комментарий:</span>
                   <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.comment || 'Не указано'}</span>
