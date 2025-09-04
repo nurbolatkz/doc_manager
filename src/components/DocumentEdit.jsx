@@ -54,9 +54,13 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   });
 
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [existingAttachments, setExistingAttachments] = useState([]);
+  const [arrayToUpload, setArrayToUpload] = useState([]);
+  const [arrayToRemove, setArrayToRemove] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
   const [modalSearchTerm, setModalSearchTerm] = useState('');
+  const [loadingAttachments, setLoadingAttachments] = useState(false);
   
   // Data for modals
   const [organizations, setOrganizations] = useState([]);
@@ -77,6 +81,44 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   const [loadingCounterparties, setLoadingCounterparties] = useState(false);
   const [loadingContracts, setLoadingContracts] = useState(false);
   const [loadingPaymentLines, setLoadingPaymentLines] = useState(false); // For payment lines loading
+
+  // Function to fetch existing attachments
+  const fetchExistingAttachments = async () => {
+    if (!document.id || !document.documentType) return;
+    
+    setLoadingAttachments(true);
+    
+    try {
+      const token = localStorage.getItem('authToken') || '';
+      
+      const requestBody = {
+        username: "Администратор",
+        action: "get_array_files",
+        type: document.documentType,
+        documentid: document.id
+      };
+      
+      const response = await apiRequest("document_files", requestBody, token);
+      
+      if (response.success === 1 && Array.isArray(response.files)) {
+        // Transform the response to match the existing attachment structure
+        const transformedAttachments = response.files.map((file, index) => ({
+          id: index + 1,
+          name: file.name,
+          guid: file.guid || file.id,
+          uploadDate: file.uploadDate || new Date().toISOString()
+        }));
+        setExistingAttachments(transformedAttachments);
+      } else {
+        setExistingAttachments([]);
+      }
+    } catch (err) {
+      console.error('Error fetching attachments:', err);
+      setExistingAttachments([]);
+    } finally {
+      setLoadingAttachments(false);
+    }
+  };
 
   // Function to fetch payment lines for payment documents
   const fetchPaymentLines = async () => {
@@ -181,6 +223,9 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         // Fetch payment lines for editing
         fetchPaymentLines();
       }
+      
+      // Fetch existing attachments
+      fetchExistingAttachments();
     }
     
     // Fetch data for modals
@@ -659,19 +704,66 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
     );
   };
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     const files = Array.from(event.target.files);
-    const newFiles = files.map(file => ({
-      id: Date.now() + Math.random(),
-      name: file.name,
-      size: file.size,
-      type: file.type
-    }));
-    setUploadedFiles(prev => [...prev, ...newFiles]);
+    
+    // Convert files to base64
+    const filePromises = files.map(file => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          resolve({
+            name: file.name,
+            fileObject: reader.result // This is the base64 string
+          });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    });
+    
+    try {
+      const fileObjects = await Promise.all(filePromises);
+      setArrayToUpload(prev => [...prev, ...fileObjects]);
+      
+      // Also keep track of uploaded files for display
+      const newFiles = files.map(file => ({
+        id: Date.now() + Math.random(),
+        name: file.name,
+        size: file.size,
+        type: file.type
+      }));
+      setUploadedFiles(prev => [...prev, ...newFiles]);
+    } catch (error) {
+      console.error('Error converting files to base64:', error);
+      showCustomMessage('Ошибка при загрузке файлов: ' + error.message, 'danger');
+    }
   };
 
   const removeFile = (fileId) => {
-    setUploadedFiles(prev => prev.filter(file => file.id !== fileId));
+    // Check if it's an existing attachment or a newly uploaded file
+    const existingAttachment = existingAttachments.find(attachment => attachment.id === fileId);
+    
+    if (existingAttachment) {
+      // For existing attachments, ask for confirmation before adding to arrayToRemove
+      if (window.confirm(`Вы уверены, что хотите удалить файл "${existingAttachment.name}"?`)) {
+        // Add to arrayToRemove
+        setArrayToRemove(prev => [...prev, {
+          name: existingAttachment.name,
+          guid: existingAttachment.guid
+        }]);
+        
+        // Remove from existing attachments display
+        setExistingAttachments(prev => prev.filter(attachment => attachment.id !== fileId));
+      }
+    } else {
+      // For newly uploaded files, remove from arrayToUpload and uploadedFiles
+      const fileToRemove = uploadedFiles.find(file => file.id === fileId);
+      if (fileToRemove) {
+        setArrayToUpload(prev => prev.filter(file => file.name !== fileToRemove.name));
+        setUploadedFiles(prev => prev.filter(file => file.id !== fileId));
+      }
+    }
   };
 
   const formatFileSize = (bytes) => {
@@ -737,6 +829,14 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         const response = await apiRequest("register_document_action", requestBody, token);
         
         if (response && response.success === 1) {
+          // Update document files if there are any changes
+          if (arrayToUpload.length > 0 || arrayToRemove.length > 0) {
+            const fileUpdateResponse = await updateDocumentFiles(token);
+            if (!fileUpdateResponse || fileUpdateResponse.success !== 1) {
+              showCustomMessage('Документ обновлен, но возникли проблемы с обновлением файлов', 'warning');
+            }
+          }
+          
           showCustomMessage('Служебная записка успешно обновлена!', 'success');
           // Call onSave with the updated document data
           if (onSave) {
@@ -848,6 +948,14 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         const response = await apiRequest("register_document_action", requestBody, token);
         
         if (response && response.success === 1) {
+          // Update document files if there are any changes
+          if (arrayToUpload.length > 0 || arrayToRemove.length > 0) {
+            const fileUpdateResponse = await updateDocumentFiles(token);
+            if (!fileUpdateResponse || fileUpdateResponse.success !== 1) {
+              showCustomMessage('Документ обновлен, но возникли проблемы с обновлением файлов', 'warning');
+            }
+          }
+          
           showCustomMessage('Заявка на расходы успешно обновлена!', 'success');
           // Call onSave with the updated document data
           if (onSave) {
@@ -927,6 +1035,14 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         const response = await apiRequest("register_document_action", requestBody, token);
         
         if (response && response.success === 1) {
+          // Update document files if there are any changes
+          if (arrayToUpload.length > 0 || arrayToRemove.length > 0) {
+            const fileUpdateResponse = await updateDocumentFiles(token);
+            if (!fileUpdateResponse || fileUpdateResponse.success !== 1) {
+              showCustomMessage('Документ обновлен, но возникли проблемы с обновлением файлов', 'warning');
+            }
+          }
+          
           showCustomMessage('Платежный документ успешно обновлен!', 'success');
           // Call onSave with the updated document data
           if (onSave) {
@@ -960,6 +1076,25 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         console.error('Error updating payment:', error);
         showCustomMessage('Ошибка при обновлении платежного документа: ' + error.message, 'danger');
       }
+    }
+  };
+
+  // Function to update document files
+  const updateDocumentFiles = async (token) => {
+    try {
+      const requestBody = {
+        token: token,
+        username: "Администратор",
+        array_to_remove: arrayToRemove,
+        array_to_upload: arrayToUpload
+      };
+      
+      const response = await apiRequest("update_document_files", requestBody, token);
+      return response;
+    } catch (error) {
+      console.error('Error updating document files:', error);
+      showCustomMessage('Ошибка при обновлении файлов документа: ' + error.message, 'danger');
+      return null;
     }
   };
 
@@ -1089,6 +1224,12 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
               cfos={cfos}
               projects={projects}
               openModal={openModal}
+              handleFileUpload={handleFileUpload}
+              uploadedFiles={uploadedFiles}
+              removeFile={removeFile}
+              formatFileSize={formatFileSize}
+              existingAttachments={existingAttachments}
+              loadingAttachments={loadingAttachments}
             />
           ) : document.documentType === 'payment' ? (
             // Payment form
@@ -1102,6 +1243,12 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
               toggleSelectAllPayments={toggleSelectAllPayments}
               updatePaymentAmount={updatePaymentAmount}
               updatePaymentDate={updatePaymentDate}
+              handleFileUpload={handleFileUpload}
+              uploadedFiles={uploadedFiles}
+              removeFile={removeFile}
+              formatFileSize={formatFileSize}
+              existingAttachments={existingAttachments}
+              loadingAttachments={loadingAttachments}
             />
           ) : (
             // Expenditure form
@@ -1120,6 +1267,8 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
               uploadedFiles={uploadedFiles}
               removeFile={removeFile}
               formatFileSize={formatFileSize}
+              existingAttachments={existingAttachments}
+              loadingAttachments={loadingAttachments}
             />
           )}
 

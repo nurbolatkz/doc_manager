@@ -10,7 +10,13 @@ const PaymentEdit = ({
   handlePaymentSelection,
   toggleSelectAllPayments,
   updatePaymentAmount,
-  updatePaymentDate
+  updatePaymentDate,
+  handleFileUpload,
+  uploadedFiles,
+  removeFile,
+  formatFileSize,
+  existingAttachments,
+  loadingAttachments
 }) => {
   return (
     <>
@@ -196,6 +202,107 @@ const PaymentEdit = ({
             </table>
           </div>
         </div>
+      </div>
+
+      {/* File Upload Section */}
+      <div className="form-group">
+        <label>Прикрепленные файлы:</label>
+        
+        {/* Loading indicator for attachments */}
+        {loadingAttachments && (
+          <div className="text-center py-4">
+            <i className="fas fa-spinner fa-spin text-2xl"></i>
+            <p>Загрузка вложений...</p>
+          </div>
+        )}
+        
+        {/* Existing attachments */}
+        {!loadingAttachments && existingAttachments && existingAttachments.length > 0 && (
+          <div className="existing-files-table mb-4">
+            <h4>Существующие вложения:</h4>
+            <table className={`table table-bordered ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <thead>
+                <tr>
+                  <th>Имя файла</th>
+                  <th>Дата загрузки</th>
+                  <th>Действия</th>
+                </tr>
+              </thead>
+              <tbody>
+                {existingAttachments.map((attachment) => (
+                  <tr key={attachment.id}>
+                    <td>{attachment.name}</td>
+                    <td>{attachment.uploadDate ? new Date(attachment.uploadDate).toLocaleDateString('ru-RU') : '-'}</td>
+                    <td>
+                      <button 
+                        type="button" 
+                        className="btn btn-danger btn-sm"
+                        onClick={() => removeFile(attachment.id)}
+                      >
+                        <i className="fas fa-trash"></i> Удалить
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        
+        {/* File upload input */}
+        <div className="file-upload-container">
+          <input 
+            type="file" 
+            id="file-upload" 
+            className="file-input"
+            onChange={handleFileUpload}
+            multiple
+          />
+          <label htmlFor="file-upload" className="file-upload-label">
+            <i className="fas fa-cloud-upload-alt"></i> Выберите файлы или перетащите их сюда
+          </label>
+        </div>
+        
+        {/* Newly uploaded files */}
+        {uploadedFiles.length > 0 && (
+          <div className="uploaded-files-table mt-4">
+            <h4>Новые вложения:</h4>
+            <table className={`table table-bordered ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <thead>
+                <tr>
+                  <th>Имя файла</th>
+                  <th>Размер</th>
+                  <th>Действия</th>
+                </tr>
+              </thead>
+              <tbody>
+                {uploadedFiles.map((file) => (
+                  <tr key={file.id}>
+                    <td>{file.name}</td>
+                    <td>{formatFileSize(file.size)}</td>
+                    <td>
+                      <button 
+                        type="button" 
+                        className="btn btn-danger btn-sm"
+                        onClick={() => removeFile(file.id)}
+                      >
+                        <i className="fas fa-trash"></i> Удалить
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        
+        {/* No attachments message */}
+        {!loadingAttachments && (!existingAttachments || existingAttachments.length === 0) && uploadedFiles.length === 0 && (
+          <div className="text-center py-4 text-gray-500">
+            <i className="fas fa-paperclip text-2xl mb-2"></i>
+            <p>Нет прикрепленных файлов</p>
+          </div>
+        )}
       </div>
     </>
   );
