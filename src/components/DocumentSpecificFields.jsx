@@ -34,6 +34,14 @@ const DocumentSpecificFields = ({ documentDetail, theme, formatDate, formatCurre
     }
   };
 
+  // Inline style to ensure responsive grid behavior
+  const infoGridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+    gap: '1.5rem',
+    marginTop: '1.5rem'
+  };
+
   switch (documentDetail.documentType) {
     case 'payment':
       return (
@@ -47,7 +55,7 @@ const DocumentSpecificFields = ({ documentDetail, theme, formatDate, formatCurre
               <i className="fas fa-info-circle"></i>
               Основная информация
             </div>
-            <div className="info-grid">
+            <div className="info-grid" style={infoGridStyle}>
               <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Ответственный:</span>
@@ -124,7 +132,7 @@ const DocumentSpecificFields = ({ documentDetail, theme, formatDate, formatCurre
               <i className="fas fa-info-circle"></i>
               Основная информация
             </div>
-            <div className="info-grid">
+            <div className="info-grid" style={infoGridStyle}>
               <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Автор:</span>
@@ -185,7 +193,7 @@ const DocumentSpecificFields = ({ documentDetail, theme, formatDate, formatCurre
               <i className="fas fa-calendar-alt"></i>
               Основная информация
             </div>
-            <div className="info-grid">
+            <div className="info-grid" style={infoGridStyle}>
               <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Дата расхода:</span>
@@ -215,7 +223,7 @@ const DocumentSpecificFields = ({ documentDetail, theme, formatDate, formatCurre
               <i className="fas fa-dollar-sign"></i>
               Финансовая информация
             </div>
-            <div className="info-grid">
+            <div className="info-grid" style={infoGridStyle}>
               <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Сумма документа:</span>
@@ -253,7 +261,7 @@ const DocumentSpecificFields = ({ documentDetail, theme, formatDate, formatCurre
               <i className="fas fa-handshake"></i>
               Контрагент и договоры
             </div>
-            <div className="info-grid">
+            <div className="info-grid" style={infoGridStyle}>
               <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Контрагент:</span>
@@ -273,7 +281,7 @@ const DocumentSpecificFields = ({ documentDetail, theme, formatDate, formatCurre
               <i className="fas fa-sitemap"></i>
               Организационная структура
             </div>
-            <div className="info-grid">
+            <div className="info-grid" style={infoGridStyle}>
               <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>ЦФО:</span>
@@ -293,7 +301,7 @@ const DocumentSpecificFields = ({ documentDetail, theme, formatDate, formatCurre
               <i className="fas fa-chart-pie"></i>
               Бюджет и учет
             </div>
-            <div className="info-grid">
+            <div className="info-grid" style={infoGridStyle}>
               <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Статья движения денежных средств:</span>
@@ -313,7 +321,7 @@ const DocumentSpecificFields = ({ documentDetail, theme, formatDate, formatCurre
               <i className="fas fa-comment"></i>
               Дополнительная информация
             </div>
-            <div className="info-grid">
+            <div className="info-grid" style={infoGridStyle}>
               <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`} style={{ gridColumn: 'span 3' }}>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Комментарий:</span>
@@ -352,7 +360,7 @@ const DocumentSpecificFields = ({ documentDetail, theme, formatDate, formatCurre
               <i className="fas fa-info-circle"></i>
               Информация о документе
             </div>
-            <div className="info-grid">
+            <div className="info-grid" style={infoGridStyle}>
               <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Автор:</span>

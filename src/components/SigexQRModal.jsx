@@ -8,7 +8,7 @@ const SigexQRModal = ({
   documentData,
   documentInfo
 }) => {
-  console.log('SigexQRModal props:', { isOpen, documentData: documentData ? `${documentData.substring(0, 50)}...` : null, documentInfo });
+  //console.log('SigexQRModal props:', { isOpen, documentData: documentData ? `${documentData.substring(0, 50)}...` : null, documentInfo });
   
   // Always render the library component, but it will control its own visibility
   return (

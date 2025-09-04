@@ -9,7 +9,7 @@ const SigexLibraryReact = ({
   onSuccess, 
   onError 
 }) => {
-  console.log('SigexLibraryReact props:', { apiUrl, documentData: documentData ? `${documentData.substring(0, 50)}...` : null, documentInfo, isOpen });
+  //console.log('SigexLibraryReact props:', { apiUrl, documentData: documentData ? `${documentData.substring(0, 50)}...` : null, documentInfo, isOpen });
   
   // State management
   const [internalIsOpen, setInternalIsOpen] = useState(false);
@@ -256,7 +256,7 @@ const SigexLibraryReact = ({
       
       // Extract the session ID from the activeDataUrl
       const sessionId = activeDataUrl.replace('https://sigex.kz/api/egovQr/', '');
-      console.log('Extracted session ID:', sessionId);
+      //console.log('Extracted session ID:', sessionId);
       
       const payload = {
         signMethod: "CMS_WITH_DATA",
@@ -287,7 +287,7 @@ const SigexLibraryReact = ({
       
       // Use the signURL from the response for polling
       const pollingUrl = response.signURL || response.signURLAuto || activeDataUrl;
-      console.log('Using polling URL:', pollingUrl);
+     // console.log('Using polling URL:', pollingUrl);
       
       // Set the signUrl for polling using the URL from the response
       setSignUrl(pollingUrl);

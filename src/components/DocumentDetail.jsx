@@ -618,11 +618,10 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
   };
   // Render attachments component
   const renderAttachments = () => {
-    const attachments = documentDetail?.attachments || [];
-    
     return (
       <Attachments 
-        attachments={attachments} 
+        documentId={documentDetail?.id} 
+        documentType={documentDetail?.documentType}
         theme={theme} 
         onDownload={(attachment) => console.log(`Downloading ${attachment.fileName}`)}
       />
@@ -1307,7 +1306,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           {renderRouteSteps()}
           
           {/* Attachments */}
-          {renderAttachments()}
+          {documentDetail?.documentType !== 'payment' && renderAttachments()}
         </div>
       </div>
       
