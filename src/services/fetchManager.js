@@ -100,9 +100,10 @@ export async function apiRequest(endpoint, requestBody, token) {
 }
 
 // Function to fetch document list
-export async function fetchDocuments(token) {
+export async function fetchDocuments(token, filter = {}) {
   const requestBody = {
-    username: "Администратор"
+    username: "Администратор",
+    SelectedFilter: filter.SelectedFilter || "all"
   };
 
   return apiRequest("documents", requestBody, token);

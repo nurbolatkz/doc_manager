@@ -34,10 +34,10 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
 
   // Fetch documents and counts from 1C backend on component mount
   useEffect(() => {
-    loadDashboardData();
+    loadDashboardData("all");
   }, []);
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = async (selectedFilter = "all") => {
     try {
       setLoading(true);
       const token = localStorage.getItem('authToken');
@@ -47,7 +47,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
 
       // Fetch documents and counts in parallel
       const [documentsResponse, countsResponse] = await Promise.all([
-        fetchDocuments(token),
+        fetchDocuments(token, { SelectedFilter: selectedFilter }),
         fetchDocumentCounts(token)
       ]);
 
@@ -143,7 +143,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
     setSelectedDocument(null);
     setShowCreateForm(null);
     // Refresh the document list after returning from detail view
-    loadDashboardData();
+    loadDashboardData("all");
   };
 
   const toggleDropdown = (dropdownName) => {
@@ -152,6 +152,13 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
 
   const handleFilterChange = (newFilter) => {
     setFilter(newFilter);
+    
+    // Fetch documents with the selected filter
+    if (newFilter.SelectedFilter) {
+      loadDashboardData(newFilter.SelectedFilter);
+    } else {
+      loadDashboardData("all");
+    }
   };
 
   if (loading) {
@@ -231,7 +238,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                     <button 
                       className="nav-button"
                       onClick={() => {
-                        handleFilterChange({});
+                        handleFilterChange({ SelectedFilter: "all" });
                         setOpenDropdown(null);
                       }}
                     >
@@ -241,7 +248,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                     <button 
                       className="nav-button"
                       onClick={() => {
-                        handleFilterChange({ status: 'approved' });
+                        handleFilterChange({ SelectedFilter: "get_outgoing_signed" });
                         setOpenDropdown(null);
                       }}
                     >
@@ -268,7 +275,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                     <button 
                       className="nav-button"
                       onClick={() => {
-                        handleFilterChange({ status: 'on_approving' });
+                        handleFilterChange({ SelectedFilter: "get_incoming_to_sign" });
                         setOpenDropdown(null);
                       }}
                     >
@@ -279,7 +286,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                     <button 
                       className="nav-button"
                       onClick={() => {
-                        handleFilterChange({ documentType: 'payment' });
+                        handleFilterChange({ SelectedFilter: "get_incoming_payment" });
                         setOpenDropdown(null);
                       }}
                     >
@@ -290,7 +297,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                     <button 
                       className="nav-button"
                       onClick={() => {
-                        handleFilterChange({ documentType: 'expenditure' });
+                        handleFilterChange({ SelectedFilter: "get_incoming_expenditure" });
                         setOpenDropdown(null);
                       }}
                     >
@@ -301,7 +308,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                     <button 
                       className="nav-button"
                       onClick={() => {
-                        handleFilterChange({ documentType: 'memo' });
+                        handleFilterChange({ SelectedFilter: "get_incoming_memo" });
                         setOpenDropdown(null);
                       }}
                     >
@@ -329,7 +336,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                     <button 
                       className="nav-button"
                       onClick={() => {
-                        handleFilterChange({ status: 'on_approving' });
+                        handleFilterChange({ SelectedFilter: "get_outgoing_pending" });
                         setOpenDropdown(null);
                       }}
                     >
@@ -340,7 +347,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                     <button 
                       className="nav-button"
                       onClick={() => {
-                        handleFilterChange({ status: 'approved' });
+                        handleFilterChange({ SelectedFilter: "get_outgoing_signed" });
                         setOpenDropdown(null);
                       }}
                     >
@@ -351,7 +358,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                     <button 
                       className="nav-button"
                       onClick={() => {
-                        handleFilterChange({ status: 'declined' });
+                        handleFilterChange({ SelectedFilter: "get_outgoing_rejected" });
                         setOpenDropdown(null);
                       }}
                     >
