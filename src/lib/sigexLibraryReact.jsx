@@ -536,7 +536,7 @@ const SigexLibraryReact = ({
       link.href = url;
       link.download = fileName;
       document.body.appendChild(link);
-      link.click();
+      //link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
