@@ -49,12 +49,12 @@ const Login = ({ onLogin }) => {
         const token = getCookie('csrftoken');
         if (token) {
           setCsrfToken(token);
-          console.log("CSRF token fetched successfully.");
+          // console.log("CSRF token fetched successfully.");
         } else {
-          console.error("CSRF token not found in cookies.");
+          // console.error("CSRF token not found in cookies.");
         }
       } catch (err) {
-        console.error("Failed to fetch CSRF token:", err);
+        // console.error("Failed to fetch CSRF token:", err);
       }
     };
     fetchCsrfToken();
@@ -73,7 +73,7 @@ const Login = ({ onLogin }) => {
       // Create request body for login
       const requestBody = {
         "Метод": "POST",
-        "Адрес": `http://localhost/Ag_Tech_Mobile/hs/MobileExchange/login`,
+        "Адрес": `${config.localhost_url}login`,
         "ТелоЗапроса": {
           username: username,
           password: password
@@ -94,8 +94,8 @@ const Login = ({ onLogin }) => {
         credentials: 'include',
       };
 
-      console.log("Sending login request to backend with request body:", requestBody);
-      console.log("Backend URL:", config.backend_1c_url);
+      // console.log("Sending login request to backend with request body:", requestBody);
+      // console.log("Backend URL:", config.backend_1c_url);
 
       // Make the API call to authenticate user
       const response = await fetch(config.backend_1c_url, fetchOptions);
@@ -105,7 +105,7 @@ const Login = ({ onLogin }) => {
       }
 
       const data = await response.json();
-      console.log("Login response from backend:", data);
+      // console.log("Login response from backend:", data);
 
       // Check if login was successful
       if (data.hasOwnProperty('success') && data.success === 1) {
@@ -119,7 +119,7 @@ const Login = ({ onLogin }) => {
         setError(errorMessage);
       }
     } catch (err) {
-      console.error("Login error:", err);
+      // console.error("Login error:", err);
       setError('Ошибка при попытке входа. Пожалуйста, попробуйте еще раз.');
     } finally {
       setIsLoading(false);

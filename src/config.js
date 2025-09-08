@@ -1,5 +1,5 @@
 const API_BASE = process.env.NODE_ENV === 'production' 
-    ? 'https://birqadam.kz:8000/api'
+    ? '/api'
     : 'http://localhost:8000/api/';
 
 const config = {
