@@ -1,6 +1,10 @@
+const API_BASE = process.env.NODE_ENV === 'production' 
+    ? 'https://birqadam.kz:8000/api'
+    : 'http://localhost:8000/api/';
+
 const config = {
   // Use proxy for development, direct URL for production
-backend_1c_url: "http://localhost:8000/api/",
+backend_1c_url: API_BASE,
 
 //  backend_1c_url: "https://1c-dev.kazuni.kz/Ag_Tech_Web/hs/MobileExchange/redirection",
   loginURL: "login",

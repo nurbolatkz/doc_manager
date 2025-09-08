@@ -32,14 +32,14 @@ async function fetchCsrfToken() {
     // We read it from the document's cookies.
     const token = getCookie('csrftoken');
     if (token) {
-      console.log("CSRF token fetched successfully.");
+      // console.log("CSRF token fetched successfully.");
       return token;
     } else {
-      console.error("CSRF token not found in cookies.");
+      // console.error("CSRF token not found in cookies.");
       return null;
     }
   } catch (err) {
-    console.error("Failed to fetch CSRF token:", err);
+    // console.error("Failed to fetch CSRF token:", err);
     return null;
   }
 }
@@ -53,7 +53,7 @@ export async function apiRequest(endpoint, requestBody, token) {
     // Create the full request body with method, address and payload
     const fullRequestBody = {
       "Метод": "POST",
-      "Адрес": `http://localhost/Ag_Tech_Mobile/hs/MobileExchange/${endpoint}`,
+      "Адрес": `${config.localhost_url}${endpoint}`,
       "ТелоЗапроса": {
         ...requestBody,
         token: token
@@ -94,7 +94,7 @@ export async function apiRequest(endpoint, requestBody, token) {
 
     return data;
   } catch (err) {
-    console.error(`API request error for endpoint ${endpoint}:`, err);
+    // console.error(`API request error for endpoint ${endpoint}:`, err);
     throw err;
   }
 }
@@ -221,10 +221,10 @@ export async function getSigningTemplate(token, documentType, documentId) {
 
   try {
     const response = await apiRequest("get_template_to_sign", requestBody, token);
-    console.log("Signing template response:", response);
+    // console.log("Signing template response:", response);
     return response;
   } catch (error) {
-    console.error("Error in getSigningTemplate:", error);
+    // console.error("Error in getSigningTemplate:", error);
     throw error;
   }
 }
@@ -285,10 +285,10 @@ export async function saveSignedDocumentAndApprove(token, documentType, document
 
   try {
     const response = await apiRequest("register_document_action", requestBody, token);
-    console.log("Save signed document and approve response:", response);
+    // console.log("Save signed document and approve response:", response);
     return response;
   } catch (error) {
-    console.error("Error in saveSignedDocumentAndApprove:", error);
+    // console.error("Error in saveSignedDocumentAndApprove:", error);
     throw error;
   }
 }
@@ -306,10 +306,10 @@ export async function declineDocument(token, documentType, documentId) {
 
   try {
     const response = await apiRequest("register_document_action", requestBody, token);
-    console.log("Decline document response:", response);
+    // console.log("Decline document response:", response);
     return response;
   } catch (error) {
-    console.error("Error in declineDocument:", error);
+    // console.error("Error in declineDocument:", error);
     throw error;
   }
 }
@@ -327,10 +327,10 @@ export async function deleteDocument(token, documentType, documentId) {
 
   try {
     const response = await apiRequest("register_document_action", requestBody, token);
-    console.log("Delete document response:", response);
+    // console.log("Delete document response:", response);
     return response;
   } catch (error) {
-    console.error("Error in deleteDocument:", error);
+    // console.error("Error in deleteDocument:", error);
     throw error;
   }
 }
@@ -349,10 +349,10 @@ export async function saveSignedDocument(token, documentId, documentType, signed
 
   try {
     const response = await apiRequest(endpoint, requestBody, token);
-    console.log("Save signed document response:", response);
+    // console.log("Save signed document response:", response);
     return response;
   } catch (error) {
-    console.error("Error in saveSignedDocument:", error);
+    // console.error("Error in saveSignedDocument:", error);
     throw error;
   }
 }
@@ -398,13 +398,13 @@ export async function updateDocumentFiles(token, username, arrayToRemove, arrayT
     array_to_upload: arrayToUpload
    };
 
-  console.log('Sending update_document_files request');
-  console.log('Request body:', requestBody);
-  console.log('Array to remove:', arrayToRemove);
-  console.log('Array to upload:', arrayToUpload);
+  // console.log('Sending update_document_files request');
+  // console.log('Request body:', requestBody);
+  // console.log('Array to remove:', arrayToRemove);
+  // console.log('Array to upload:', arrayToUpload);
   
   const response = await apiRequest("document_files", requestBody, token);
-  console.log('Received response:', response);
+  // console.log('Received response:', response);
   return response;
 }
 

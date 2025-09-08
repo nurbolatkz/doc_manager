@@ -155,10 +155,10 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                                   documentDetail.hasOwnProperty('paymentLines') ||
                                   documentDetail.hasOwnProperty('expenseDate') ||
                                   documentDetail.hasOwnProperty('author');
-        console.log('Has basic info:', hasBasicInfo);
-        console.log('Has detailed fields:', hasDetailedFields);
-        console.log('Document type:', documentDetail.documentType);
-        console.log('Current paymentLines:', documentDetail.paymentLines || 'No paymentLines');
+        // console.log('Has basic info:', hasBasicInfo);
+        // console.log('Has detailed fields:', hasDetailedFields);
+        // console.log('Document type:', documentDetail.documentType);
+        // console.log('Current paymentLines:', documentDetail.paymentLines || 'No paymentLines');
         hasDetailedFields = false; 
         // Only fetch if we don't have detailed fields yet
         if (hasBasicInfo && !hasDetailedFields) {
@@ -177,7 +177,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               documentDetail.documentType, 
               documentDetail.id
             );
-            console.log('Detail Data:', detailData);
+            // console.log('Detail Data:', detailData);
             if (detailData && detailData.data) {
               // Transform the fetched data to match our Document type
               const transformedData = {
@@ -199,8 +199,8 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               };
               
               // Log paymentLines to console when fetched, regardless of content
-              console.log('Document type:', documentDetail.documentType);
-              console.log('paymentLines fetched:', transformedData.paymentLines);
+              // console.log('Document type:', documentDetail.documentType);
+              // console.log('paymentLines fetched:', transformedData.paymentLines);
               
               setDocumentDetail(transformedData);
             } else {
@@ -214,10 +214,10 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           }
         } else if (hasDetailedFields) {
           // If we already have detailed fields, mark fetch as attempted to prevent future attempts
-          console.log('Skipping fetch - already has detailed fields');
+          // console.log('Skipping fetch - already has detailed fields');
           // Let's still attempt to fetch if it's a payment document without paymentLines
           if (documentDetail.documentType === 'payment' && !documentDetail.hasOwnProperty('paymentLines')) {
-            console.log('Forcing fetch for payment document without paymentLines');
+            // console.log('Forcing fetch for payment document without paymentLines');
             setFetchAttempted(true); // Mark that we've attempted to fetch
             setLoading(true);
             try {
@@ -233,7 +233,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 documentDetail.documentType, 
                 documentDetail.id
               );
-              console.log('Detail Data (forced fetch):', detailData);
+              // console.log('Detail Data (forced fetch):', detailData);
               if (detailData && detailData.data) {
                 // Transform the fetched data to match our Document type
                 const transformedData = {
@@ -254,8 +254,8 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 };
                 
                 // Log paymentLines to console when fetched, regardless of content
-                console.log('Document type:', documentDetail.documentType);
-                console.log('paymentLines fetched (forced):', transformedData.paymentLines);
+                // console.log('Document type:', documentDetail.documentType);
+                // console.log('paymentLines fetched (forced):', transformedData.paymentLines);
                 
                 setDocumentDetail(transformedData);
               } else {
@@ -263,7 +263,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               }
             } catch (err) {
               showCustomMessage('Failed to load document details: ' + (err.message || 'Unknown error'), 'danger');
-              console.error('Error fetching document details:', err);
+              // console.error('Error fetching document details:', err);
             } finally {
               setLoading(false);
             }
@@ -272,7 +272,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           }
         } else {
           // If we don't have basic info, we should still try to fetch
-          console.log('Attempting fetch - missing basic info');
+          // console.log('Attempting fetch - missing basic info');
           setFetchAttempted(true); // Mark that we've attempted to fetch
           setLoading(true);
           try {
@@ -288,7 +288,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               documentDetail.documentType, 
               documentDetail.id
             );
-            console.log('Detail Data (missing basic info):', detailData);
+            // console.log('Detail Data (missing basic info):', detailData);
             if (detailData && detailData.data) {
               // Transform the fetched data to match our Document type
               const transformedData = {
@@ -308,8 +308,8 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 paymentLines: detailData.data.paymentLines || documentDetail.paymentLines || []
               };
               // Log paymentLines to console when fetched, regardless of content
-              console.log('Document type:', documentDetail.documentType);
-              console.log('paymentLines fetched (missing basic info):', transformedData.paymentLines);
+              // console.log('Document type:', documentDetail.documentType);
+              // console.log('paymentLines fetched (missing basic info):', transformedData.paymentLines);
               
               setDocumentDetail(transformedData);
             } else {
@@ -375,12 +375,12 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
             routeType: response.routeType
           }));
         } else {
-          console.error('Failed to fetch route type:', response?.message);
+          // console.error('Failed to fetch route type:', response?.message);
           // Show error as alert instead of blocking the document view
           showCustomMessage(response?.message || 'Failed to fetch route type', 'warning');
         }
       } catch (err) {
-        console.error('Error fetching route type:', err);
+        // console.error('Error fetching route type:', err);
         // Show error as alert instead of blocking the document view
         //showCustomMessage(err.message || 'Failed to fetch route type', 'danger');
       } finally {
@@ -402,7 +402,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         
         // Fetch document routes based on document type and ID
         const routeData = await fetchDocumentRoutes(token, documentDetail.documentType, documentDetail.id);
-        console.log('Document routes fetched from 1C backend:', routeData);
+        // console.log('Document routes fetched from 1C backend:', routeData);
         
         if (routeData && routeData.data && Array.isArray(routeData.data)) {
           // Transform the fetched route data to match our route steps structure
@@ -444,7 +444,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
          //showCustomMessage(routeData?.message || 'Failed to fetch document routes', 'warning');
         }
       } catch (err) {
-        console.error('Error fetching document routes:', err);
+        // console.error('Error fetching document routes:', err);
         // Show error as alert instead of setting error state
         //showCustomMessage(err.message || 'Failed to fetch document routes', 'danger');
       }
@@ -481,7 +481,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         //showCustomMessage(response?.message || 'Failed to fetch route titles', 'warning');
       }
     } catch (err) {
-      console.error('Error fetching route titles:', err);
+      // console.error('Error fetching route titles:', err);
       // Show error as alert instead of setting error state
       //showCustomMessage(err.message || 'Failed to fetch route titles', 'danger');
     } finally {
@@ -506,7 +506,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           //showCustomMessage(response?.message || 'Failed to fetch users list', 'warning');
         }
       } catch (err) {
-        console.error('Error fetching users list:', err);
+        // console.error('Error fetching users list:', err);
         // Show error as alert instead of setting error state
         //showCustomMessage(err.message || 'Failed to fetch users list', 'danger');
       }

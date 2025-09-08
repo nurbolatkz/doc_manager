@@ -38,7 +38,7 @@ function App() {
         setUser(completeUser);
         setIsAuthenticated(true);
       } catch (e) {
-        console.error('Error parsing saved user:', e);
+        // console.error('Error parsing saved user:', e);
         // Clear invalid data
         localStorage.removeItem('authToken');
         localStorage.removeItem('currentUser');
@@ -47,7 +47,7 @@ function App() {
   }, []);
 
   const handleLogin = (username, password) => {
-    console.log('Login successful:', { username });
+    // console.log('Login successful:', { username });
     
     const userObj = {
       id: 'user_' + Date.now(),

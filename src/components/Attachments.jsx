@@ -62,8 +62,8 @@ const Attachments = ({ documentId, documentType, theme, onDownload }) => {
   // Function to download a file from base64 data
   const downloadFile = (attachment) => {
     try {
-      console.log('Downloading file:', attachment.fileName);
-      console.log('File object (first 100 chars):', attachment.fileObject?.substring(0, 100));
+      // console.log('Downloading file:', attachment.fileName);
+      // console.log('File object (first 100 chars):', attachment.fileObject?.substring(0, 100));
       
       // Check if fileObject exists and is a string
       if (!attachment.fileObject || typeof attachment.fileObject !== 'string') {
@@ -72,7 +72,7 @@ const Attachments = ({ documentId, documentType, theme, onDownload }) => {
       
       // Remove any newlines and whitespace that might interfere with base64 decoding
       const cleanFileObject = attachment.fileObject.replace(/\s/g, '');
-      console.log('Clean file object (first 100 chars):', cleanFileObject.substring(0, 100));
+      // console.log('Clean file object (first 100 chars):', cleanFileObject.substring(0, 100));
       
       // Check if it's a data URI or just base64
       let base64Data, mimeString;
@@ -90,8 +90,8 @@ const Attachments = ({ documentId, documentType, theme, onDownload }) => {
         mimeString = attachment.mimeType || 'application/octet-stream';
       }
       
-      console.log('MIME type:', mimeString);
-      console.log('Base64 data (first 100 chars):', base64Data.substring(0, 100));
+      // console.log('MIME type:', mimeString);
+      // console.log('Base64 data (first 100 chars):', base64Data.substring(0, 100));
       
       // Decode base64 data
       const byteString = atob(base64Data);
@@ -112,12 +112,12 @@ const Attachments = ({ documentId, documentType, theme, onDownload }) => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error('Error downloading file:', err);
+      // console.error('Error downloading file:', err);
       // Fallback to the provided onDownload function or console log
       if (onDownload) {
         onDownload(attachment);
       } else {
-        console.log(`Downloading ${attachment.fileName}`);
+        // console.log(`Downloading ${attachment.fileName}`);
       }
     }
   };
@@ -143,11 +143,11 @@ const Attachments = ({ documentId, documentType, theme, onDownload }) => {
       
       if (response.success === 1 && Array.isArray(response.files)) {
         // Log the response to see its structure
-        console.log('Files response:', response.files);
+        // console.log('Files response:', response.files);
         
         // Create an array to store file GUIDs
         const fileGuids = response.files.map(file => file.guid || file.id || null).filter(guid => guid !== null);
-        console.log('File GUIDs:', fileGuids);
+        // console.log('File GUIDs:', fileGuids);
         
         // Transform the response to match the existing attachment structure
         const transformedAttachments = response.files.map((file, index) => ({
@@ -164,7 +164,7 @@ const Attachments = ({ documentId, documentType, theme, onDownload }) => {
         setError('Failed to fetch attachments');
       }
     } catch (err) {
-      console.error('Error fetching attachments:', err);
+      // console.error('Error fetching attachments:', err);
       setError('Error fetching attachments: ' + err.message);
     } finally {
       setLoading(false);

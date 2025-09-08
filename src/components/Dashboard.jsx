@@ -51,8 +51,8 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
         fetchDocumentCounts(token)
       ]);
 
-      console.log('Documents fetched from 1C backend:', documentsResponse);
-      console.log('Document counts fetched from 1C backend:', countsResponse);
+      // console.log('Documents fetched from 1C backend:', documentsResponse);
+      // console.log('Document counts fetched from 1C backend:', countsResponse);
 
       // Transform the documents data to match our Document type
       if (documentsResponse.documents && Array.isArray(documentsResponse.documents)) {
@@ -108,7 +108,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
 
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching dashboard data:', err);
+      // console.error('Error fetching dashboard data:', err);
       // Fallback to mock data in case of error
       setDocuments([
         { id: '1', title: 'Sample Document 1', status: 'on_approving' },
@@ -506,7 +506,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
             onBack={handleBackToList}
             onSave={(formData) => {
               // Handle form submission
-              console.log('Memo form submitted:', formData);
+              // console.log('Memo form submitted:', formData);
               // In a real app, this would save to the backend
               handleBackToList();
               // Refresh the document list after creating a document
@@ -521,7 +521,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
             onBack={handleBackToList}
             onSave={(formData) => {
               // Handle form submission
-              console.log('Expenditure form submitted:', formData);
+              // console.log('Expenditure form submitted:', formData);
               // In a real app, this would save to the backend
               handleBackToList();
               // Refresh the document list after creating a document
@@ -536,7 +536,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
             onBack={handleBackToList}
             onSave={(formData) => {
               // Handle form submission
-              console.log('Payment form submitted:', formData);
+              // console.log('Payment form submitted:', formData);
               // In a real app, this would save to the backend
               handleBackToList();
               // Refresh the document list after creating a document
