@@ -46,7 +46,7 @@ function App() {
     }
   }, []);
 
-  const handleLogin = (username, password) => {
+  const handleLogin = (username, password, token = 'sample-token') => {
     // console.log('Login successful:', { username });
     
     const userObj = {
@@ -63,8 +63,8 @@ function App() {
     setUser(userObj);
     setIsAuthenticated(true);
     
-    // Save user data
-    localStorage.setItem('authToken', 'sample-token');
+    // Save user data with actual token
+    localStorage.setItem('authToken', token);
     localStorage.setItem('currentUser', JSON.stringify(userObj));
   };
 
