@@ -16,6 +16,7 @@ import {
   getDocumentRouteType
 } from '../services/fetchManager';
 import { showCustomMessage } from '../utils';
+import { sanitizeInput } from '../utils/inputSanitization';
 import ConfirmModal from './ConfirmModal';
 import SigexQRModal from './SigexQRModal';
 import Attachments from './Attachments';

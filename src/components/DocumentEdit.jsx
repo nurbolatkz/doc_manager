@@ -13,6 +13,7 @@ import {
   updateDocumentFiles as updateDocumentFilesAPI
 } from '../services/fetchManager';
 import { showCustomMessage } from '../utils';
+import { sanitizeInput, sanitizeFormData } from '../utils/inputSanitization';
 import MemoEdit from './MemoEdit';
 import PaymentEdit from './PaymentEdit';
 import ExpenditureEdit from './ExpenditureEdit';
@@ -582,32 +583,35 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   }, [formData.counterpartyGuid]);
 
   const handleInputChange = (field, value) => {
+    // Sanitize input value
+    const sanitizedValue = typeof value === 'string' ? sanitizeInput(value) : value;
+    
     // Handle document type GUID when document type is selected
     if (field === 'documentType') {
-      if (value) {
-        const selectedDocType = documentTypes.find(type => type.guid === value);
+      if (sanitizedValue) {
+        const selectedDocType = documentTypes.find(type => type.guid === sanitizedValue);
         setFormData(prev => ({ 
           ...prev, 
-          [field]: value,
-          documentTypeGuid: selectedDocType ? selectedDocType.guid : value
+          [field]: sanitizedValue,
+          documentTypeGuid: selectedDocType ? selectedDocType.guid : sanitizedValue
         }));
       } else {
         // Clear document type GUID when document type is cleared
         setFormData(prev => ({ 
           ...prev, 
-          [field]: value,
+          [field]: sanitizedValue,
           documentTypeGuid: ''
         }));
       }
-    } else if (field === 'counterparty' && value) {
+    } else if (field === 'counterparty' && sanitizedValue) {
       // Enable contract field when counterparty is selected
-      setFormData(prev => ({ ...prev, [field]: value }));
-    } else if (field === 'counterparty' && !value) {
+      setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
+    } else if (field === 'counterparty' && !sanitizedValue) {
       // Disable contract field when counterparty is cleared
-      setFormData(prev => ({ ...prev, [field]: value, contract: '', contractGuid: '' }));
+      setFormData(prev => ({ ...prev, [field]: sanitizedValue, contract: '', contractGuid: '' }));
     } else {
       // Handle all other fields normally
-      setFormData(prev => ({ ...prev, [field]: value }));
+      setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
     }
   };
 
@@ -846,30 +850,33 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
     e.preventDefault();
     console.log('handleSubmit called');
     
+    // Sanitize all form data
+    const sanitizedFormData = sanitizeFormData(formData);
+    
     // Validate based on document type
     if (document.documentType === 'memo') {
       // Validate required fields for memo
-      if (!formData.documentType) {
+      if (!sanitizedFormData.documentType) {
         showCustomMessage('Пожалуйста, выберите тип документа', 'danger');
         return;
       }
       
-      if (!formData.text) {
+      if (!sanitizedFormData.text) {
         showCustomMessage('Пожалуйста, введите текст обращения', 'danger');
         return;
       }
       
-      if (!formData.organizationGuid) {
+      if (!sanitizedFormData.organizationGuid) {
         showCustomMessage('Пожалуйста, выберите организацию', 'danger');
         return;
       }
       
-      if (!formData.cfoGuid) {
+      if (!sanitizedFormData.cfoGuid) {
         showCustomMessage('Пожалуйста, выберите ЦФО', 'danger');
         return;
       }
       
-      if (!formData.projectGuid) {
+      if (!sanitizedFormData.projectGuid) {
         showCustomMessage('Пожалуйста, выберите проект', 'danger');
         return;
       }
@@ -887,11 +894,11 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
           documentId: document.id,
           action: "update_document_memo",
           type: "memo",
-          documentTypeGuid: formData.documentTypeGuid,
-          projectGuid: formData.projectGuid,
-          organizationGuid: formData.organizationGuid,
-          cfoGuid: formData.cfoGuid,
-          text: formData.text
+          documentTypeGuid: sanitizedFormData.documentTypeGuid,
+          projectGuid: sanitizedFormData.projectGuid,
+          organizationGuid: sanitizedFormData.organizationGuid,
+          cfoGuid: sanitizedFormData.cfoGuid,
+          text: sanitizedFormData.text
         };
         
         // Send request to backend
@@ -946,42 +953,42 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       }
     } else if (document.documentType === 'expenditure') {
       // Validate required fields for expenditure
-      if (!formData.amount) {
+      if (!sanitizedFormData.amount) {
         showCustomMessage('Пожалуйста, укажите сумму', 'danger');
         return;
       }
       
-      if (!formData.organizationGuid) {
+      if (!sanitizedFormData.organizationGuid) {
         showCustomMessage('Пожалуйста, выберите организацию', 'danger');
         return;
       }
       
-      if (!formData.counterpartyGuid) {
+      if (!sanitizedFormData.counterpartyGuid) {
         showCustomMessage('Пожалуйста, выберите контрагента', 'danger');
         return;
       }
       
-      if (!formData.cfoGuid) {
+      if (!sanitizedFormData.cfoGuid) {
         showCustomMessage('Пожалуйста, выберите ЦФО', 'danger');
         return;
       }
       
-      if (!formData.projectGuid) {
+      if (!sanitizedFormData.projectGuid) {
         showCustomMessage('Пожалуйста, выберите проект', 'danger');
         return;
       }
       
-      if (!formData.ddsArticleGuid) {
+      if (!sanitizedFormData.ddsArticleGuid) {
         showCustomMessage('Пожалуйста, выберите статью ДДС', 'danger');
         return;
       }
       
-      if (!formData.budgetArticleGuid) {
+      if (!sanitizedFormData.budgetArticleGuid) {
         showCustomMessage('Пожалуйста, выберите статью бюджета', 'danger');
         return;
       }
       
-      if (!formData.contractGuid) {
+      if (!sanitizedFormData.contractGuid) {
         showCustomMessage('Пожалуйста, выберите договор', 'danger');
         return;
       }
@@ -1000,17 +1007,17 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
           documentId: document.id,
           action: "update_document_expenditure",
           type: "expenditure",
-          organizationGuid: formData.organizationGuid,
-          cfoGuid: formData.cfoGuid,
-          projectGuid: formData.projectGuid,
-          counterpartyGuid: formData.counterpartyGuid,
-          date: formData.date,
-          amount: formData.amount,
-          currency: formData.currency,
-          paymentForm: formData.paymentForm,
-          budgetArticleGuid: formData.budgetArticleGuid,
-          ddsArticleGuid: formData.ddsArticleGuid,
-          contractGuid: formData.contractGuid
+          organizationGuid: sanitizedFormData.organizationGuid,
+          cfoGuid: sanitizedFormData.cfoGuid,
+          projectGuid: sanitizedFormData.projectGuid,
+          counterpartyGuid: sanitizedFormData.counterpartyGuid,
+          date: sanitizedFormData.date,
+          amount: sanitizedFormData.amount,
+          currency: sanitizedFormData.currency,
+          paymentForm: sanitizedFormData.paymentForm,
+          budgetArticleGuid: sanitizedFormData.budgetArticleGuid,
+          ddsArticleGuid: sanitizedFormData.ddsArticleGuid,
+          contractGuid: sanitizedFormData.contractGuid
         };
         
         // Send request to backend
@@ -1066,7 +1073,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       }
     } else if (document.documentType === 'payment') {
       // Validate required fields for payment
-      if (!formData.selectedPayments || formData.selectedPayments.length === 0) {
+      if (!sanitizedFormData.selectedPayments || sanitizedFormData.selectedPayments.length === 0) {
         showCustomMessage('Пожалуйста, выберите хотя бы один платеж', 'danger');
         return;
       }
@@ -1079,8 +1086,8 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         }
         
         // Filter payments to only include selected ones
-        const selectedPaymentsData = formData.payments.filter(payment => 
-          formData.selectedPayments.includes(payment.id)
+        const selectedPaymentsData = sanitizedFormData.payments.filter(payment => 
+          sanitizedFormData.selectedPayments.includes(payment.id)
         );
         
         // Prepare the payment lines data for the request

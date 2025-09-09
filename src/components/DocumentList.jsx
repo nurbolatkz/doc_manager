@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Dashboard_Restructured.css';
 import { showCustomMessage } from '../utils';
+import { sanitizeInput } from '../utils/inputSanitization';
 
 const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, theme }) => {
   const [searchQuery, setSearchQuery] = useState(filter.searchQuery || '');
@@ -124,7 +125,8 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
   };
 
   const handleSearch = () => {
-    onFilterChange({ ...filter, searchQuery: searchQuery });
+    const sanitizedSearchQuery = sanitizeInput(searchQuery);
+    onFilterChange({ ...filter, searchQuery: sanitizedSearchQuery });
   };
 
   const handleKeyPress = (e) => {
@@ -134,14 +136,23 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
   };
 
   const handleFilterChange = (field, value) => {
+    const sanitizedValue = typeof value === 'string' ? sanitizeInput(value) : value;
     onFilterChange({ 
       ...filter, 
-      [field]: value || undefined 
+      [field]: sanitizedValue || undefined 
     });
   };
 
   const handleApplyFilters = (newFilters) => {
-    onFilterChange({ ...filter, ...newFilters });
+    // Sanitize filter values
+    const sanitizedFilters = {};
+    for (const key in newFilters) {
+      if (newFilters.hasOwnProperty(key)) {
+        sanitizedFilters[key] = typeof newFilters[key] === 'string' ? 
+          sanitizeInput(newFilters[key]) : newFilters[key];
+      }
+    }
+    onFilterChange({ ...filter, ...sanitizedFilters });
     setShowFilterModal(false);
   };
 
@@ -170,7 +181,8 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
       if (doc.number && !doc.number.includes(filter.documentNumber)) return false;
     }
     if (filter.searchQuery) {
-      const query = filter.searchQuery.toLowerCase();
+      const sanitizedQuery = sanitizeInput(filter.searchQuery);
+      const query = sanitizedQuery.toLowerCase();
       const orgName = typeof doc.organization === 'string' 
         ? doc.organization 
         : doc.organization?.name || '';
@@ -272,9 +284,10 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
     });
 
     const handleLocalFilterChange = (field, value) => {
+      const sanitizedValue = typeof value === 'string' ? sanitizeInput(value) : value;
       setLocalFilters({
         ...localFilters,
-        [field]: value
+        [field]: sanitizedValue
       });
     };
 
@@ -361,7 +374,7 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
                 className="form-control"
                 placeholder="Введите номер документа"
                 value={localFilters.documentNumber}
-                onChange={(e) => handleLocalFilterChange('documentNumber', e.target.value)}
+                onChange={(e) => handleLocalFilterChange('documentNumber', sanitizeInput(e.target.value))}
               />
             </div>
           </div>
@@ -402,7 +415,7 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
                 className="search-input"
                 placeholder="Поиск документов..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => setSearchQuery(sanitizeInput(e.target.value))}
                 onKeyPress={handleKeyPress}
               />
               <i className="fas fa-search search-icon"></i>

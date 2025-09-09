@@ -17,8 +17,8 @@ function App() {
     }
     
     // Check for existing auth token
-    const authToken = localStorage.getItem('authToken');
-    const savedUser = localStorage.getItem('currentUser');
+    const authToken = sessionStorage.getItem('authToken');
+    const savedUser = sessionStorage.getItem('currentUser');
     
     if (authToken && savedUser) {
       try {
@@ -40,8 +40,8 @@ function App() {
       } catch (e) {
         // console.error('Error parsing saved user:', e);
         // Clear invalid data
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('currentUser');
+        sessionStorage.removeItem('authToken');
+        sessionStorage.removeItem('currentUser');
       }
     }
   }, []);
@@ -64,15 +64,15 @@ function App() {
     setIsAuthenticated(true);
     
     // Save user data with actual token
-    localStorage.setItem('authToken', token);
-    localStorage.setItem('currentUser', JSON.stringify(userObj));
+    sessionStorage.setItem('authToken', token);
+    sessionStorage.setItem('currentUser', JSON.stringify(userObj));
   };
 
   const handleLogout = () => {
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('currentUser');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('currentUser');
   };
 
   const toggleTheme = () => {

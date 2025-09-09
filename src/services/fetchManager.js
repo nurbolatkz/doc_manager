@@ -47,6 +47,9 @@ async function fetchCsrfToken() {
 // Generic function to make API requests to 1C backend
 export async function apiRequest(endpoint, requestBody, token) {
   try {
+    // Use token parameter if provided, otherwise get from sessionStorage
+    const authToken = token || sessionStorage.getItem('authToken');
+    
     // Fetch CSRF token
     const csrfToken = await fetchCsrfToken();
     
@@ -56,7 +59,7 @@ export async function apiRequest(endpoint, requestBody, token) {
       "Адрес": `${config.localhost_url}${endpoint}`,
       "ТелоЗапроса": {
         ...requestBody,
-        token: token
+        token: authToken
       }
     };
 
