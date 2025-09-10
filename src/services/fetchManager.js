@@ -374,7 +374,20 @@ export async function fetchDocumentTypes(token, documentId) {
     documentId: documentId
   };
 
-  return apiRequest("type-documents", requestBody, token);
+  const response = await apiRequest("type-documents", requestBody, token);
+  
+  // Normalize the response data structure
+  if (response && response.data && Array.isArray(response.data)) {
+    const normalizedData = response.data.map(item => ({
+      ...item,
+      id: item.id || item.guid || item.GUID,
+      guid: item.guid || item.id || item.GUID,
+      name: item.name || item.Наименование || item.title
+    }));
+    return { ...response, data: normalizedData };
+  }
+  
+  return response;
 }
 
 // Function to fetch organizations
@@ -384,7 +397,20 @@ export async function fetchOrganizations(token, documentId) {
     documentId: documentId
   };
 
-  return apiRequest("organization", requestBody, token);
+  const response = await apiRequest("organization", requestBody, token);
+  
+  // Normalize the response data structure
+  if (response && response.data && Array.isArray(response.data)) {
+    const normalizedData = response.data.map(item => ({
+      ...item,
+      id: item.id || item.guid || item.GUID,
+      guid: item.guid || item.id || item.GUID,
+      name: item.name || item.Наименование || item.title
+    }));
+    return { ...response, data: normalizedData };
+  }
+  
+  return response;
 }
 
 // Function to fetch projects
@@ -394,7 +420,20 @@ export async function fetchProjects(token, documentId) {
     documentId: documentId
   };
 
-  return apiRequest("project", requestBody, token);
+  const response = await apiRequest("project", requestBody, token);
+  
+  // Normalize the response data structure
+  if (response && response.data && Array.isArray(response.data)) {
+    const normalizedData = response.data.map(item => ({
+      ...item,
+      id: item.id || item.guid || item.GUID,
+      guid: item.guid || item.id || item.GUID,
+      name: item.name || item.Наименование || item.title
+    }));
+    return { ...response, data: normalizedData };
+  }
+  
+  return response;
 }
 
 // Function to update document files
@@ -425,7 +464,20 @@ export async function fetchCFOs(token, documentId) {
     documentId: documentId
   };
 
-  return apiRequest("cfo", requestBody, token);
+  const response = await apiRequest("cfo", requestBody, token);
+  
+  // Normalize the response data structure
+  if (response && response.data && Array.isArray(response.data)) {
+    const normalizedData = response.data.map(item => ({
+      ...item,
+      id: item.id || item.guid || item.GUID,
+      guid: item.guid || item.id || item.GUID,
+      name: item.name || item.Наименование || item.title
+    }));
+    return { ...response, data: normalizedData };
+  }
+  
+  return response;
 }
 
 // Function to fetch DDS articles
@@ -436,7 +488,20 @@ export async function fetchDdsArticles(token, documentId) {
     type: "expenditure"
   };
 
-  return apiRequest("ddsArticle", requestBody, token);
+  const response = await apiRequest("ddsArticle", requestBody, token);
+  
+  // Normalize the response data structure
+  if (response && response.data && Array.isArray(response.data)) {
+    const normalizedData = response.data.map(item => ({
+      ...item,
+      id: item.id || item.guid || item.GUID,
+      guid: item.guid || item.id || item.GUID,
+      name: item.name || item.Наименование || item.title
+    }));
+    return { ...response, data: normalizedData };
+  }
+  
+  return response;
 }
 
 // Function to fetch budget articles
@@ -447,7 +512,20 @@ export async function fetchBudgetArticles(token, documentId) {
     type: "expenditure"
   };
 
-  return apiRequest("budget-article", requestBody, token);
+  const response = await apiRequest("budget-article", requestBody, token);
+  
+  // Normalize the response data structure
+  if (response && response.data && Array.isArray(response.data)) {
+    const normalizedData = response.data.map(item => ({
+      ...item,
+      id: item.id || item.guid || item.GUID,
+      guid: item.guid || item.id || item.GUID,
+      name: item.name || item.Наименование || item.title
+    }));
+    return { ...response, data: normalizedData };
+  }
+  
+  return response;
 }
 
 // Function to fetch counterparties
@@ -458,7 +536,20 @@ export async function fetchCounterparties(token, documentId) {
     type: "expenditure"
   };
 
-  return apiRequest("counterparty-list", requestBody, token);
+  const response = await apiRequest("counterparty-list", requestBody, token);
+  
+  // Normalize the response data structure
+  if (response && response.data && Array.isArray(response.data)) {
+    const normalizedData = response.data.map(item => ({
+      ...item,
+      id: item.id || item.guid || item.GUID,
+      guid: item.guid || item.id || item.GUID,
+      name: item.name || item.Наименование || item.title
+    }));
+    return { ...response, data: normalizedData };
+  }
+  
+  return response;
 }
 
 // Function to fetch contracts for a specific counterparty
@@ -470,7 +561,20 @@ export async function fetchContracts(token, documentId, counterpartyGuid) {
     counterparty_guid: counterpartyGuid
   };
 
-  return apiRequest("contract-list", requestBody, token);
+  const response = await apiRequest("contract-list", requestBody, token);
+  
+  // Normalize the response data structure
+  if (response && response.data && Array.isArray(response.data)) {
+    const normalizedData = response.data.map(item => ({
+      ...item,
+      id: item.id || item.guid || item.GUID,
+      guid: item.guid || item.id || item.GUID,
+      name: item.name || item.Наименование || item.title
+    }));
+    return { ...response, data: normalizedData };
+  }
+  
+  return response;
 }
 
 export default apiRequest;

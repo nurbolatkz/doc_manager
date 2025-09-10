@@ -280,13 +280,14 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       const response = await fetchOrganizations(token, sampleDocumentId);
       
       if (response && response.data && Array.isArray(response.data)) {
-        // Map the API response to match the expected format (guid -> id, GUID -> guid)
-        const formattedOrganizations = response.data.map(org => ({
-          id: org.guid || org.GUID,
-          guid: org.GUID || org.guid,
-          name: org.name
+        // Normalize the data structure to ensure we have the expected properties
+        const normalizedOrganizations = response.data.map(org => ({
+          ...org,
+          id: org.id || org.guid || org.GUID,
+          guid: org.guid || org.id || org.GUID,
+          name: org.name || org.Наименование || org.title
         }));
-        setOrganizations(formattedOrganizations);
+        setOrganizations(normalizedOrganizations);
       } else {
         // Fallback to dummy data if API doesn't return expected data
         setOrganizations([
@@ -332,7 +333,14 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       const response = await fetchProjects(token, sampleDocumentId);
       
       if (response && response.data && Array.isArray(response.data)) {
-        setProjects(response.data);
+        // Normalize the data structure to ensure we have the expected properties
+        const normalizedProjects = response.data.map(project => ({
+          ...project,
+          id: project.id || project.guid || project.GUID,
+          guid: project.guid || project.id || project.GUID,
+          name: project.name || project.Наименование || project.title
+        }));
+        setProjects(normalizedProjects);
       } else {
         // Fallback to dummy data if API doesn't return expected data
         setProjects([
@@ -378,7 +386,14 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       const response = await fetchCFOs(token, sampleDocumentId);
       
       if (response && response.data && Array.isArray(response.data)) {
-        setCfos(response.data);
+        // Normalize the data structure to ensure we have the expected properties
+        const normalizedCFOs = response.data.map(cfo => ({
+          ...cfo,
+          id: cfo.id || cfo.guid || cfo.GUID,
+          guid: cfo.guid || cfo.id || cfo.GUID,
+          name: cfo.name || cfo.Наименование || cfo.title
+        }));
+        setCfos(normalizedCFOs);
       } else {
         // Fallback to dummy data if API doesn't return expected data
         setCfos([
@@ -424,7 +439,14 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       const response = await fetchDocumentTypes(token, sampleDocumentId);
       
       if (response && response.data && Array.isArray(response.data)) {
-        setDocumentTypes(response.data);
+        // Normalize the data structure to ensure we have the expected properties
+        const normalizedDocumentTypes = response.data.map(type => ({
+          ...type,
+          id: type.id || type.guid || type.GUID,
+          guid: type.guid || type.id || type.GUID,
+          name: type.name || type.Наименование || type.title
+        }));
+        setDocumentTypes(normalizedDocumentTypes);
       } else {
         // Fallback to default options if API doesn't return expected data
         setDocumentTypes([
@@ -478,7 +500,14 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       const response = await fetchDdsArticles(token, sampleDocumentId);
       
       if (response && response.data && Array.isArray(response.data)) {
-        setDdsArticles(response.data);
+        // Normalize the data structure to ensure we have the expected properties
+        const normalizedDdsArticles = response.data.map(item => ({
+          ...item,
+          id: item.id || item.guid || item.GUID,
+          guid: item.guid || item.id || item.GUID,
+          name: item.name || item.Наименование || item.title
+        }));
+        setDdsArticles(normalizedDdsArticles);
       } else {
         // Fallback to dummy data if API doesn't return expected data
         setDdsArticles([
@@ -520,7 +549,14 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       const response = await fetchBudgetArticles(token, sampleDocumentId);
       
       if (response && response.data && Array.isArray(response.data)) {
-        setBudgetArticles(response.data);
+        // Normalize the data structure to ensure we have the expected properties
+        const normalizedBudgetArticles = response.data.map(item => ({
+          ...item,
+          id: item.id || item.guid || item.GUID,
+          guid: item.guid || item.id || item.GUID,
+          name: item.name || item.Наименование || item.title
+        }));
+        setBudgetArticles(normalizedBudgetArticles);
       } else {
         // Fallback to dummy data if API doesn't return expected data
         setBudgetArticles([
@@ -562,7 +598,14 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       const response = await fetchCounterparties(token, sampleDocumentId);
       
       if (response && response.data && Array.isArray(response.data)) {
-        setCounterparties(response.data);
+        // Normalize the data structure to ensure we have the expected properties
+        const normalizedCounterparties = response.data.map(item => ({
+          ...item,
+          id: item.id || item.guid || item.GUID,
+          guid: item.guid || item.id || item.GUID,
+          name: item.name || item.Наименование || item.title
+        }));
+        setCounterparties(normalizedCounterparties);
       } else {
         // Fallback to dummy data if API doesn't return expected data
         setCounterparties([
@@ -607,7 +650,14 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
           const response = await fetchContracts(token, sampleDocumentId, formData.counterpartyGuid);
           
           if (response && response.data && Array.isArray(response.data)) {
-            setContracts(response.data);
+            // Normalize the data structure to ensure we have the expected properties
+            const normalizedContracts = response.data.map(item => ({
+              ...item,
+              id: item.id || item.guid || item.GUID,
+              guid: item.guid || item.id || item.GUID,
+              name: item.name || item.Наименование || item.title
+            }));
+            setContracts(normalizedContracts);
           } else {
             // Fallback to dummy data if API doesn't return expected data
             setContracts([
@@ -691,49 +741,49 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         setFormData(prev => ({
           ...prev,
           cfo: item.name,
-          cfoGuid: item.guid
+          cfoGuid: item.guid || item.id || item.GUID
         }));
         break;
       case 'project':
         setFormData(prev => ({
           ...prev,
           project: item.name,
-          projectGuid: item.guid
+          projectGuid: item.guid || item.id || item.GUID
         }));
         break;
       case 'organization':
         setFormData(prev => ({
           ...prev,
           organization: item.name,
-          organizationGuid: item.guid
+          organizationGuid: item.guid || item.id || item.GUID
         }));
         break;
       case 'ddsArticle':
         setFormData(prev => ({
           ...prev,
           ddsArticle: item.name,
-          ddsArticleGuid: item.guid
+          ddsArticleGuid: item.guid || item.id || item.GUID
         }));
         break;
       case 'budgetArticle':
         setFormData(prev => ({
           ...prev,
           budgetArticle: item.name,
-          budgetArticleGuid: item.guid
+          budgetArticleGuid: item.guid || item.id || item.GUID
         }));
         break;
       case 'counterparty':
         setFormData(prev => ({
           ...prev,
           counterparty: item.name,
-          counterpartyGuid: item.guid
+          counterpartyGuid: item.guid || item.id || item.GUID
         }));
         break;
       case 'contract':
         setFormData(prev => ({
           ...prev,
           contract: item.name,
-          contractGuid: item.guid
+          contractGuid: item.guid || item.id || item.GUID
         }));
         break;
       default:
@@ -1039,6 +1089,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       }
       
       if (!sanitizedFormData.ddsArticleGuid) {
+        console.log('DDS Article data:', formData.ddsArticle, formData.ddsArticleGuid);
         showCustomMessage('Пожалуйста, выберите статью ДДС', 'danger');
         return;
       }

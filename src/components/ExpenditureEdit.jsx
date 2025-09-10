@@ -95,7 +95,7 @@ const ExpenditureEdit = ({
                 type="hidden" 
                 id="expenditure-organization-guid" 
                 name="organizationGuid" 
-                value={formData.organizationGuid}
+                value={formData.organizationGuid || ''}
               />
             </div>
             <div className="detail-item">
@@ -105,7 +105,7 @@ const ExpenditureEdit = ({
                   type="text" 
                   id="expenditure-project" 
                   name="project" 
-                  value={formData.project}
+                  value={formData.project || ''}
                   readOnly
                   className={`form-control ${theme?.mode === 'dark' ? 'dark' : 'light'}`} 
                   placeholder="Выберите Проект..."
@@ -123,7 +123,7 @@ const ExpenditureEdit = ({
                 type="hidden" 
                 id="expenditure-project-guid" 
                 name="projectGuid" 
-                value={formData.projectGuid}
+                value={formData.projectGuid || ''}
               />
             </div>
           </div>
@@ -215,7 +215,7 @@ const ExpenditureEdit = ({
                   type="text" 
                   id="expenditure-counterparty" 
                   name="counterparty" 
-                  value={formData.counterparty}
+                  value={formData.counterparty || ''}
                   readOnly
                   className={`form-control ${theme?.mode === 'dark' ? 'dark' : 'light'}`} 
                   placeholder="Выберите Контрагента..."
@@ -233,7 +233,7 @@ const ExpenditureEdit = ({
                 type="hidden" 
                 id="expenditure-counterparty-guid" 
                 name="counterpartyGuid" 
-                value={formData.counterpartyGuid}
+                value={formData.counterpartyGuid || ''}
               />
             </div>
             <div className="detail-item">
@@ -243,7 +243,7 @@ const ExpenditureEdit = ({
                   type="text" 
                   id="expenditure-contract" 
                   name="contract" 
-                  value={formData.contract}
+                  value={formData.contract || ''}
                   readOnly
                   className={`form-control ${theme?.mode === 'dark' ? 'dark' : 'light'}`} 
                   placeholder="Выберите Договор..."
@@ -263,7 +263,7 @@ const ExpenditureEdit = ({
                 type="hidden" 
                 id="expenditure-contract-guid" 
                 name="contractGuid" 
-                value={formData.contractGuid}
+                value={formData.contractGuid || ''}
               />
             </div>
           </div>
@@ -285,7 +285,7 @@ const ExpenditureEdit = ({
                   type="text" 
                   id="expenditure-cfo" 
                   name="cfo" 
-                  value={formData.cfo}
+                  value={formData.cfo || ''}
                   readOnly
                   className={`form-control ${theme?.mode === 'dark' ? 'dark' : 'light'}`} 
                   placeholder="Выберите ЦФО..."
@@ -303,7 +303,7 @@ const ExpenditureEdit = ({
                 type="hidden" 
                 id="expenditure-cfo-guid" 
                 name="cfoGuid" 
-                value={formData.cfoGuid}
+                value={formData.cfoGuid || ''}
               />
             </div>
           </div>
@@ -325,7 +325,7 @@ const ExpenditureEdit = ({
                   type="text" 
                   id="expenditure-dds-article" 
                   name="ddsArticle" 
-                  value={formData.ddsArticle}
+                  value={formData.ddsArticle || ''}
                   readOnly
                   className={`form-control ${theme?.mode === 'dark' ? 'dark' : 'light'}`} 
                   placeholder="Выберите Статью ДДС..."
@@ -343,7 +343,7 @@ const ExpenditureEdit = ({
                 type="hidden" 
                 id="expenditure-dds-article-guid" 
                 name="ddsArticleGuid" 
-                value={formData.ddsArticleGuid}
+                value={formData.ddsArticleGuid || ''}
               />
             </div>
             <div className="detail-item">
@@ -353,7 +353,7 @@ const ExpenditureEdit = ({
                   type="text" 
                   id="expenditure-budget-article" 
                   name="budgetArticle" 
-                  value={formData.budgetArticle}
+                  value={formData.budgetArticle || ''}
                   readOnly
                   className={`form-control ${theme?.mode === 'dark' ? 'dark' : 'light'}`} 
                   placeholder="Выберите Статью Бюджета..."
@@ -371,7 +371,7 @@ const ExpenditureEdit = ({
                 type="hidden" 
                 id="expenditure-budget-article-guid" 
                 name="budgetArticleGuid" 
-                value={formData.budgetArticleGuid}
+                value={formData.budgetArticleGuid || ''}
               />
             </div>
           </div>
