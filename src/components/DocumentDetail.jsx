@@ -208,8 +208,9 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               showCustomMessage('Failed to load document details', 'danger');
             }
           } catch (err) {
-            showCustomMessage('Failed to load document details: ' + (err.message || 'Unknown error'), 'danger');
+            // Only show one alert per error case
             console.error('Error fetching document details:', err);
+            showCustomMessage('Failed to load document details: ' + (err.message || 'Unknown error'), 'danger');
           } finally {
             setLoading(false);
           }
@@ -263,8 +264,9 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 showCustomMessage('Failed to load document details', 'danger');
               }
             } catch (err) {
+              // Only show one alert per error case
+              console.error('Error fetching document details:', err);
               showCustomMessage('Failed to load document details: ' + (err.message || 'Unknown error'), 'danger');
-              // console.error('Error fetching document details:', err);
             } finally {
               setLoading(false);
             }
@@ -317,8 +319,9 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               showCustomMessage('Failed to load document details', 'danger');
             }
           } catch (err) {
-            showCustomMessage('Failed to load document details: ' + (err.message || 'Unknown error'), 'danger');
+            // Only show one alert per error case
             console.error('Error fetching document details:', err);
+            showCustomMessage('Failed to load document details: ' + (err.message || 'Unknown error'), 'danger');
           } finally {
             setLoading(false);
           }
@@ -376,14 +379,14 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
             routeType: response.routeType
           }));
         } else {
-          // console.error('Failed to fetch route type:', response?.message);
           // Show error as alert instead of blocking the document view
           showCustomMessage(response?.message || 'Failed to fetch route type', 'warning');
         }
       } catch (err) {
-        // console.error('Error fetching route type:', err);
+        // Only log error and show one alert
+        console.error('Error fetching route type:', err);
         // Show error as alert instead of blocking the document view
-        //showCustomMessage(err.message || 'Failed to fetch route type', 'danger');
+        showCustomMessage(err.message || 'Failed to fetch route type', 'danger');
       } finally {
         setLoadingRouteType(false);
       }
@@ -442,12 +445,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           setRouteSteps(transformedRoutes);
         } else {
           // Show error as alert instead of setting error state
-         //showCustomMessage(routeData?.message || 'Failed to fetch document routes', 'warning');
+          showCustomMessage(routeData?.message || 'Failed to fetch document routes', 'warning');
         }
       } catch (err) {
-        // console.error('Error fetching document routes:', err);
+        // Only log error and show one alert
+        console.error('Error fetching document routes:', err);
         // Show error as alert instead of setting error state
-        //showCustomMessage(err.message || 'Failed to fetch document routes', 'danger');
+        showCustomMessage(err.message || 'Failed to fetch document routes', 'danger');
       }
     };
 
@@ -479,12 +483,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         setSelectedUsers(initialSelectedUsers);
       } else {
         // Show error as alert instead of setting error state
-        //showCustomMessage(response?.message || 'Failed to fetch route titles', 'warning');
+        showCustomMessage(response?.message || 'Failed to fetch route titles', 'warning');
       }
     } catch (err) {
-      // console.error('Error fetching route titles:', err);
+      // Only log error and show one alert
+      console.error('Error fetching route titles:', err);
       // Show error as alert instead of setting error state
-      //showCustomMessage(err.message || 'Failed to fetch route titles', 'danger');
+      showCustomMessage(err.message || 'Failed to fetch route titles', 'danger');
     } finally {
       setLoadingRouteTitles(false);
     }
@@ -504,12 +509,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           setUsersList(response.data);
         } else {
           // Show error as alert instead of setting error state
-          //showCustomMessage(response?.message || 'Failed to fetch users list', 'warning');
+          showCustomMessage(response?.message || 'Failed to fetch users list', 'warning');
         }
       } catch (err) {
-        // console.error('Error fetching users list:', err);
+        // Only log error and show one alert
+        console.error('Error fetching users list:', err);
         // Show error as alert instead of setting error state
-        //showCustomMessage(err.message || 'Failed to fetch users list', 'danger');
+        showCustomMessage(err.message || 'Failed to fetch users list', 'danger');
       }
     };
 
@@ -852,6 +858,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         console.log('State update completed');
       } else {
         showCustomMessage('Failed to get signing template for approve', 'danger');
+        setSigningLoading(false); // Add this to prevent hanging loading state
       }
     } catch (err) {
       console.error('Error getting signing template for approve:', err);
@@ -859,8 +866,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       if (err.message !== 'Не удалось получить данные документа для подписания') {
         showCustomMessage('Failed to get signing template for approve: ' + (err.message || 'Unknown error'), 'danger');
       }
-    } finally {
-      setSigningLoading(false);
+      setSigningLoading(false); // Ensure loading state is reset on error
     }
   };
 
@@ -965,6 +971,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               });
             }
           } catch (accessError) {
+            // Only log error and show one alert
             console.error('Error checking access to approve/decline:', accessError);
             showCustomMessage('Error checking access to approve/decline: ' + (accessError.message || 'Unknown error'), 'warning');
             // Continue even if access check fails
@@ -972,51 +979,59 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         }
         
         // After success: fetch and re-render route steps
-        const routeData = await fetchDocumentRoutes(token, documentDetail.documentType, documentDetail.id);
-        if (routeData && routeData.data && Array.isArray(routeData.data)) {
-          // Transform the fetched route data to match our route steps structure
-          const transformedRoutes = routeData.data
-            .map((route, index) => {
-              // Find the current step based on status
-              let status = 'pending';
-              if (route.status === 'approved') {
-                status = 'approved';
-              } else if (route.status === 'rejected') {
-                status = 'rejected';
-              }
-              
-              // Extract users from the route data
-              let users = [''];
-              if (route.users && Array.isArray(route.users)) {
-                // Split each user by newlines and flatten into a single array
-                users = route.users.flatMap(user => 
-                  user.split('\n').filter(line => line.trim() !== '')
-                );
-                // If no valid users after splitting, use a default
-                if (users.length === 0) users = [''];
-              }
-              
-              return {
-                id: route.id || `step-${index}`,
-                stepNumber: route.order !== undefined ? route.order + 1 : index + 1,
-                title: route.step_title || `Шаг ${index + 1}`,
-                users: users,
-                status: status,
-                comment: route.info || ''
-              };
-            })
-            .sort((a, b) => a.stepNumber - b.stepNumber); // Sort by step number to ensure correct order
-          
-          setRouteSteps(transformedRoutes);
+        try {
+          const routeData = await fetchDocumentRoutes(token, documentDetail.documentType, documentDetail.id);
+          if (routeData && routeData.data && Array.isArray(routeData.data)) {
+            // Transform the fetched route data to match our route steps structure
+            const transformedRoutes = routeData.data
+              .map((route, index) => {
+                // Find the current step based on status
+                let status = 'pending';
+                if (route.status === 'approved') {
+                  status = 'approved';
+                } else if (route.status === 'rejected') {
+                  status = 'rejected';
+                }
+                
+                // Extract users from the route data
+                let users = [''];
+                if (route.users && Array.isArray(route.users)) {
+                  // Split each user by newlines and flatten into a single array
+                  users = route.users.flatMap(user => 
+                    user.split('\n').filter(line => line.trim() !== '')
+                  );
+                  // If no valid users after splitting, use a default
+                  if (users.length === 0) users = [''];
+                }
+                
+                return {
+                  id: route.id || `step-${index}`,
+                  stepNumber: route.order !== undefined ? route.order + 1 : index + 1,
+                  title: route.step_title || `Шаг ${index + 1}`,
+                  users: users,
+                  status: status,
+                  comment: route.info || ''
+                };
+              })
+              .sort((a, b) => a.stepNumber - b.stepNumber); // Sort by step number to ensure correct order
+            
+            setRouteSteps(transformedRoutes);
+          }
+        } catch (routeError) {
+          // Only log error and show one alert
+          console.error('Error refetching document routes:', routeError);
+          showCustomMessage('Error refetching document routes: ' + (routeError.message || 'Unknown error'), 'warning');
+          // Continue even if route fetch fails
         }
         
         // Show success message
         showCustomMessage('Document sent to route successfully', 'success');
       } else {
-        // Error
+        // Error - only show one alert
         showCustomMessage('Failed to send document to route: ' + (response?.message || 'Unknown error'), 'danger');
       }
     } catch (err) {
+      // Only log error and show one alert
       console.error('Error sending document to route:', err);
       showCustomMessage('Failed to send document to route: ' + (err.message || 'Unknown error'), 'danger');
     } finally {
@@ -1136,6 +1151,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           // Show success message
           showCustomMessage('Document approved successfully', 'success');
         } catch (err) {
+          // Only log error and show one alert
           console.error('Error saving signed document:', err);
           showCustomMessage('Failed to approve document: ' + (err.message || 'Unknown error'), 'danger');
         }
@@ -1144,6 +1160,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       // Execute the function
       sendSignedDocument();
     } catch (err) {
+      // Only log error and show one alert
       console.error('Error handling signed document:', err);
       showCustomMessage('Failed to process signed document: ' + (err.message || 'Unknown error'), 'danger');
     }

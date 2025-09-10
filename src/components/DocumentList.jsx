@@ -48,6 +48,12 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
       return new Date(year, month - 1, day, hour, minute, second);
     }
     
+    // Handle format "dd.mm.yyyy" (date only)
+    if (dateString.includes('.') && !dateString.includes(':')) {
+      const [day, month, year] = dateString.split('.');
+      return new Date(year, month - 1, day);
+    }
+    
     // Try to parse as standard date string
     const date = new Date(dateString);
     return isNaN(date.getTime()) ? null : date;
@@ -178,8 +184,32 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
       if (cpName && cpName !== filter.counterparty) return false;
     }
     if (filter.documentNumber) {
+      // Changed from exact match to partial match
       if (doc.number && !doc.number.includes(filter.documentNumber)) return false;
     }
+    
+    // Add date range filtering for "Дата создания" column
+    if (filter.dateFrom || filter.dateTo) {
+      const docDate = parseDateString(doc.uploadDate);
+      if (docDate) {
+        if (filter.dateFrom) {
+          const fromDate = new Date(filter.dateFrom);
+          // Set time to start of day for comparison
+          fromDate.setHours(0, 0, 0, 0);
+          if (docDate < fromDate) return false;
+        }
+        if (filter.dateTo) {
+          const toDate = new Date(filter.dateTo);
+          // Set time to end of day for comparison
+          toDate.setHours(23, 59, 59, 999);
+          if (docDate > toDate) return false;
+        }
+      } else if (filter.dateFrom || filter.dateTo) {
+        // If document date can't be parsed and we have date filters, exclude it
+        return false;
+      }
+    }
+    
     if (filter.searchQuery) {
       const sanitizedQuery = sanitizeInput(filter.searchQuery);
       const query = sanitizedQuery.toLowerCase();
@@ -280,7 +310,9 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
       status: filter.status || '',
       organization: filter.organization || '',
       counterparty: filter.counterparty || '',
-      documentNumber: filter.documentNumber || ''
+      documentNumber: filter.documentNumber || '',
+      dateFrom: filter.dateFrom || '',
+      dateTo: filter.dateTo || ''
     });
 
     const handleLocalFilterChange = (field, value) => {
@@ -376,6 +408,30 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
                 value={localFilters.documentNumber}
                 onChange={(e) => handleLocalFilterChange('documentNumber', sanitizeInput(e.target.value))}
               />
+            </div>
+
+            <div className="filter-group">
+              <h4>Дата создания</h4>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '5px' }}>От:</label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={localFilters.dateFrom}
+                    onChange={(e) => handleLocalFilterChange('dateFrom', e.target.value)}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '5px' }}>До:</label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={localFilters.dateTo}
+                    onChange={(e) => handleLocalFilterChange('dateTo', e.target.value)}
+                  />
+                </div>
+              </div>
             </div>
           </div>
           <div className="modal-footer">

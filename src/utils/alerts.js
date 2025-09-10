@@ -1,5 +1,17 @@
+// Keep track of active alerts to prevent duplicates
+const activeAlerts = new Map();
+
 // Custom alert function
 export const showCustomMessage = (message, type = 'info') => {
+    // Create a unique key for this alert based on message and type
+    const alertKey = `${message}-${type}`;
+    
+    // Check if an alert with the same message and type is already active
+    if (activeAlerts.has(alertKey)) {
+        // If it's already active, don't show a duplicate
+        return;
+    }
+    
     // Define alert configurations for better UX
     const alertConfig = {
         success: {
@@ -113,6 +125,9 @@ export const showCustomMessage = (message, type = 'info') => {
     
     document.body.appendChild(alertDiv);
     
+    // Add this alert to the active alerts map
+    activeAlerts.set(alertKey, alertDiv);
+    
     // Trigger animation
     setTimeout(() => {
         alertDiv.style.opacity = '1';
@@ -154,7 +169,11 @@ export const showCustomMessage = (message, type = 'info') => {
             alertDiv.style.transform = 'translateX(100%)';
             alertDiv.style.opacity = '0';
             setTimeout(() => {
-                if (alertDiv.parentNode) alertDiv.remove();
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                    // Remove from active alerts map
+                    activeAlerts.delete(alertKey);
+                }
             }, 400);
         }
     }, 5000);
@@ -162,6 +181,8 @@ export const showCustomMessage = (message, type = 'info') => {
     // Clear timer if manually closed
     alertDiv.addEventListener('closed.bs.alert', () => {
         clearTimeout(autoRemoveTimer);
+        // Remove from active alerts map
+        activeAlerts.delete(alertKey);
     });
     
     // Add click-to-dismiss functionality
@@ -171,8 +192,22 @@ export const showCustomMessage = (message, type = 'info') => {
             alertDiv.style.transform = 'translateX(100%)';
             alertDiv.style.opacity = '0';
             setTimeout(() => {
-                if (alertDiv.parentNode) alertDiv.remove();
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                    // Remove from active alerts map
+                    activeAlerts.delete(alertKey);
+                }
             }, 400);
         }
     });
+    
+    // Also remove from active alerts map when the close button is clicked
+    const closeButton = alertDiv.querySelector('.btn-close');
+    if (closeButton) {
+        closeButton.addEventListener('click', () => {
+            clearTimeout(autoRemoveTimer);
+            // Remove from active alerts map
+            activeAlerts.delete(alertKey);
+        });
+    }
 };

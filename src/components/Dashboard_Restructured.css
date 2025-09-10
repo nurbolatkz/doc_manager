@@ -2527,6 +2527,256 @@ button {
   border-top: 1px solid #4b5563;
 }
 
+/* SIGEX QR Modal Specific Styles */
+.sigex-modal {
+  width: 90%;
+  max-width: 500px;
+}
+
+.sigex-initial .form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+body.dark .sigex-initial .form-group label {
+  color: #d1d5db;
+}
+
+.sigex-initial .form-control {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: white;
+  color: #111827;
+}
+
+body.dark .sigex-initial .form-control {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: white;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background-color: #f9fafb;
+  border-radius: 0.375rem;
+  border: 1px solid #e5e7eb;
+}
+
+body.dark .file-info {
+  background-color: #374151;
+  border-color: #4b5563;
+}
+
+.sigex-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.qr-section {
+  text-align: center;
+}
+
+.qr-section h4 {
+  margin-bottom: 0.5rem;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+body.dark .qr-section h4 {
+  color: #e5e7eb;
+}
+
+.qr-section p {
+  margin-bottom: 1.5rem;
+  color: #64748b;
+}
+
+body.dark .qr-section p {
+  color: #9ca3af;
+}
+
+.qr-code {
+  margin: 1.5rem 0;
+  display: flex;
+  justify-content: center;
+}
+
+.qr-code img {
+  max-width: 200px;
+  height: auto;
+}
+
+.mobile-link {
+  margin-top: 1.5rem;
+}
+
+.progress-bar {
+  height: 10px;
+  background-color: #e5e7eb;
+  border-radius: 5px;
+  margin: 1rem 0;
+  overflow: hidden;
+  position: relative;
+}
+
+body.dark .progress-bar {
+  background-color: #4b5563;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(to right, #10b981, #059669);
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+body.dark .progress-text {
+  color: white;
+}
+
+.alert {
+  padding: 1rem;
+  border-radius: 0.375rem;
+  margin: 1rem 0;
+}
+
+.alert-success {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.alert-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.alert-info {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+body.dark .alert-success {
+  background-color: #14532d;
+  color: #bbf7d0;
+  border-color: #166534;
+}
+
+body.dark .alert-error {
+  background-color: #7f1d1d;
+  color: #fecaca;
+  border-color: #991b1b;
+}
+
+body.dark .alert-info {
+  background-color: #1e3a8a;
+  color: #bfdbfe;
+  border-color: #312e81;
+}
+
+/* Responsive styles for SIGEX QR Modal */
+@media (max-width: 768px) {
+  .sigex-modal {
+    width: 95%;
+    max-width: none;
+    margin: 1rem;
+  }
+  
+  .modal-content {
+    max-height: 95vh;
+  }
+  
+  .modal-body {
+    padding: 1rem;
+  }
+  
+  .sigex-initial .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .sigex-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .sigex-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .qr-code img {
+    max-width: 150px;
+  }
+  
+  .mobile-link .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-header {
+    padding: 1rem;
+  }
+  
+  .modal-title {
+    font-size: 1.125rem;
+  }
+  
+  .modal-body {
+    padding: 0.75rem;
+  }
+  
+  .sigex-initial .form-control {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .qr-section h4 {
+    font-size: 1.125rem;
+  }
+  
+  .qr-section p {
+    font-size: 0.875rem;
+  }
+  
+  .qr-code {
+    margin: 1rem 0;
+  }
+  
+  .qr-code img {
+    max-width: 120px;
+  }
+  
+  .sigex-actions {
+    margin-top: 1rem;
+  }
+}
+
+/* Filter Controls */
 .filter-group {
   margin-bottom: 1.5rem;
 }
@@ -2733,9 +2983,9 @@ button {
 .filter-controls {
   display: flex !important;
   flex-wrap: wrap !important;
-  gap: 0.75rem !important;
-  align-items: center !important;
 }
+
+
 
 @media (max-width: 768px) {
   .filter-controls {
