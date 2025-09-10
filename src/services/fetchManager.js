@@ -85,6 +85,8 @@ export async function apiRequest(endpoint, requestBody, token) {
       body: JSON.stringify(fullRequestBody),
       // Crucial for sending and receiving cookies
       credentials: 'include',
+      // Add timeout
+      signal: AbortSignal.timeout(30000) // 30 seconds timeout
     };
 
     // Use the full URL with endpoint
@@ -103,6 +105,10 @@ export async function apiRequest(endpoint, requestBody, token) {
 
     return data;
   } catch (err) {
+    // Handle timeout errors specifically
+    if (err.name === 'TimeoutError') {
+      throw new Error('Request timeout');
+    }
     // console.error(`API request error for endpoint ${endpoint}:`, err);
     throw err;
   }

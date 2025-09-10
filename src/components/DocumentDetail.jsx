@@ -829,6 +829,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
     try {
       setSigningLoading(true);
       
+      // Add a timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Request timeout'));
+        }, 30000); // 30 seconds timeout
+      });
+      
       const token = (() => {
               try {
                 return sessionStorage.getItem('authToken');
@@ -847,12 +854,15 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         documentId: documentDetail.id
       });
       
-      // Get signing template
-      const templateResponse = await getSigningTemplate(
-        token,
-        documentDetail.documentType,
-        documentDetail.id
-      );
+      // Get signing template with timeout
+      const templateResponse = await Promise.race([
+        getSigningTemplate(
+          token,
+          documentDetail.documentType,
+          documentDetail.id
+        ),
+        timeoutPromise
+      ]);
       
       console.log('Template response received:', templateResponse);
       
@@ -922,11 +932,20 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       }
     } catch (err) {
       console.error('Error getting signing template for approve:', err);
+      // Handle timeout error specifically
+      if (err.message === 'Request timeout') {
+        showCustomMessage('Request timed out. Please try again.', 'danger');
+      } 
       // Only show error in UI if it's not the binary data error (which is handled with alert)
-      if (err.message !== 'Не удалось получить данные документа для подписания') {
+      else if (err.message !== 'Не удалось получить данные документа для подписания') {
         showCustomMessage('Failed to get signing template for approve: ' + (err.message || 'Unknown error'), 'danger');
       }
       setSigningLoading(false); // Ensure loading state is reset on error
+    } finally {
+      // Ensure loading state is reset in all cases
+      if (!showSigningModal) {
+        setSigningLoading(false);
+      }
     }
   };
 
@@ -1108,7 +1127,10 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
   // Function to handle SIGEX signing completion
   const handleSigningComplete = (signedDocuments) => {
     console.log('SIGEX signing completed with documents:', signedDocuments);
-    if (!documentDetail || !signingAction) return;
+    if (!documentDetail || !signingAction) {
+      setSigningLoading(false);
+      return;
+    }
     
     try {
       // Close the SIGEX modal
@@ -1117,6 +1139,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       // Send the signed document to the backend for approval
       const sendSignedDocument = async () => {
         try {
+          // Add a timeout to prevent infinite loading
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => {
+              reject(new Error('Request timeout'));
+            }, 30000); // 30 seconds timeout
+          });
+          
           const token = (() => {
               try {
                 return sessionStorage.getItem('authToken');
@@ -1126,19 +1155,23 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
             })();
           if (!token) {
             showCustomMessage('No authentication token found', 'danger');
+            setSigningLoading(false);
             return;
           }
           
-          // First, save the signed document data
-          
+          // First, save the signed document data with timeout
+          let saveResponse;
           if (documentDetail.signingTemplate?.metadata) {
-            const saveResponse = await saveSignedDocument(
-              token,
-              documentDetail.id,
-              documentDetail.documentType,
-              signedDocuments[0]?.data || '', // Pass the signed document data
-              documentDetail.signingTemplate.metadata // Pass the metadata
-            );
+            saveResponse = await Promise.race([
+              saveSignedDocument(
+                token,
+                documentDetail.id,
+                documentDetail.documentType,
+                signedDocuments[0]?.data || '', // Pass the signed document data
+                documentDetail.signingTemplate.metadata // Pass the metadata
+              ),
+              timeoutPromise
+            ]);
             
             console.log('Signed document saved:', saveResponse);
             
@@ -1146,17 +1179,21 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
             const isSuccess = saveResponse && (saveResponse.success === 1 || saveResponse.Success === 1);
             if (!isSuccess) {
               showCustomMessage(saveResponse?.message || 'Failed to save signed document', 'danger');
+              setSigningLoading(false);
               return;
             }
           }
           
-          // Then, send the signed document to the backend for approval
-          const response = await saveSignedDocumentAndApprove(
-            token,
-            documentDetail.documentType,
-            documentDetail.id,
-            signedDocuments[0]?.data || '' // Pass the signed document data
-          );
+          // Then, send the signed document to the backend for approval with timeout
+          const response = await Promise.race([
+            saveSignedDocumentAndApprove(
+              token,
+              documentDetail.documentType,
+              documentDetail.id,
+              signedDocuments[0]?.data || '' // Pass the signed document data
+            ),
+            timeoutPromise
+          ]);
           
           console.log('Signed document saved and approved:', response);
           
@@ -1217,15 +1254,24 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
             }
           } else {
             showCustomMessage(response?.message || 'Failed to approve document', 'danger');
+            setSigningLoading(false);
             return;
           }
           
           // Show success message
           showCustomMessage('Document approved successfully', 'success');
         } catch (err) {
-          // Only log error and show one alert
-          console.error('Error saving signed document:', err);
-          showCustomMessage('Failed to approve document: ' + (err.message || 'Unknown error'), 'danger');
+          // Handle timeout error specifically
+          if (err.message === 'Request timeout') {
+            showCustomMessage('Request timed out. Please try again.', 'danger');
+          } else {
+            // Only log error and show one alert
+            console.error('Error saving signed document:', err);
+            showCustomMessage('Failed to approve document: ' + (err.message || 'Unknown error'), 'danger');
+          }
+        } finally {
+          // Ensure loading state is reset
+          setSigningLoading(false);
         }
       };
       
@@ -1235,6 +1281,8 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       // Only log error and show one alert
       console.error('Error handling signed document:', err);
       showCustomMessage('Failed to process signed document: ' + (err.message || 'Unknown error'), 'danger');
+      // Ensure loading state is reset
+      setSigningLoading(false);
     }
   };
 
@@ -1425,7 +1473,10 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       {/* SIGEX Signing Modal */}
       <SigexQRModal
         isOpen={showSigningModal}
-        onClose={() => setShowSigningModal(false)}
+        onClose={() => {
+          setShowSigningModal(false);
+          setSigningLoading(false);
+        }}
         onSigningComplete={handleSigningComplete}
         documentData={documentDetail?.signingTemplate?.binaryData}
         documentInfo={documentDetail?.signingTemplate?.documentInfo}
