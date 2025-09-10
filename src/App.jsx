@@ -3,6 +3,35 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import './App.css';
 
+// Robust storage helper that falls back to in-memory storage
+const storage = {
+  setItem: (key, value) => {
+    try {
+      sessionStorage.setItem(key, value);
+    } catch (e) {
+      // Fallback to in-memory storage for Safari private mode
+      storage.memory[key] = value;
+    }
+  },
+  getItem: (key) => {
+    try {
+      return sessionStorage.getItem(key);
+    } catch (e) {
+      // Fallback to in-memory storage
+      return storage.memory[key] || null;
+    }
+  },
+  removeItem: (key) => {
+    try {
+      sessionStorage.removeItem(key);
+    } catch (e) {
+      // Fallback to in-memory storage
+      delete storage.memory[key];
+    }
+  },
+  memory: {}
+};
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
@@ -11,14 +40,14 @@ function App() {
   // Load auth state and theme on startup
   useEffect(() => {
     // Load theme
-    const savedTheme = localStorage.getItem('theme');
+    const savedTheme = storage.getItem('theme');
     if (savedTheme) {
       setTheme({ mode: savedTheme });
     }
     
     // Check for existing auth token
-    const authToken = sessionStorage.getItem('authToken');
-    const savedUser = sessionStorage.getItem('currentUser');
+    const authToken = storage.getItem('authToken');
+    const savedUser = storage.getItem('currentUser');
     
     if (authToken && savedUser) {
       try {
@@ -40,8 +69,8 @@ function App() {
       } catch (e) {
         // console.error('Error parsing saved user:', e);
         // Clear invalid data
-        sessionStorage.removeItem('authToken');
-        sessionStorage.removeItem('currentUser');
+        storage.removeItem('authToken');
+        storage.removeItem('currentUser');
       }
     }
   }, []);
@@ -63,22 +92,22 @@ function App() {
     setUser(userObj);
     setIsAuthenticated(true);
     
-    // Save user data with actual token
-    sessionStorage.setItem('authToken', token);
-    sessionStorage.setItem('currentUser', JSON.stringify(userObj));
+    // Save user data with actual token using robust storage
+    storage.setItem('authToken', token);
+    storage.setItem('currentUser', JSON.stringify(userObj));
   };
 
   const handleLogout = () => {
     setUser(null);
     setIsAuthenticated(false);
-    sessionStorage.removeItem('authToken');
-    sessionStorage.removeItem('currentUser');
+    storage.removeItem('authToken');
+    storage.removeItem('currentUser');
   };
 
   const toggleTheme = () => {
     const newTheme = { mode: theme.mode === 'light' ? 'dark' : 'light' };
     setTheme(newTheme);
-    localStorage.setItem('theme', newTheme.mode);
+    storage.setItem('theme', newTheme.mode);
   };
 
   return (

@@ -93,7 +93,13 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
     setLoadingAttachments(true);
     
     try {
-      const token = localStorage.getItem('authToken') || '';
+      const token = (() => {
+      try {
+        return sessionStorage.getItem('authToken') || '';
+      } catch (e) {
+        return '';
+      }
+    })();
       
       const requestBody = {
         username: "Администратор",
@@ -258,7 +264,13 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   const fetchOrganizationsForEdit = async () => {
     try {
       setLoadingOrganizations(true);
-      const token = localStorage.getItem('authToken');
+      const token = (() => {
+      try {
+        return sessionStorage.getItem('authToken');
+      } catch (e) {
+        return null;
+      }
+    })();
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -304,7 +316,13 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   const fetchProjectsForEdit = async () => {
     try {
       setLoadingProjects(true);
-      const token = localStorage.getItem('authToken');
+      const token = (() => {
+      try {
+        return sessionStorage.getItem('authToken');
+      } catch (e) {
+        return null;
+      }
+    })();
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -344,7 +362,13 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   const fetchCFOsForEdit = async () => {
     try {
       setLoadingCfos(true);
-      const token = localStorage.getItem('authToken');
+      const token = (() => {
+      try {
+        return sessionStorage.getItem('authToken');
+      } catch (e) {
+        return null;
+      }
+    })();
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -384,7 +408,13 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   const fetchDocumentTypesForEdit = async () => {
     try {
       setLoadingDocumentTypes(true);
-      const token = localStorage.getItem('authToken');
+      const token = (() => {
+      try {
+        return sessionStorage.getItem('authToken');
+      } catch (e) {
+        return null;
+      }
+    })();
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -432,7 +462,13 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   const fetchDdsArticlesForEdit = async () => {
     try {
       setLoadingDdsArticles(true);
-      const token = localStorage.getItem('authToken');
+      const token = (() => {
+      try {
+        return sessionStorage.getItem('authToken');
+      } catch (e) {
+        return null;
+      }
+    })();
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -468,7 +504,13 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   const fetchBudgetArticlesForEdit = async () => {
     try {
       setLoadingBudgetArticles(true);
-      const token = localStorage.getItem('authToken');
+      const token = (() => {
+      try {
+        return sessionStorage.getItem('authToken');
+      } catch (e) {
+        return null;
+      }
+    })();
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -504,7 +546,13 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   const fetchCounterpartiesForEdit = async () => {
     try {
       setLoadingCounterparties(true);
-      const token = localStorage.getItem('authToken');
+      const token = (() => {
+      try {
+        return sessionStorage.getItem('authToken');
+      } catch (e) {
+        return null;
+      }
+    })();
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -543,7 +591,13 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       if (formData.counterpartyGuid) {
         try {
           setLoadingContracts(true);
-          const token = localStorage.getItem('authToken');
+          const token = (() => {
+      try {
+        return sessionStorage.getItem('authToken');
+      } catch (e) {
+        return null;
+      }
+    })();
           if (!token) {
             throw new Error('No authentication token found');
           }
@@ -882,7 +936,13 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       }
       
       try {
-        const token = localStorage.getItem('authToken');
+        const token = (() => {
+      try {
+        return sessionStorage.getItem('authToken');
+      } catch (e) {
+        return null;
+      }
+    })();
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -995,7 +1055,13 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       
       try {
         // Get auth token
-        const token = localStorage.getItem('authToken');
+        const token = (() => {
+      try {
+        return sessionStorage.getItem('authToken');
+      } catch (e) {
+        return null;
+      }
+    })();
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -1080,7 +1146,13 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       
       try {
         // Get auth token
-        const token = localStorage.getItem('authToken');
+        const token = (() => {
+      try {
+        return sessionStorage.getItem('authToken');
+      } catch (e) {
+        return null;
+      }
+    })();
         if (!token) {
           throw new Error('No authentication token found');
         }

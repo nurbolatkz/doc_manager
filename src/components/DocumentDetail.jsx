@@ -166,7 +166,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           setFetchAttempted(true); // Mark that we've attempted to fetch
           setLoading(true);
           try {
-            const token = localStorage.getItem('authToken');
+            const token = (() => {
+              try {
+                return sessionStorage.getItem('authToken');
+              } catch (e) {
+                return null;
+              }
+            })();
             if (!token) {
               showCustomMessage('No authentication token found', 'danger');
               return;
@@ -223,7 +229,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
             setFetchAttempted(true); // Mark that we've attempted to fetch
             setLoading(true);
             try {
-              const token = localStorage.getItem('authToken');
+              const token = (() => {
+              try {
+                return sessionStorage.getItem('authToken');
+              } catch (e) {
+                return null;
+              }
+            })();
               if (!token) {
                 showCustomMessage('No authentication token found', 'danger');
                 return;
@@ -279,7 +291,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           setFetchAttempted(true); // Mark that we've attempted to fetch
           setLoading(true);
           try {
-            const token = localStorage.getItem('authToken');
+            const token = (() => {
+              try {
+                return sessionStorage.getItem('authToken');
+              } catch (e) {
+                return null;
+              }
+            })();
             if (!token) {
               showCustomMessage('No authentication token found', 'danger');
               return;
@@ -364,7 +382,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       
       try {
         setLoadingRouteType(true);
-        const token = localStorage.getItem('authToken');
+        const token = (() => {
+              try {
+                return sessionStorage.getItem('authToken');
+              } catch (e) {
+                return null;
+              }
+            })();
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -399,7 +423,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
   useEffect(() => {
     const fetchRouteSteps = async () => {
       try {
-        const token = localStorage.getItem('authToken');
+        const token = (() => {
+              try {
+                return sessionStorage.getItem('authToken');
+              } catch (e) {
+                return null;
+              }
+            })();
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -467,7 +497,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
     
     try {
       setLoadingRouteTitles(true);
-      const token = localStorage.getItem('authToken');
+      const token = (() => {
+              try {
+                return sessionStorage.getItem('authToken');
+              } catch (e) {
+                return null;
+              }
+            })();
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -499,7 +535,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem('authToken');
+        const token = (() => {
+              try {
+                return sessionStorage.getItem('authToken');
+              } catch (e) {
+                return null;
+              }
+            })();
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -642,7 +684,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
     try {
       setDeclining(true);
       
-      const token = localStorage.getItem('authToken');
+      const token = (() => {
+              try {
+                return sessionStorage.getItem('authToken');
+              } catch (e) {
+                return null;
+              }
+            })();
       if (!token) {
         showCustomMessage('No authentication token found', 'danger');
         setDeclining(false);
@@ -687,7 +735,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
     try {
       setDeleting(true);
       
-      const token = localStorage.getItem('authToken');
+      const token = (() => {
+              try {
+                return sessionStorage.getItem('authToken');
+              } catch (e) {
+                return null;
+              }
+            })();
       if (!token) {
         showCustomMessage('No authentication token found', 'danger');
         setDeleting(false);
@@ -775,7 +829,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
     try {
       setSigningLoading(true);
       
-      const token = localStorage.getItem('authToken');
+      const token = (() => {
+              try {
+                return sessionStorage.getItem('authToken');
+              } catch (e) {
+                return null;
+              }
+            })();
       if (!token) {
         showCustomMessage('No authentication token found', 'danger');
         setSigningLoading(false);
@@ -900,7 +960,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
     try {
       setSendingToRoute(true);
       
-      const token = localStorage.getItem('authToken');
+      const token = (() => {
+              try {
+                return sessionStorage.getItem('authToken');
+              } catch (e) {
+                return null;
+              }
+            })();
       if (!token) {
         showCustomMessage('No authentication token found', 'danger');
         setSendingToRoute(false);
@@ -1051,7 +1117,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       // Send the signed document to the backend for approval
       const sendSignedDocument = async () => {
         try {
-          const token = localStorage.getItem('authToken');
+          const token = (() => {
+              try {
+                return sessionStorage.getItem('authToken');
+              } catch (e) {
+                return null;
+              }
+            })();
           if (!token) {
             showCustomMessage('No authentication token found', 'danger');
             return;

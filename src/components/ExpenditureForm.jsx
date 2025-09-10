@@ -90,7 +90,7 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
     const loadOperationTypes = async () => {
       try {
         setLoadingOperationTypes(true);
-        const token = localStorage.getItem('authToken');
+        const token = sessionStorage.getItem('authToken');
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -160,7 +160,7 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
     const loadOrganizations = async () => {
       try {
         setLoadingOrganizations(true);
-        const token = localStorage.getItem('authToken');
+        const token = sessionStorage.getItem('authToken');
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -210,7 +210,7 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
     const loadProjects = async () => {
       try {
         setLoadingProjects(true);
-        const token = localStorage.getItem('authToken');
+        const token = sessionStorage.getItem('authToken');
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -242,7 +242,7 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
     const loadCFOs = async () => {
       try {
         setLoadingCfos(true);
-        const token = localStorage.getItem('authToken');
+        const token = sessionStorage.getItem('authToken');
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -274,7 +274,7 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
     const loadDdsArticles = async () => {
       try {
         setLoadingDdsArticles(true);
-        const token = localStorage.getItem('authToken');
+        const token = sessionStorage.getItem('authToken');
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -312,7 +312,7 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
     const loadBudgetArticles = async () => {
       try {
         setLoadingBudgetArticles(true);
-        const token = localStorage.getItem('authToken');
+        const token = sessionStorage.getItem('authToken');
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -350,7 +350,7 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
     const loadCounterparties = async () => {
       try {
         setLoadingCounterparties(true);
-        const token = localStorage.getItem('authToken');
+        const token = sessionStorage.getItem('authToken');
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -390,7 +390,7 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
       if (formData.counterpartyGuid) {
         try {
           setLoadingContracts(true);
-          const token = localStorage.getItem('authToken');
+          const token = sessionStorage.getItem('authToken');
           if (!token) {
             throw new Error('No authentication token found');
           }
@@ -632,7 +632,7 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
     
     try {
       // Get auth token
-      const token = localStorage.getItem('authToken');
+      const token = sessionStorage.getItem('authToken');
       if (!token) {
         throw new Error('No authentication token found');
       }

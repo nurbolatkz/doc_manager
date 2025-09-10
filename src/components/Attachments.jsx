@@ -130,7 +130,13 @@ const Attachments = ({ documentId, documentType, theme, onDownload }) => {
     setError(null);
     
     try {
-      const token = localStorage.getItem('authToken') || '';
+      const token = (() => {
+      try {
+        return sessionStorage.getItem('authToken') || '';
+      } catch (e) {
+        return '';
+      }
+    })();
       
       const requestBody = {
         username: "Администратор",

@@ -47,8 +47,14 @@ async function fetchCsrfToken() {
 // Generic function to make API requests to 1C backend
 export async function apiRequest(endpoint, requestBody, token) {
   try {
-    // Use token parameter if provided, otherwise get from sessionStorage
-    const authToken = token || sessionStorage.getItem('authToken');
+    // Use token parameter if provided, otherwise get from storage with fallback
+    const authToken = token || (() => {
+      try {
+        return sessionStorage.getItem('authToken');
+      } catch (e) {
+        return null;
+      }
+    })();
     
     // Fetch CSRF token
     const csrfToken = await fetchCsrfToken();

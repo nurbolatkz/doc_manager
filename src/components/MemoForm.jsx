@@ -34,7 +34,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
     const loadDocumentTypes = async () => {
       try {
         setLoadingDocumentTypes(true);
-        const token = localStorage.getItem('authToken');
+        const token = sessionStorage.getItem('authToken');
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -82,7 +82,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
     const loadOrganizations = async () => {
       try {
         setLoadingOrganizations(true);
-        const token = localStorage.getItem('authToken');
+        const token = sessionStorage.getItem('authToken');
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -132,7 +132,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
     const loadProjects = async () => {
       try {
         setLoadingProjects(true);
-        const token = localStorage.getItem('authToken');
+        const token = sessionStorage.getItem('authToken');
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -176,7 +176,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
     const loadCFOs = async () => {
       try {
         setLoadingCfos(true);
-        const token = localStorage.getItem('authToken');
+        const token = sessionStorage.getItem('authToken');
         if (!token) {
           throw new Error('No authentication token found');
         }
@@ -316,7 +316,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
     
     try {
       // Get auth token
-      const token = localStorage.getItem('authToken');
+      const token = sessionStorage.getItem('authToken');
       if (!token) {
         throw new Error('No authentication token found');
       }

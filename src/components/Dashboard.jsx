@@ -40,7 +40,14 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
   const loadDashboardData = async (selectedFilter = "all") => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('authToken');
+      // Use robust storage approach for token retrieval
+      const token = (() => {
+        try {
+          return sessionStorage.getItem('authToken');
+        } catch (e) {
+          return null;
+        }
+      })();
       if (!token) {
         throw new Error('No authentication token found');
       }
