@@ -190,7 +190,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
       {/* Mobile Sidebar Toggle Button */}
       {!sidebarOpen && (
         <button
-          className="mobile-sidebar-toggle"
+          className={`mobile-sidebar-toggle ${theme.mode === 'dark' ? 'dark' : 'light'}`}
           onClick={() => setSidebarOpen(true)}
         >
           <i className="fas fa-bars"></i>
@@ -200,13 +200,13 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div 
-          className="mobile-sidebar-overlay"
+          className={`mobile-sidebar-overlay ${theme.mode === 'dark' ? 'dark' : 'light'}`}
           onClick={() => setSidebarOpen(false)}
         />
       )}
       
       {/* Sidebar */}
-      <div className={`sidebar sidebar-transition ${sidebarOpen ? 'sidebar-open' : ''}`}>
+      <div className={`sidebar sidebar-transition ${sidebarOpen ? 'sidebar-open' : ''} ${theme.mode === 'dark' ? 'dark' : 'light'}`}>
         <div className="sidebar-header">
           <div className="sidebar-title">
             {sidebarOpen && (
