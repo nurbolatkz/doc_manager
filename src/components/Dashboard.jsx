@@ -158,6 +158,8 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
   };
 
   const handleFilterChange = (newFilter) => {
+    // Clear selected document first to ensure we switch to list view immediately
+    setSelectedDocument(null);
     setFilter(newFilter);
     
     // Fetch documents with the selected filter
