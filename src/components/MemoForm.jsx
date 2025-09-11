@@ -17,6 +17,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
     projectGuid: ''
   });
 
+  const [uploadedFiles, setUploadedFiles] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
   const [modalSearchTerm, setModalSearchTerm] = useState('');
@@ -237,6 +238,29 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
       // Handle all other fields normally
       setFormData(prev => ({ ...prev, [field]: value }));
     }
+  };
+
+  const handleFileUpload = (event) => {
+    const files = Array.from(event.target.files);
+    const newFiles = files.map(file => ({
+      id: Date.now() + Math.random(),
+      name: file.name,
+      size: file.size,
+      type: file.type
+    }));
+    setUploadedFiles(prev => [...prev, ...newFiles]);
+  };
+
+  const removeFile = (fileId) => {
+    setUploadedFiles(prev => prev.filter(file => file.id !== fileId));
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const openModal = (type) => {
@@ -539,6 +563,66 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
                   placeholder="Введите основной текст служебной записки..."
                   rows="6"
                 />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* File Upload Section */}
+        <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+          <div className={`section-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+            <i className="fas fa-paperclip"></i>
+            Прикрепленные файлы
+          </div>
+          <div className="info-grid">
+            <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`} style={{ gridColumn: 'span 3' }}>
+              <div className="detail-item">
+                <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Файлы:</span>
+                <div className="file-upload-container">
+                  <input 
+                    type="file" 
+                    id="file-upload" 
+                    className="file-input"
+                    onChange={handleFileUpload}
+                    multiple
+                  />
+                  <label htmlFor="file-upload" className="file-upload-label">
+                    <i className="fas fa-cloud-upload-alt"></i> Выберите файлы или перетащите их сюда
+                  </label>
+                </div>
+                
+                {uploadedFiles.length > 0 && (
+                  <div className="uploaded-files-table">
+                    <div className="table-container">
+                      <table className="table table-bordered responsive-table">
+                        <thead>
+                          <tr>
+                            <th>Имя файла</th>
+                            <th>Размер</th>
+                            <th>Действия</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {uploadedFiles.map((file) => (
+                            <tr key={file.id}>
+                              <td data-label="Имя файла">{file.name}</td>
+                              <td data-label="Размер">{formatFileSize(file.size)}</td>
+                              <td data-label="Действия">
+                                <button 
+                                  type="button" 
+                                  className="btn btn-danger btn-sm"
+                                  onClick={() => removeFile(file.id)}
+                                >
+                                  <i className="fas fa-trash"></i>
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
