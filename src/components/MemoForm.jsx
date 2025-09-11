@@ -18,6 +18,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
   });
 
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [arrayToUpload, setArrayToUpload] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
   const [modalSearchTerm, setModalSearchTerm] = useState('');
@@ -240,19 +241,70 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
     }
   };
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     const files = Array.from(event.target.files);
-    const newFiles = files.map(file => ({
-      id: Date.now() + Math.random(),
-      name: file.name,
-      size: file.size,
-      type: file.type
-    }));
-    setUploadedFiles(prev => [...prev, ...newFiles]);
+    
+    // Convert files to base64
+    const filePromises = files.map(file => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          resolve({
+            name: file.name,
+            fileObject: reader.result // This is the base64 string
+          });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    });
+    
+    try {
+      const fileObjects = await Promise.all(filePromises);
+      
+      // Remove the data URL prefix from the base64 string
+      const cleanedFileObjects = fileObjects.map(file => ({
+        name: file.name,
+        fileObject: file.fileObject.split(',')[1] || file.fileObject // Remove 'data:*/*;base64,' prefix
+      }));
+      
+      setArrayToUpload(prev => {
+        const newArray = [...prev, ...cleanedFileObjects];
+        return newArray;
+      });
+      
+      // Also keep track of uploaded files for display
+      const newFiles = files.map(file => ({
+        id: Date.now() + Math.random(),
+        name: file.name,
+        size: file.size,
+        type: file.type
+      }));
+      setUploadedFiles(prev => [...prev, ...newFiles]);
+    } catch (error) {
+      console.error('Error converting files to base64:', error);
+      showCustomMessage('Ошибка при загрузке файлов: ' + error.message, 'danger');
+    }
   };
 
   const removeFile = (fileId) => {
-    setUploadedFiles(prev => prev.filter(file => file.id !== fileId));
+    // For newly uploaded files, remove from arrayToUpload and uploadedFiles
+    const fileToRemove = uploadedFiles.find(file => file.id === fileId);
+    if (fileToRemove) {
+      // Remove from arrayToUpload
+      setArrayToUpload(prev => {
+        // Find the index of the file to remove by matching the name
+        const fileIndex = prev.findIndex(file => file.name === fileToRemove.name);
+        if (fileIndex !== -1) {
+          const newArray = [...prev];
+          newArray.splice(fileIndex, 1);
+          return newArray;
+        }
+        return prev;
+      });
+      // Remove from uploadedFiles
+      setUploadedFiles(prev => prev.filter(file => file.id !== fileId));
+    }
   };
 
   const formatFileSize = (bytes) => {
@@ -362,7 +414,34 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
       const response = await apiRequest("register_document_action", requestBody, token);
       
       if (response && response.success === 1) {
-        showCustomMessage('Служебная записка успешно создана!', 'success');
+        // If there are files to upload, upload them now
+        if (arrayToUpload.length > 0 && response.guid) {
+          try {
+            // Upload files to the newly created document
+            const fileUploadRequestBody = {
+              username: "Администратор",
+              action: "update_document_files",
+              type: "memo",
+              documentId: response.guid,
+              array_to_remove: [], // No files to remove for a new document
+              array_to_upload: arrayToUpload
+            };
+            
+            const fileResponse = await apiRequest("document_files", fileUploadRequestBody, token);
+            
+            if (fileResponse && fileResponse.success === 1) {
+              showCustomMessage('Служебная записка успешно создана с файлами!', 'success');
+            } else {
+              showCustomMessage('Служебная записка создана, но возникли проблемы с загрузкой файлов', 'warning');
+            }
+          } catch (fileError) {
+            console.error('Error uploading files:', fileError);
+            showCustomMessage('Служебная записка создана, но возникли проблемы с загрузкой файлов: ' + fileError.message, 'warning');
+          }
+        } else {
+          showCustomMessage('Служебная записка успешно создана!', 'success');
+        }
+        
         // Call onSave with the form data and created document ID
         if (onSave) {
           onSave(formData, response.guid);
