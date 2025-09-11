@@ -501,7 +501,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
                   name="date" 
                   value={formData.date}
                   onChange={(e) => handleInputChange('date', e.target.value)}
-                  className="form-control"
+                  className={`form-control ${theme?.mode === 'dark' ? 'dark' : ''}`}
                 />
               </div>
               
@@ -513,7 +513,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
                   name="documentType" 
                   value={formData.documentType}
                   onChange={(e) => handleInputChange('documentType', e.target.value)}
-                  className="form-control"
+                  className={`form-control ${theme?.mode === 'dark' ? 'dark' : ''}`}
                   disabled={loadingDocumentTypes}
                 >
                   <option value="">-- Выберите тип документа --</option>
@@ -544,7 +544,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
                     handleInputChange('organizationGuid', e.target.value);
                     handleInputChange('organization', selectedOrg ? selectedOrg.name : '');
                   }}
-                  className="form-control"
+                  className={`form-control ${theme?.mode === 'dark' ? 'dark' : ''}`}
                   disabled={loadingOrganizations}
                 >
                   <option value="">-- Выберите организацию --</option>
@@ -579,7 +579,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
                     name="cfo" 
                     value={formData.cfo}
                     readOnly
-                    className="form-control" 
+                    className={`form-control ${theme?.mode === 'dark' ? 'dark' : ''}`} 
                     placeholder="Выберите ЦФО..."
                   />
                   <button 
@@ -608,7 +608,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
                     name="project" 
                     value={formData.project}
                     readOnly
-                    className="form-control" 
+                    className={`form-control ${theme?.mode === 'dark' ? 'dark' : ''}`} 
                     placeholder="Выберите Проект..."
                   />
                   <button 
@@ -638,7 +638,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
                   name="text" 
                   value={formData.text}
                   onChange={(e) => handleInputChange('text', e.target.value)}
-                  className="form-control" 
+                  className={`form-control ${theme?.mode === 'dark' ? 'dark' : ''}`} 
                   placeholder="Введите основной текст служебной записки..."
                   rows="6"
                 />
@@ -665,13 +665,16 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
                     onChange={handleFileUpload}
                     multiple
                   />
-                  <label htmlFor="file-upload" className="file-upload-label">
+                  <label 
+                    htmlFor="file-upload" 
+                    className={`file-upload-label ${theme?.mode === 'dark' ? 'dark' : ''}`}
+                  >
                     <i className="fas fa-cloud-upload-alt"></i> Выберите файлы или перетащите их сюда
                   </label>
                 </div>
                 
                 {uploadedFiles.length > 0 && (
-                  <div className="table-container">
+                  <div className={`table-container ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                     <table className="payment-table">
                       <thead>
                         <tr>
@@ -684,7 +687,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
                         {uploadedFiles.map((file) => (
                           <tr key={file.id}>
                             <td>
-                              <div className="file-info">
+                              <div className={`file-info ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                                 <i className="fas fa-file file-icon"></i>
                                 <span className="filename-text" title={file.name}>{file.name}</span>
                               </div>
@@ -732,8 +735,8 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
 
       {/* Universal Selection Modal */}
       <div className={`modal-overlay ${showModal ? 'active' : ''}`}>
-        <div className="modal-content">
-          <div className="modal-header">
+        <div className={`modal-content ${theme?.mode === 'dark' ? 'dark' : 'light'}`}>
+          <div className={`modal-header ${theme?.mode === 'dark' ? 'dark' : ''}`}>
             <h3>
               {modalType === 'cfo' ? 'Выбрать ЦФО' : 
                modalType === 'project' ? 'Выбрать Проект' : 'Выбрать элемент'}
@@ -748,7 +751,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
           </div>
           <input 
             type="text" 
-            className="modal-search-input" 
+            className={`modal-search-input ${theme?.mode === 'dark' ? 'dark' : 'light'}`}
             placeholder="Поиск..."
             value={modalSearchTerm}
             onChange={(e) => handleModalSearch(e.target.value)}
@@ -758,7 +761,7 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
               <div 
                 key={item.guid || item.id}
                 onClick={() => handleModalSelect(item)}
-                className="modal-result-item"
+                className={`modal-result-item ${theme?.mode === 'dark' ? 'dark' : ''}`}
               >
                 {item.name}
               </div>

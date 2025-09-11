@@ -449,7 +449,7 @@ const PaymentCreationForm = ({ currentUser, onBack, onSave, theme = { mode: 'lig
                                 type="number"
                                 value={payment.amount}
                                 onChange={(e) => updatePaymentAmount(payment.id, e.target.value)}
-                                className="input-3d w-full text-right font-bold text-sm"
+                                className={`input-3d w-full text-right font-bold text-sm ${theme?.mode === 'dark' ? 'dark' : ''}`}
                               />
                             </td>
                           </tr>

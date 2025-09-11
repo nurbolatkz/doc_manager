@@ -2117,20 +2117,11 @@ button {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
-.main-content.dark .payment-table {
-  background-color: #1f2937;
-}
-
 .payment-table th,
 .payment-table td {
   padding: 1rem;
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
-}
-
-.main-content.dark .payment-table th,
-.main-content.dark .payment-table td {
-  border-bottom: 1px solid #4b5563;
 }
 
 .payment-table th {
@@ -2142,18 +2133,9 @@ button {
   background-color: #f9fafb;
 }
 
-.main-content.dark .payment-table th {
-  color: #9ca3af;
-  background-color: #374151;
-}
-
 .payment-table td {
   color: #1f2937;
   font-size: 0.875rem;
-}
-
-.main-content.dark .payment-table td {
-  color: #f3f4f6;
 }
 
 .payment-table tr:last-child td {
@@ -2165,6 +2147,29 @@ button {
 }
 
 .main-content.dark .payment-table tr:hover td {
+  background-color: #374151;
+}
+
+/* Table container dark mode support */
+.table-container.dark .payment-table {
+  background-color: #1f2937;
+}
+
+.table-container.dark .payment-table th,
+.table-container.dark .payment-table td {
+  border-bottom: 1px solid #4b5563;
+}
+
+.table-container.dark .payment-table th {
+  color: #9ca3af;
+  background-color: #374151;
+}
+
+.table-container.dark .payment-table td {
+  color: #f3f4f6;
+}
+
+.table-container.dark .payment-table tr:hover td {
   background-color: #374151;
 }
 
@@ -2357,7 +2362,8 @@ button {
   font-size: 1.25rem;
 }
 
-.main-content.dark .file-icon {
+.main-content.dark .file-icon,
+.file-icon.dark {
   color: #9ca3af;
 }
 
@@ -2572,9 +2578,50 @@ body.dark .sigex-initial .form-control {
   border: 1px solid #e5e7eb;
 }
 
-body.dark .file-info {
+body.dark .file-info,
+.file-info.dark {
   background-color: #374151;
   border-color: #4b5563;
+}
+
+/* File Upload Styles */
+.file-upload-container {
+  margin: 1rem 0;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-upload-label {
+  display: block;
+  padding: 1rem 1.5rem;
+  background-color: #f9fafb;
+  border: 2px dashed #d1d5db;
+  border-radius: 0.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.file-upload-label:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+body.dark .file-upload-label,
+.file-upload-label.dark {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #d1d5db;
+}
+
+body.dark .file-upload-label:hover,
+.file-upload-label.dark:hover {
+  background-color: #4b5563;
+  border-color: #6b7280;
 }
 
 .sigex-actions {
@@ -2640,6 +2687,7 @@ body.dark .progress-bar {
   border-radius: 5px;
   transition: width 0.3s ease;
 }
+
 
 .progress-text {
   position: absolute;
