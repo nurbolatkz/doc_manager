@@ -592,35 +592,38 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
                 </div>
                 
                 {uploadedFiles.length > 0 && (
-                  <div className="uploaded-files-table">
-                    <div className="table-container">
-                      <table className="table table-bordered responsive-table">
-                        <thead>
-                          <tr>
-                            <th>Имя файла</th>
-                            <th>Размер</th>
-                            <th>Действия</th>
+                  <div className="table-container">
+                    <table className="payment-table">
+                      <thead>
+                        <tr>
+                          <th>Имя файла</th>
+                          <th>Размер</th>
+                          <th>Действия</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {uploadedFiles.map((file) => (
+                          <tr key={file.id}>
+                            <td>
+                              <div className="file-info">
+                                <i className="fas fa-file file-icon"></i>
+                                <span className="filename-text" title={file.name}>{file.name}</span>
+                              </div>
+                            </td>
+                            <td>{formatFileSize(file.size)}</td>
+                            <td>
+                              <button 
+                                type="button" 
+                                className="btn btn-danger btn-sm"
+                                onClick={() => removeFile(file.id)}
+                              >
+                                <i className="fas fa-trash"></i>
+                              </button>
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {uploadedFiles.map((file) => (
-                            <tr key={file.id}>
-                              <td data-label="Имя файла">{file.name}</td>
-                              <td data-label="Размер">{formatFileSize(file.size)}</td>
-                              <td data-label="Действия">
-                                <button 
-                                  type="button" 
-                                  className="btn btn-danger btn-sm"
-                                  onClick={() => removeFile(file.id)}
-                                >
-                                  <i className="fas fa-trash"></i>
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>

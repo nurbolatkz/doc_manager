@@ -1084,8 +1084,8 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
                 </div>
                 
                 {uploadedFiles.length > 0 && (
-                  <div className="uploaded-files-table">
-                    <table className="table table-bordered">
+                  <div className="table-container">
+                    <table className="payment-table">
                       <thead>
                         <tr>
                           <th>Имя файла</th>
@@ -1096,7 +1096,12 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
                       <tbody>
                         {uploadedFiles.map((file) => (
                           <tr key={file.id}>
-                            <td>{file.name}</td>
+                            <td>
+                              <div className="file-info">
+                                <i className="fas fa-file file-icon"></i>
+                                <span className="filename-text" title={file.name}>{file.name}</span>
+                              </div>
+                            </td>
                             <td>{formatFileSize(file.size)}</td>
                             <td>
                               <button 
