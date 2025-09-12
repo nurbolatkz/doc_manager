@@ -1,5 +1,6 @@
 import React from 'react';
 import './Dashboard_Restructured.css';
+import './PaymentCreationForm.css';
 
 const PaymentEdit = ({ 
   formData, 
@@ -49,12 +50,12 @@ const PaymentEdit = ({
             type="button"
             onClick={fetchPaymentLines}
             disabled={loadingPaymentLines}
-            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50"
+            className="btn-3d btn-primary"
           >
             {loadingPaymentLines ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
             ) : (
-              <i className="fas fa-sync-alt"></i>
+              <i className="fas fa-sync-alt mr-2"></i>
             )}
             <span>Заполнить</span>
           </button>
