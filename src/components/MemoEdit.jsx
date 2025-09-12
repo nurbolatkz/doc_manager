@@ -204,7 +204,7 @@ const MemoEdit = ({
               onChange={handleFileUpload}
               multiple
             />
-            <label htmlFor="file-upload" className="file-upload-label">
+            <label htmlFor="file-upload" className={`file-upload-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>
               <i className="fas fa-cloud-upload-alt"></i> Выберите файлы или перетащите их сюда
             </label>
           </div>
