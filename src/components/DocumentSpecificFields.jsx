@@ -78,37 +78,37 @@ const DocumentSpecificFields = ({ documentDetail, theme, formatDate, formatCurre
                 <i className="fas fa-table"></i>
                 Запланированные платежи
               </div>
-              <div className="table-container">
-                <table className={`payment-table ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+              <div className={`table-container ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                <table className="payment-table">
                   <thead>
                     <tr>
-                      <th className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>№</th>
-                      <th className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>Заявка</th>
-                      <th className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>Организация</th>
-                      <th className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>Проект</th>
-                      <th className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>Валюта</th>
-                      <th className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>Сумма по заявке</th>
-                      <th className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>Дата платежа</th>
-                      <th className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>Сумма</th>
+                      <th>№</th>
+                      <th>Заявка</th>
+                      <th>Организация</th>
+                      <th>Проект</th>
+                      <th>Валюта</th>
+                      <th>Сумма по заявке</th>
+                      <th>Дата платежа</th>
+                      <th>Сумма</th>
                     </tr>
                   </thead>
                   <tbody>
                     {documentDetail.paymentLines && documentDetail.paymentLines.length > 0 ? (
                       documentDetail.paymentLines.map((payment, index) => (
                         <tr key={index}>
-                          <td className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{index + 1}</td>
-                          <td className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{payment.Заявка || 'Не указано'}</td>
-                          <td className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{payment.Организация || 'Не указано'}</td>
-                          <td className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{payment.Проект || 'Не указано'}</td>
-                          <td className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{payment.Валюта || 'Не указано'}</td>
-                          <td className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{payment.СуммаПоЗаявке?.toString() || 'Не указано'}</td>
-                          <td className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{formatDate(payment.ДатаПлатежа) || 'Не указано'}</td>
-                          <td className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{payment.Сумма?.toString() || 'Не указано'}</td>
+                          <td>{index + 1}</td>
+                          <td>{payment.Заявка || 'Не указано'}</td>
+                          <td>{payment.Организация || 'Не указано'}</td>
+                          <td>{payment.Проект || 'Не указано'}</td>
+                          <td>{payment.Валюта || 'Не указано'}</td>
+                          <td>{payment.СуммаПоЗаявке?.toString() || 'Не указано'}</td>
+                          <td>{formatDate(payment.ДатаПлатежа) || 'Не указано'}</td>
+                          <td>{payment.Сумма?.toString() || 'Не указано'}</td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={8} className={`text-center ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                        <td colSpan={8} className="text-center">
                           Нет запланированных платежей
                         </td>
                       </tr>
