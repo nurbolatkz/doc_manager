@@ -967,8 +967,8 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       }
     }
     
-    // Check document state - only allow sending when document is prepared
-    if (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined')  {
+    // Check document state - only allow sending when document is prepared, declined, or rejected
+    if (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined' && documentDetail.status !== 'rejected')  {
       showCustomMessage('Document is not in a state that allows sending to route', 'warning');
       return;
     }
@@ -1339,7 +1339,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                   sendingToRoute || 
                   routeSent || 
                   !documentDetail || 
-                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined') ||
+                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined' && documentDetail.status !== 'rejected') ||
                   (routeType === 'free' && routeSteps.length === 0 && 
                    Object.keys(selectedUsers).length !== routeTitles.length)
                 }
@@ -1407,7 +1407,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 onClick={() => handleActionButtonClick('edit')}
                 disabled={
                   !documentDetail || 
-                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'rejected')
+                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined' && documentDetail.status !== 'rejected')
                 }
               >
                 <i className="fas fa-edit"></i>
@@ -1420,7 +1420,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 disabled={
                   deleting ||
                   !documentDetail || 
-                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'rejected')
+                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined' && documentDetail.status !== 'rejected')
                 }
               >
                 {deleting ? (
