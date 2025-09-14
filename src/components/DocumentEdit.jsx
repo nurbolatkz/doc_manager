@@ -13,6 +13,7 @@ import {
   updateDocumentFiles as updateDocumentFilesAPI
 } from '../services/fetchManager';
 import { showCustomMessage } from '../utils';
+import { t } from '../utils/messages';
 import { sanitizeInput, sanitizeFormData } from '../utils/inputSanitization';
 import MemoEdit from './MemoEdit';
 import PaymentEdit from './PaymentEdit';
@@ -1141,6 +1142,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         };
         
         // Send request to backend
+        console.log("sanitizedFormData:", sanitizedFormData);
         const response = await apiRequest("register_document_action", requestBody, token);
         
         if (response && response.success === 1) {

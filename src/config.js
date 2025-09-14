@@ -2,8 +2,7 @@ const API_BASE = process.env.NODE_ENV === 'production'
     ? '/api/'
     : 'http://localhost:8000/api/';
 
-console.log("REACT_APP_ADMIN_USERNAME:", process.env.REACT_APP_ADMIN_USERNAME);
-console.log("REACT_APP_ADMIN_PASSWORD:", process.env.REACT_APP_ADMIN_PASSWORD);
+// Credential logging removed for security
 const config = {
   // Use proxy for development, direct URL for production
 backend_1c_url: API_BASE,

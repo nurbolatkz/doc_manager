@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Dashboard_Restructured.css';
 import { showCustomMessage } from '../utils';
+import { t } from '../utils/messages';
 import { fetchDocumentTypes, fetchOrganizations, fetchProjects, fetchCFOs, apiRequest } from '../services/fetchManager';
 
 const MemoForm = ({ currentUser, onBack, onSave, theme }) => {

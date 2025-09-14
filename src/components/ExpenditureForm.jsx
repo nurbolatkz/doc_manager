@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Dashboard_Restructured.css';
 import { showCustomMessage } from '../utils';
+import { t } from '../utils/messages';
 import { apiRequest, fetchOrganizations, fetchProjects, fetchCFOs, fetchDdsArticles, fetchBudgetArticles, fetchCounterparties, fetchContracts } from '../services/fetchManager';
 
 const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {

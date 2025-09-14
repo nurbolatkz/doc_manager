@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import config from '../config';
 import { apiRequest } from '../services/fetchManager';
 import { sanitizeInput } from '../utils/inputSanitization';
+import { t } from '../utils/messages';
 import './Login.css';
 
 // Helper function to properly encode UTF-8 strings for Basic Auth
@@ -72,11 +73,8 @@ const Login = ({ onLogin }) => {
       const cleanPassword = sanitizeInput(password);
       
       // Create the Basic Auth header with UTF-8 safe encoding
-      console.log('Admin username from config:', config.username_admin);
-      console.log('Admin password from config:', config.username_admin_password);
       const userpass = `${config.username_admin}:${config.username_admin_password}`;
       const basicAuth = utf8ToBase64(userpass);
-      console.log('Basic Auth string:', userpass);
 
       // Create request body for login
       const requestBody = {
@@ -101,10 +99,6 @@ const Login = ({ onLogin }) => {
         // Crucial for sending and receiving cookies
         credentials: 'include',
       };
-
-      console.log("Sending login request to backend with request body:", requestBody);
-      console.log("Backend URL:", config.backend_1c_url);
-      console.log("Basic Auth header:", basicAuth);
 
       // Make the API call to authenticate user
       const response = await fetch(config.backend_1c_url, fetchOptions);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Save, X, FileText, Calendar, Hash, Building2, CreditCard, CheckCircle, AlertTriangle } from 'lucide-react';
 import { apiRequest } from '../services/fetchManager';
+import { t } from '../utils/messages';
 import './PaymentCreationForm.css';
 
 const PaymentCreationForm = ({ currentUser, onBack, onSave, theme = { mode: 'light' } }) => {

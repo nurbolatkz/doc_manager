@@ -1,10 +1,16 @@
+// Import translation function
+import { t } from './messages';
+
 // Keep track of active alerts to prevent duplicates
 const activeAlerts = new Map();
 
 // Custom alert function
 export const showCustomMessage = (message, type = 'info') => {
+    // Translate the message if it's in our translation dictionary
+    const translatedMessage = t(message);
+    
     // Create a unique key for this alert based on message and type
-    const alertKey = `${message}-${type}`;
+    const alertKey = `${translatedMessage}-${type}`;
     
     // Check if an alert with the same message and type is already active
     if (activeAlerts.has(alertKey)) {
@@ -80,7 +86,7 @@ export const showCustomMessage = (message, type = 'info') => {
                       font-size: 18px; 
                       margin-top: 2px; 
                       flex-shrink: 0;"></i>
-            <div style="flex: 1; font-weight: 500;">${message}</div>
+            <div style="flex: 1; font-weight: 500;">${translatedMessage}</div>
             <button type="button" 
                     class="btn-close" 
                     data-bs-dismiss="alert" 
