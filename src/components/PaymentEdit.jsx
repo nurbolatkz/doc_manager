@@ -12,7 +12,8 @@ const PaymentEdit = ({
   handlePaymentSelection,
   toggleSelectAllPayments,
   updatePaymentAmount,
-  updatePaymentDate
+  updatePaymentDate,
+  fetchAllPaymentLines // Add the new function
 }) => {
   return (
     <>
@@ -49,7 +50,7 @@ const PaymentEdit = ({
           <label>Платежи:</label>
           <button 
             type="button"
-            onClick={fetchPaymentLines}
+            onClick={fetchAllPaymentLines || fetchPaymentLines} // Use fetchAllPaymentLines if available, otherwise fallback to fetchPaymentLines
             disabled={loadingPaymentLines}
             className="btn-3d btn-primary"
           >
