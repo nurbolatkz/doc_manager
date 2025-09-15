@@ -19,6 +19,7 @@ const ExpenditureEdit = ({
   existingAttachments,
   loadingAttachments
 }) => {
+  console.log('ExpenditureEdit formData:', formData);
   return (
     <>
       {/* Basic Information Section */}
@@ -49,21 +50,7 @@ const ExpenditureEdit = ({
                 onChange={(e) => handleInputChange('operationType', e.target.value)}
                 className={`form-control ${theme?.mode === 'dark' ? 'dark' : 'light'}`}
               >
-                <option value="Возврат денежных средств покупателю">Возврат денежных средств покупателю</option>
-                <option value="Выдача денежных средств подотчетнику">Выдача денежных средств подотчетнику</option>
-                <option value="Перечисление заработной платы">Перечисление заработной платы</option>
-                <option value="Перечисление налога">Перечисление налога</option>
-                <option value="Перечисление НДС с изменённым сроком уплаты">Перечисление НДС с изменённым сроком уплаты</option>
-                <option value="Перечисление пенсионных взносов">Перечисление пенсионных взносов</option>
-                <option value="Перечисление по исполнительным листам">Перечисление по исполнительным листам</option>
-                <option value="Перечисление социальных отчислений">Перечисление социальных отчислений</option>
-                <option value="Прочие расчёты с контрагентами">Прочие расчёты с контрагентами</option>
-                <option value="Расчёты по кредитам и займам с работниками">Расчёты по кредитам и займам с работниками</option>
-                <option value="Прочий расход денежных средств">Прочий расход денежных средств</option>
-                <option value="Расчёты по кредитам и займам с контрагентами">Расчёты по кредитам и займам с контрагентами</option>
-                <option value="Расчёты по доходу от разовых выплат с контрагентами">Расчёты по доходу от разовых выплат с контрагентами</option>
-                <option value="Оплата структурному подразделению">Оплата структурному подразделению</option>
-                <option value="Перевод на другой счёт">Перевод на другой счёт</option>
+                
                 <option value="Оплата поставщику">Оплата поставщику</option>
               </select>
             </div>

@@ -59,6 +59,15 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
   const parseDateString = (dateString) => {
     if (!dateString) return null;
     
+    // Handle format "dd.mm.yyyy" (date only)
+    if (dateString.includes('.') && !dateString.includes(':')) {
+      const [day, month, year] = dateString.split('.');
+      // Check if we have valid date components
+      if (day && month && year) {
+        return new Date(year, month - 1, day);
+      }
+    }
+    
     // Handle format "dd.mm.yyyy hh:mm:ss"
     if (dateString.includes('.') && dateString.includes(':')) {
       const [datePart, timePart] = dateString.split(' ');
@@ -198,12 +207,26 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 amount: detailData.data.amount !== undefined ? 
                   parseFloat(detailData.data.amount) : documentDetail.amount,
                 currency: detailData.data.currency || documentDetail.currency,
-                 documentTypeValue: detailData.data.documentTypeValue || documentDetail.documentTypeValue,
                 uploadDate: detailData.data.date || documentDetail.uploadDate,
                 // Use documentState if available (English key), otherwise fallback to status
                 status: detailData.data.documentState || detailData.data.status || documentDetail.status,
                 // Include paymentLines for payment documents
-                paymentLines: detailData.data.paymentLines || documentDetail.paymentLines || []
+                paymentLines: detailData.data.paymentLines || documentDetail.paymentLines || [],
+                
+                // For expenditure documents, ensure we have the date field properly mapped
+                date: documentDetail.documentType === 'expenditure' ? 
+                  (detailData.data.expenseDate || detailData.data.date || documentDetail.date) : 
+                  (detailData.data.date || documentDetail.date),
+                
+                // Save GUIDs for all selectable fields to ensure they're available in edit form
+                organizationGuid: detailData.data.organizationGuid || detailData.data.organization?.guid || documentDetail.organizationGuid || '',
+                projectGuid: detailData.data.projectGuid || detailData.data.project?.guid || documentDetail.projectGuid || '',
+                cfoGuid: detailData.data.cfoGuid || detailData.data.cfo?.guid || documentDetail.cfoGuid || '',
+                documentTypeGuid: detailData.data.documentTypeGuid || detailData.data.documentTypeValue?.guid || documentDetail.documentTypeGuid || '',
+                ddsArticleGuid: detailData.data.ddsArticleGuid || detailData.data.ddsArticle?.guid || documentDetail.ddsArticleGuid || '',
+                budgetArticleGuid: detailData.data.budgetArticleGuid || detailData.data.budgetArticle?.guid || documentDetail.budgetArticleGuid || '',
+                counterpartyGuid: detailData.data.counterpartyGuid || detailData.data.counterparty?.guid || documentDetail.counterpartyGuid || '',
+                contractGuid: detailData.data.contractGuid || detailData.data.contract?.guid || documentDetail.contractGuid || ''
               };
               
               // Log paymentLines to console when fetched, regardless of content
@@ -265,7 +288,22 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                   // Use documentState if available (English key), otherwise fallback to status
                   status: detailData.data.documentState || detailData.data.status || documentDetail.status,
                   // Include paymentLines for payment documents
-                  paymentLines: detailData.data.paymentLines || documentDetail.paymentLines || []
+                  paymentLines: detailData.data.paymentLines || documentDetail.paymentLines || [],
+                  
+                  // For expenditure documents, ensure we have the date field properly mapped
+                  date: documentDetail.documentType === 'expenditure' ? 
+                    (detailData.data.expenseDate || detailData.data.date || documentDetail.date) : 
+                    (detailData.data.date || documentDetail.date),
+                  
+                  // Save GUIDs for all selectable fields to ensure they're available in edit form
+                  organizationGuid: detailData.data.organizationGuid || detailData.data.organization?.guid || documentDetail.organizationGuid || '',
+                  projectGuid: detailData.data.projectGuid || detailData.data.project?.guid || documentDetail.projectGuid || '',
+                  cfoGuid: detailData.data.cfoGuid || detailData.data.cfo?.guid || documentDetail.cfoGuid || '',
+                  documentTypeGuid: detailData.data.documentTypeGuid || detailData.data.documentTypeValue?.guid || documentDetail.documentTypeGuid || '',
+                  ddsArticleGuid: detailData.data.ddsArticleGuid || detailData.data.ddsArticle?.guid || documentDetail.ddsArticleGuid || '',
+                  budgetArticleGuid: detailData.data.budgetArticleGuid || detailData.data.budgetArticle?.guid || documentDetail.budgetArticleGuid || '',
+                  counterpartyGuid: detailData.data.counterpartyGuid || detailData.data.counterparty?.guid || documentDetail.counterpartyGuid || '',
+                  contractGuid: detailData.data.contractGuid || detailData.data.contract?.guid || documentDetail.contractGuid || ''
                 };
                 
                 // Log paymentLines to console when fetched, regardless of content
@@ -327,7 +365,22 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 // Use documentState if available (English key), otherwise fallback to status
                 status: detailData.data.documentState || detailData.data.status || documentDetail.status,
                 // Include paymentLines for payment documents
-                paymentLines: detailData.data.paymentLines || documentDetail.paymentLines || []
+                paymentLines: detailData.data.paymentLines || documentDetail.paymentLines || [],
+                
+                // For expenditure documents, ensure we have the date field properly mapped
+                date: documentDetail.documentType === 'expenditure' ? 
+                  (detailData.data.expenseDate || detailData.data.date || documentDetail.date) : 
+                  (detailData.data.date || documentDetail.date),
+                
+                // Save GUIDs for all selectable fields to ensure they're available in edit form
+                organizationGuid: detailData.data.organizationGuid || detailData.data.organization?.guid || documentDetail.organizationGuid || '',
+                projectGuid: detailData.data.projectGuid || detailData.data.project?.guid || documentDetail.projectGuid || '',
+                cfoGuid: detailData.data.cfoGuid || detailData.data.cfo?.guid || documentDetail.cfoGuid || '',
+                documentTypeGuid: detailData.data.documentTypeGuid || detailData.data.documentTypeValue?.guid || documentDetail.documentTypeGuid || '',
+                ddsArticleGuid: detailData.data.ddsArticleGuid || detailData.data.ddsArticle?.guid || documentDetail.ddsArticleGuid || '',
+                budgetArticleGuid: detailData.data.budgetArticleGuid || detailData.data.budgetArticle?.guid || documentDetail.budgetArticleGuid || '',
+                counterpartyGuid: detailData.data.counterpartyGuid || detailData.data.counterparty?.guid || documentDetail.counterpartyGuid || '',
+                contractGuid: detailData.data.contractGuid || detailData.data.contract?.guid || documentDetail.contractGuid || ''
               };
               // Log paymentLines to console when fetched, regardless of content
               // console.log('Document type:', documentDetail.documentType);
@@ -792,8 +845,9 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         break;
       case 'edit':
         // Call the onEdit callback to switch to edit mode in the parent component
+        // Pass the detailed document data
         if (onEdit) {
-          onEdit();
+          onEdit(documentDetail);
         }
         break;
       default:

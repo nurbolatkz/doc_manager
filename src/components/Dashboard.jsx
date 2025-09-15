@@ -512,7 +512,13 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
               // Refresh the document list after deleting a document
               loadDashboardData();
             }}
-            onEdit={() => setIsEditingDocument(true)} // Add this callback
+            onEdit={(detailedDocument) => {
+              // Update the selectedDocument with the detailed data if provided
+              if (detailedDocument) {
+                setSelectedDocument(detailedDocument);
+              }
+              setIsEditingDocument(true);
+            }}
             theme={theme}
           />
         ) : showCreateForm === 'memo' ? (

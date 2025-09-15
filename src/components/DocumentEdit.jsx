@@ -85,6 +85,46 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   const [loadingContracts, setLoadingContracts] = useState(false);
   const [loadingPaymentLines, setLoadingPaymentLines] = useState(false); // For payment lines loading
 
+  // Helper function to format date for input type="date" field
+  const formatInputDate = (dateString) => {
+    if (!dateString) return '';
+    
+    let parsedDate = null;
+    
+    // Handle format "dd.mm.yyyy" (date only)
+    if (dateString.includes('.') && !dateString.includes(':')) {
+      const [day, month, year] = dateString.split('.');
+      if (day && month && year) {
+        parsedDate = new Date(year, month - 1, day);
+      }
+    }
+    // Handle format "dd.mm.yyyy hh:mm:ss"
+    else if (dateString.includes('.') && dateString.includes(':')) {
+      const [datePart, timePart] = dateString.split(' ');
+      const [day, month, year] = datePart.split('.');
+      // We don't need the time part for input type="date", so we ignore it
+      if (day && month && year) {
+        parsedDate = new Date(year, month - 1, day);
+      }
+    }
+    // Try to parse as standard date string
+    else {
+      parsedDate = new Date(dateString);
+    }
+    
+    // Return empty string if date is invalid
+    if (!parsedDate || isNaN(parsedDate.getTime())) {
+      return '';
+    }
+    
+    // Format as YYYY-MM-DD for input type="date"
+    const year = parsedDate.getFullYear();
+    const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(parsedDate.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  };
+
   // Function to fetch existing attachments
   const fetchExistingAttachments = async () => {
     if (!document.id || !document.documentType) {
@@ -183,55 +223,94 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   useEffect(() => {
     if (document) {
       console.log('Initializing form with', document.documentType, 'document');
+      console.log('Document data:', document);
+      console.log('Document GUIDs:', {
+        organizationGuid: document.organizationGuid,
+        projectGuid: document.projectGuid,
+        cfoGuid: document.cfoGuid,
+        ddsArticleGuid: document.ddsArticleGuid,
+        budgetArticleGuid: document.budgetArticleGuid,
+        counterpartyGuid: document.counterpartyGuid,
+        contractGuid: document.contractGuid
+      });
+      
+      // Common fields that should be initialized for all document types
+      const commonFields = {
+        documentType: document.documentType || '',
+        documentTypeGuid: document.documentTypeGuid || document.documentTypeValue?.guid || '',
+        organizationGuid: document.organizationGuid || document.organization?.guid || '',
+        cfoGuid: document.cfoGuid || document.cfo?.guid || '',
+        projectGuid: document.projectGuid || document.project?.guid || '',
+        cfo: document.cfo || document.cfo?.name || '',
+        project: document.project || document.project?.name || ''
+      };
+      
+      console.log('Common fields:', commonFields);
       
       if (document.documentType === 'memo') {
         setFormData(prev => ({
           ...prev,
+          ...commonFields,
           text: document.message || '',
-          organizationGuid: document.organizationGuid || '',
-          cfoGuid: document.cfoGuid || '',
-          projectGuid: document.projectGuid || '',
-          cfo: document.cfo || '',
-          project: document.project || '',
-          documentType: document.documentType || '',
-          documentTypeGuid: document.documentTypeGuid || ''
+          organization: document.organization || document.organization?.name || '',
+          organizationGuid: document.organizationGuid || document.organization?.guid || '',
+          cfo: document.cfo || document.cfo?.name || '',
+          cfoGuid: document.cfoGuid || document.cfo?.guid || '',
+          project: document.project || document.project?.name || '',
+          projectGuid: document.projectGuid || document.project?.guid || ''
         }));
       } else if (document.documentType === 'expenditure') {
-        setFormData(prev => ({
-          ...prev,
-          date: document.date || new Date().toISOString().split('T')[0],
+        // For expenditure documents, the date field might be called 'expenseDate' instead of 'date'
+        const documentDate = document.date || document.expenseDate || new Date().toISOString().split('T')[0];
+        console.log('Document date:', documentDate);
+        const formattedDate = formatInputDate(documentDate);
+        console.log('Formatted date:', formattedDate);
+        
+        const expenditureFields = {
+          ...commonFields,
+          date: formattedDate,
           currency: document.currency || 'KZT',
           amount: document.amount || '',
           paymentForm: document.paymentForm || 'Наличные',
           operationType: document.operationType || 'Возврат денежных средств покупателю',
-          organization: document.organization || '',
-          organizationGuid: document.organizationGuid || '',
           purposeText: document.purposeText || '',
-          ddsArticle: document.ddsArticle || '',
-          ddsArticleGuid: document.ddsArticleGuid || '',
-          budgetArticle: document.budgetArticle || '',
-          budgetArticleGuid: document.budgetArticleGuid || '',
-          project: document.project || '',
-          projectGuid: document.projectGuid || '',
-          cfo: document.cfo || '',
-          cfoGuid: document.cfoGuid || '',
-          counterparty: document.counterparty || '',
-          counterpartyGuid: document.counterpartyGuid || '',
-          contract: document.contract || '',
-          contractGuid: document.contractGuid || '',
-          documentType: document.documentType || '',
-          documentTypeGuid: document.documentTypeGuid || ''
+          organization: document.organization || document.organization?.name || '',
+          organizationGuid: document.organizationGuid || document.organization?.guid || '',
+          project: document.project || document.project?.name || '',
+          projectGuid: document.projectGuid || document.project?.guid || '',
+          cfo: document.cfo || document.cfo?.name || '',
+          cfoGuid: document.cfoGuid || document.cfo?.guid || '',
+          ddsArticle: document.ddsArticle || document.ddsArticle?.name || '',
+          ddsArticleGuid: document.ddsArticleGuid || document.ddsArticle?.guid || '',
+          budgetArticle: document.budgetArticle || document.budgetArticle?.name || '',
+          budgetArticleGuid: document.budgetArticleGuid || document.budgetArticle?.guid || '',
+          counterparty: document.counterparty || document.counterparty?.name || '',
+          counterpartyGuid: document.counterpartyGuid || document.counterparty?.guid || '',
+          contract: document.contract || document.contract?.name || '',
+          contractGuid: document.contractGuid || document.contract?.guid || ''
+        };
+        
+        console.log('Expenditure fields:', expenditureFields);
+        
+        setFormData(prev => ({
+          ...prev,
+          ...expenditureFields
         }));
       } else if (document.documentType === 'payment') {
         setFormData(prev => ({
           ...prev,
+          ...commonFields,
           documentNumber: document.number || '',
           documentDate: document.date || new Date().toISOString().split('T')[0],
           payments: document.paymentLines || [],
-          documentType: document.documentType || '',
-          documentTypeGuid: document.documentTypeGuid || '',
           // Initialize selected payments
-          selectedPayments: document.paymentLines ? document.paymentLines.map((_, index) => index + 1) : []
+          selectedPayments: document.paymentLines ? document.paymentLines.map((_, index) => index + 1) : [],
+          organization: document.organization || document.organization?.name || '',
+          organizationGuid: document.organizationGuid || document.organization?.guid || '',
+          project: document.project || document.project?.name || '',
+          projectGuid: document.projectGuid || document.project?.guid || '',
+          cfo: document.cfo || document.cfo?.name || '',
+          cfoGuid: document.cfoGuid || document.cfo?.guid || ''
         }));
         
         // Fetch payment lines for editing
@@ -629,63 +708,65 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
     }
   };
 
-  // Fetch contracts when counterparty is selected
-  useEffect(() => {
-    const loadContracts = async () => {
-      // Only fetch contracts if a counterparty is selected
-      if (formData.counterpartyGuid) {
-        try {
-          setLoadingContracts(true);
-          const token = (() => {
+  // Fetch contracts for edit form
+  const fetchContractsForEdit = async (counterpartyGuid) => {
+    // Only fetch contracts if a counterparty is selected
+    if (counterpartyGuid) {
+      try {
+        setLoadingContracts(true);
+        const token = (() => {
       try {
         return sessionStorage.getItem('authToken');
       } catch (e) {
         return null;
       }
     })();
-          if (!token) {
-            throw new Error('No authentication token found');
-          }
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
 
-          // Using a sample document ID for the request
-          const sampleDocumentId = 'f10c6dfe-84a4-11f0-8dd9-d8859d41b83b';
-          const response = await fetchContracts(token, sampleDocumentId, formData.counterpartyGuid);
-          
-          if (response && response.data && Array.isArray(response.data)) {
-            // Normalize the data structure to ensure we have the expected properties
-            const normalizedContracts = response.data.map(item => ({
-              ...item,
-              id: item.id || item.guid || item.GUID,
-              guid: item.guid || item.id || item.GUID,
-              name: item.name || item.Наименование || item.title
-            }));
-            setContracts(normalizedContracts);
-          } else {
-            // Fallback to dummy data if API doesn't return expected data
-            setContracts([
-              { id: 1, guid: 'contract-001', name: 'Договор 1' },
-              { id: 2, guid: 'contract-002', name: 'Договор 2' },
-              { id: 3, guid: 'contract-003', name: 'Договор 3' }
-            ]);
-          }
-        } catch (err) {
-          console.error('Error fetching contracts:', err);
-          // Fallback to dummy data on error
+        // Using a sample document ID for the request
+        const sampleDocumentId = 'f10c6dfe-84a4-11f0-8dd9-d8859d41b83b';
+        const response = await fetchContracts(token, sampleDocumentId, counterpartyGuid);
+        
+        if (response && response.data && Array.isArray(response.data)) {
+          // Normalize the data structure to ensure we have the expected properties
+          const normalizedContracts = response.data.map(item => ({
+            ...item,
+            id: item.id || item.guid || item.GUID,
+            guid: item.guid || item.id || item.GUID,
+            name: item.name || item.Наименование || item.title
+          }));
+          setContracts(normalizedContracts);
+        } else {
+          // Fallback to dummy data if API doesn't return expected data
           setContracts([
             { id: 1, guid: 'contract-001', name: 'Договор 1' },
             { id: 2, guid: 'contract-002', name: 'Договор 2' },
             { id: 3, guid: 'contract-003', name: 'Договор 3' }
           ]);
-        } finally {
-          setLoadingContracts(false);
         }
-      } else {
-        // Clear contracts when no counterparty is selected
-        setContracts([]);
+      } catch (err) {
+        console.error('Error fetching contracts:', err);
+        // Fallback to dummy data on error
+        setContracts([
+          { id: 1, guid: 'contract-001', name: 'Договор 1' },
+          { id: 2, guid: 'contract-002', name: 'Договор 2' },
+          { id: 3, guid: 'contract-003', name: 'Договор 3' }
+        ]);
+      } finally {
+        setLoadingContracts(false);
       }
-    };
+    } else {
+      // Clear contracts when no counterparty is selected
+      setContracts([]);
+    }
+  };
 
-    loadContracts();
+  // Fetch contracts when counterparty is selected
+  useEffect(() => {
+    // Call the fetchContractsForEdit function with the current counterpartyGuid
+    fetchContractsForEdit(formData.counterpartyGuid);
   }, [formData.counterpartyGuid]);
 
   const handleInputChange = (field, value) => {
@@ -737,94 +818,154 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
     setModalSearchTerm(value);
   };
 
-  const handleModalSelect = (item) => {
-    switch (modalType) {
-      case 'cfo':
-        setFormData(prev => ({
-          ...prev,
-          cfo: item.name,
-          cfoGuid: item.guid || item.id || item.GUID
-        }));
-        break;
-      case 'project':
-        setFormData(prev => ({
-          ...prev,
-          project: item.name,
-          projectGuid: item.guid || item.id || item.GUID
-        }));
-        break;
-      case 'organization':
-        setFormData(prev => ({
-          ...prev,
-          organization: item.name,
-          organizationGuid: item.guid || item.id || item.GUID
-        }));
-        break;
-      case 'ddsArticle':
-        setFormData(prev => ({
-          ...prev,
-          ddsArticle: item.name,
-          ddsArticleGuid: item.guid || item.id || item.GUID
-        }));
-        break;
-      case 'budgetArticle':
-        setFormData(prev => ({
-          ...prev,
-          budgetArticle: item.name,
-          budgetArticleGuid: item.guid || item.id || item.GUID
-        }));
-        break;
-      case 'counterparty':
-        setFormData(prev => ({
-          ...prev,
-          counterparty: item.name,
-          counterpartyGuid: item.guid || item.id || item.GUID
-        }));
-        break;
-      case 'contract':
-        setFormData(prev => ({
-          ...prev,
-          contract: item.name,
-          contractGuid: item.guid || item.id || item.GUID
-        }));
-        break;
-      default:
-        break;
-    }
-    closeModal();
+  // Function to find an item by GUID in a list of items
+  const findItemByGuid = (items, guid) => {
+    if (!guid || !Array.isArray(items)) return null;
+    return items.find(item => item.guid === guid) || items.find(item => item.id === guid) || null;
   };
 
-  const getFilteredModalData = () => {
-    let data = [];
-    switch (modalType) {
-      case 'cfo':
-        data = cfos;
+  // Function to handle selection in modals with GUID support
+  const handleModalSelect = (item, type) => {
+    console.log('Selecting item:', item, 'for type:', type);
+    
+    // Use the type parameter passed to the function instead of modalType
+    const actualType = type || modalType;
+    
+    switch (actualType) {
+      case 'organization':
+        setFormData(prev => ({
+          ...prev,
+          organization: item.name || item.Наименование || item.title || '',
+          organizationGuid: item.guid || item.id || ''
+        }));
         break;
       case 'project':
-        data = projects;
+        setFormData(prev => ({
+          ...prev,
+          project: item.name || item.Наименование || item.title || '',
+          projectGuid: item.guid || item.id || ''
+        }));
         break;
-      case 'organization':
-        data = organizations;
+      case 'cfo':
+        setFormData(prev => ({
+          ...prev,
+          cfo: item.name || item.Наименование || item.title || '',
+          cfoGuid: item.guid || item.id || ''
+        }));
+        break;
+      case 'documentType':
+        setFormData(prev => ({
+          ...prev,
+          documentType: item.name || item.Наименование || item.title || item.type || '',
+          documentTypeGuid: item.guid || item.id || ''
+        }));
         break;
       case 'ddsArticle':
-        data = ddsArticles;
+        setFormData(prev => ({
+          ...prev,
+          ddsArticle: item.name || item.Наименование || item.title || '',
+          ddsArticleGuid: item.guid || item.id || ''
+        }));
         break;
       case 'budgetArticle':
-        data = budgetArticles;
+        setFormData(prev => ({
+          ...prev,
+          budgetArticle: item.name || item.Наименование || item.title || '',
+          budgetArticleGuid: item.guid || item.id || ''
+        }));
         break;
       case 'counterparty':
-        data = counterparties;
+        setFormData(prev => ({
+          ...prev,
+          counterparty: item.name || item.Наименование || item.title || '',
+          counterpartyGuid: item.guid || item.id || ''
+        }));
+        // Also fetch contracts when counterparty changes
+        fetchContractsForEdit(item.guid || item.id);
         break;
       case 'contract':
-        data = contracts;
+        setFormData(prev => ({
+          ...prev,
+          contract: item.name || item.Наименование || item.title || '',
+          contractGuid: item.guid || item.id || ''
+        }));
         break;
       default:
         break;
     }
     
-    return data.filter(item => 
-      item.name.toLowerCase().includes(modalSearchTerm.toLowerCase())
-    );
+    setShowModal(false);
+    setModalType('');
+    setModalSearchTerm('');
+  };
+
+  // Modified search function that prioritizes GUID matching
+  const searchItems = (items, searchTerm, guid) => {
+    if (!Array.isArray(items)) return [];
+    
+    // If we have a GUID, try to find the exact match first
+    if (guid) {
+      const exactMatch = findItemByGuid(items, guid);
+      if (exactMatch) {
+        return [exactMatch];
+      }
+    }
+    
+    // If no GUID match or no GUID provided, search by name
+    if (!searchTerm) return items;
+    
+    const term = searchTerm.toLowerCase();
+    return items.filter(item => {
+      const name = item.name || item.Наименование || item.title || '';
+      return name.toLowerCase().includes(term);
+    });
+  };
+
+  // Function to get preselected items based on GUIDs
+  const getPreselectedItems = (items, guid) => {
+    if (!guid || !Array.isArray(items)) return [];
+    const item = findItemByGuid(items, guid);
+    return item ? [item] : [];
+  };
+
+  const getFilteredModalData = () => {
+    let data = [];
+    let guid = null;
+    
+    switch (modalType) {
+      case 'cfo':
+        data = cfos;
+        guid = formData.cfoGuid;
+        break;
+      case 'project':
+        data = projects;
+        guid = formData.projectGuid;
+        break;
+      case 'organization':
+        data = organizations;
+        guid = formData.organizationGuid;
+        break;
+      case 'ddsArticle':
+        data = ddsArticles;
+        guid = formData.ddsArticleGuid;
+        break;
+      case 'budgetArticle':
+        data = budgetArticles;
+        guid = formData.budgetArticleGuid;
+        break;
+      case 'counterparty':
+        data = counterparties;
+        guid = formData.counterpartyGuid;
+        break;
+      case 'contract':
+        data = contracts;
+        guid = formData.contractGuid;
+        break;
+      default:
+        break;
+    }
+    
+    return searchItems(data, modalSearchTerm, guid);
   };
 
   const handleFileUpload = async (event) => {
@@ -1165,22 +1306,19 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
               paymentForm: formData.paymentForm,
               operationType: formData.operationType,
               purposeText: formData.purposeText,
-              budgetArticleGuid: formData.budgetArticleGuid,
-              ddsArticleGuid: formData.ddsArticleGuid,
-              contractGuid: formData.contractGuid,
-              counterpartyGuid: formData.counterpartyGuid,
               organizationGuid: formData.organizationGuid,
-              projectGuid: formData.projectGuid,
               cfoGuid: formData.cfoGuid,
-              budgetArticle: formData.budgetArticle,
-              ddsArticle: formData.ddsArticle,
-              contract: formData.contract,
-              counterparty: formData.counterparty,
-              organization: formData.organization,
-              project: formData.project,
+              projectGuid: formData.projectGuid,
+              ddsArticleGuid: formData.ddsArticleGuid,
+              budgetArticleGuid: formData.budgetArticleGuid,
+              counterpartyGuid: formData.counterpartyGuid,
+              contractGuid: formData.contractGuid,
               cfo: formData.cfo,
-              documentType: document.documentType,
-              documentTypeGuid: formData.documentTypeGuid,
+              project: formData.project,
+              ddsArticle: formData.ddsArticle,
+              budgetArticle: formData.budgetArticle,
+              counterparty: formData.counterparty,
+              contract: formData.contract,
               // Preserve the document ID and other important properties
               id: document.id,
               title: document.title,
@@ -1206,13 +1344,22 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       }
     } else if (document.documentType === 'payment') {
       // Validate required fields for payment
+      if (!sanitizedFormData.documentNumber) {
+        showCustomMessage('Пожалуйста, укажите номер документа', 'danger');
+        return;
+      }
+      
+      if (!sanitizedFormData.documentDate) {
+        showCustomMessage('Пожалуйста, укажите дату документа', 'danger');
+        return;
+      }
+      
       if (!sanitizedFormData.selectedPayments || sanitizedFormData.selectedPayments.length === 0) {
-        showCustomMessage('Пожалуйста, выберите хотя бы один платеж', 'danger');
+        showCustomMessage('Пожалуйста, выберите хотя бы одну строку платежа', 'danger');
         return;
       }
       
       try {
-        // Get auth token
         const token = (() => {
       try {
         return sessionStorage.getItem('authToken');
@@ -1224,17 +1371,10 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
           throw new Error('No authentication token found');
         }
         
-        // Filter payments to only include selected ones
-        const selectedPaymentsData = sanitizedFormData.payments.filter(payment => 
+        // Filter selected payments
+        const selectedPaymentLines = sanitizedFormData.payments.filter(payment => 
           sanitizedFormData.selectedPayments.includes(payment.id)
         );
-        
-        // Prepare the payment lines data for the request
-        const paymentLines = selectedPaymentsData.map(payment => ({
-          GUID: payment.guid,
-          amount: payment.amount,
-          paymentDate: payment.paymentDate
-        }));
         
         // Prepare request body according to specification
         const requestBody = {
@@ -1243,7 +1383,13 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
           documentId: document.id,
           action: "update_document_payment",
           type: "payment",
-          paymentLines: paymentLines
+          documentNumber: sanitizedFormData.documentNumber,
+          documentDate: sanitizedFormData.documentDate,
+          paymentLines: selectedPaymentLines.map(payment => ({
+            guid: payment.guid,
+            amount: payment.amount,
+            paymentDate: payment.paymentDate
+          }))
         };
         
         // Send request to backend
@@ -1265,9 +1411,14 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
               ...document,
               number: formData.documentNumber,
               date: formData.documentDate,
-              paymentLines: selectedPaymentsData,
-              documentType: document.documentType,
-              documentTypeGuid: formData.documentTypeGuid,
+              paymentLines: formData.payments.filter(payment => 
+                formData.selectedPayments.includes(payment.id)
+              ).map(payment => ({
+                ...payment,
+                guid: payment.guid,
+                amount: payment.amount,
+                paymentDate: payment.paymentDate
+              })),
               // Preserve the document ID and other important properties
               id: document.id,
               title: document.title,
@@ -1544,7 +1695,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
             {getFilteredModalData().map(item => (
               <div 
                 key={item.guid || item.id}
-                onClick={() => handleModalSelect(item)}
+                onClick={() => handleModalSelect(item, modalType)}
                 className={`modal-result-item ${theme?.mode === 'dark' ? 'dark' : ''}`}
               >
                 {item.name}

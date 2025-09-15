@@ -197,7 +197,7 @@ const DocumentSpecificFields = ({ documentDetail, theme, formatDate, formatCurre
               <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Дата расхода:</span>
-                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{formatDate(documentDetail.expenseDate) || 'Не указано'}</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{formatDate(documentDetail.date) || 'Не указано'}</span>
                 </div>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Вид операции:</span>
