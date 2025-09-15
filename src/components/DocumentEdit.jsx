@@ -15,6 +15,7 @@ import {
 import { showCustomMessage } from '../utils';
 import { t } from '../utils/messages';
 import { sanitizeInput, sanitizeFormData } from '../utils/inputSanitization';
+import { mergeDocumentData, formatDateForInput } from '../utils/documentUtils';
 import MemoEdit from './MemoEdit';
 import PaymentEdit from './PaymentEdit';
 import ExpenditureEdit from './ExpenditureEdit';
@@ -85,45 +86,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   const [loadingContracts, setLoadingContracts] = useState(false);
   const [loadingPaymentLines, setLoadingPaymentLines] = useState(false); // For payment lines loading
 
-  // Helper function to format date for input type="date" field
-  const formatInputDate = (dateString) => {
-    if (!dateString) return '';
-    
-    let parsedDate = null;
-    
-    // Handle format "dd.mm.yyyy" (date only)
-    if (dateString.includes('.') && !dateString.includes(':')) {
-      const [day, month, year] = dateString.split('.');
-      if (day && month && year) {
-        parsedDate = new Date(year, month - 1, day);
-      }
-    }
-    // Handle format "dd.mm.yyyy hh:mm:ss"
-    else if (dateString.includes('.') && dateString.includes(':')) {
-      const [datePart, timePart] = dateString.split(' ');
-      const [day, month, year] = datePart.split('.');
-      // We don't need the time part for input type="date", so we ignore it
-      if (day && month && year) {
-        parsedDate = new Date(year, month - 1, day);
-      }
-    }
-    // Try to parse as standard date string
-    else {
-      parsedDate = new Date(dateString);
-    }
-    
-    // Return empty string if date is invalid
-    if (!parsedDate || isNaN(parsedDate.getTime())) {
-      return '';
-    }
-    
-    // Format as YYYY-MM-DD for input type="date"
-    const year = parsedDate.getFullYear();
-    const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
-    const day = String(parsedDate.getDate()).padStart(2, '0');
-    
-    return `${year}-${month}-${day}`;
-  };
+  // Using imported formatDateForInput function from documentUtils
 
   // Function to fetch existing attachments
   const fetchExistingAttachments = async () => {
@@ -249,7 +212,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       } else if (document.documentType === 'expenditure') {
         // For expenditure documents, the date field might be called 'expenseDate' instead of 'date'
         const documentDate = document.date || document.expenseDate || '';
-        const formattedDate = documentDate ? formatInputDate(documentDate) : '';
+        const formattedDate = documentDate ? formatDateForInput(documentDate) : '';
         
         const expenditureFields = {
           ...commonFields,
@@ -281,7 +244,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         }));
       } else if (document.documentType === 'payment') {
         // Format the document date for input field
-        const formattedDate = document.date ? formatInputDate(document.date) : '';
+        const formattedDate = document.date ? formatDateForInput(document.date) : '';
         
         setFormData(prev => ({
           ...prev,
@@ -889,15 +852,8 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   const searchItems = (items, searchTerm, guid) => {
     if (!Array.isArray(items)) return [];
     
-    // If we have a GUID, try to find the exact match first
-    if (guid) {
-      const exactMatch = findItemByGuid(items, guid);
-      if (exactMatch) {
-        return [exactMatch];
-      }
-    }
-    
-    // If no GUID match or no GUID provided, search by name
+    // Always return all items when in a modal for selection
+    // The GUID is used for pre-selection, not filtering
     if (!searchTerm) return items;
     
     const term = searchTerm.toLowerCase();
@@ -1169,16 +1125,16 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
           // Call onSave with the updated document data
           if (onSave) {
             onSave({
-              ...document,
-              message: formData.text,
-              cfoGuid: formData.cfoGuid,
-              projectGuid: formData.projectGuid,
-              cfo: formData.cfo,
-              project: formData.project,
-              documentType: document.documentType,
-              documentTypeValue: formData.documentType,
-              documentTypeGuid: formData.documentTypeGuid,
-              organizationGuid: formData.organizationGuid,
+              ...document, // Preserve all original document properties
+              message: formData.text || document.message,
+              // Preserve GUIDs if they exist in formData
+              ...(formData.documentTypeGuid && { documentTypeGuid: formData.documentTypeGuid }),
+              ...(formData.projectGuid && { projectGuid: formData.projectGuid }),
+              ...(formData.organizationGuid && { organizationGuid: formData.organizationGuid }),
+              ...(formData.cfoGuid && { cfoGuid: formData.cfoGuid }),
+              // Preserve display names if they exist in formData
+              ...(formData.cfo && { cfo: formData.cfo }),
+              ...(formData.project && { project: formData.project }),
               // Preserve the document ID and other important properties
               id: document.id,
               title: document.title,
@@ -1190,6 +1146,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
               canReject: document.canReject,
               CanSendToRoute: document.CanSendToRoute,
               documentState: document.documentState,
+              status: document.status,
               routeType: document.routeType,
               SubDivsions: document.SubDivsions
             });
@@ -1310,26 +1267,28 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
           // Call onSave with the updated document data
           if (onSave) {
             onSave({
-              ...document,
-              date: formData.date,
-              amount: formData.amount,
-              currency: formData.currency,
-              paymentForm: formData.paymentForm,
-              operationType: formData.operationType,
-              purposeText: formData.purposeText,
-              organizationGuid: formData.organizationGuid,
-              cfoGuid: formData.cfoGuid,
-              projectGuid: formData.projectGuid,
-              ddsArticleGuid: formData.ddsArticleGuid,
-              budgetArticleGuid: formData.budgetArticleGuid,
-              counterpartyGuid: formData.counterpartyGuid,
-              contractGuid: formData.contractGuid,
-              cfo: formData.cfo,
-              project: formData.project,
-              ddsArticle: formData.ddsArticle,
-              budgetArticle: formData.budgetArticle,
-              counterparty: formData.counterparty,
-              contract: formData.contract,
+              ...document, // Preserve all original document properties
+              date: formData.date || document.date,
+              amount: formData.amount || document.amount,
+              currency: formData.currency || document.currency,
+              paymentForm: formData.paymentForm || document.paymentForm,
+              operationType: formData.operationType || document.operationType,
+              purposeText: formData.purposeText || document.purposeText,
+              // Preserve GUIDs if they exist in formData
+              ...(formData.organizationGuid && { organizationGuid: formData.organizationGuid }),
+              ...(formData.cfoGuid && { cfoGuid: formData.cfoGuid }),
+              ...(formData.projectGuid && { projectGuid: formData.projectGuid }),
+              ...(formData.ddsArticleGuid && { ddsArticleGuid: formData.ddsArticleGuid }),
+              ...(formData.budgetArticleGuid && { budgetArticleGuid: formData.budgetArticleGuid }),
+              ...(formData.counterpartyGuid && { counterpartyGuid: formData.counterpartyGuid }),
+              ...(formData.contractGuid && { contractGuid: formData.contractGuid }),
+              // Preserve display names if they exist in formData
+              ...(formData.cfo && { cfo: formData.cfo }),
+              ...(formData.project && { project: formData.project }),
+              ...(formData.ddsArticle && { ddsArticle: formData.ddsArticle }),
+              ...(formData.budgetArticle && { budgetArticle: formData.budgetArticle }),
+              ...(formData.counterparty && { counterparty: formData.counterparty }),
+              ...(formData.contract && { contract: formData.contract }),
               // Preserve the document ID and other important properties
               id: document.id,
               title: document.title,
@@ -1340,6 +1299,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
               canReject: document.canReject,
               CanSendToRoute: document.CanSendToRoute,
               documentState: document.documentState,
+              status: document.status,
               routeType: document.routeType,
               SubDivsions: document.SubDivsions
             });
@@ -1432,31 +1392,28 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
           showCustomMessage('Платежный документ успешно обновлен!', 'success');
           // Call onSave with the updated document data
           if (onSave) {
-            onSave({
-              ...document,
-              number: formData.documentNumber,
-              date: formData.documentDate,
-              paymentLines: formData.payments.filter(payment => 
-                formData.selectedPayments.includes(payment.id)
-              ).map(payment => ({
+            // Prepare the payment lines data
+            const paymentLinesData = formData.payments
+              .filter(payment => formData.selectedPayments.includes(payment.id))
+              .map(payment => ({
                 ...payment,
-                guid: payment.guid,
-                amount: payment.amount,
-                paymentDate: payment.paymentDate
-              })),
-              // Preserve the document ID and other important properties
-              id: document.id,
-              title: document.title,
-              author: document.author,
-              responsible: document.responsible,
-              CanEdit: document.CanEdit,
-              canApprove: document.canApprove,
-              canReject: document.canReject,
-              CanSendToRoute: document.CanSendToRoute,
-              documentState: document.documentState,
-              routeType: document.routeType,
-              SubDivsions: document.SubDivsions
+                guid: payment.guid || payment.GUID,
+                amount: payment.amount !== undefined ? payment.amount : (payment.Сумма || 0),
+                paymentDate: payment.paymentDate || payment.ДатаПлатежа || new Date().toISOString()
+              }));
+            
+            // Merge the updated data with the existing document data
+            const updatedDocument = mergeDocumentData(document, {
+              number: formData.documentNumber || document.number,
+              date: formData.documentDate || document.date,
+              paymentLines: paymentLinesData,
+              // Preserve GUIDs if they exist in formData
+              ...(formData.organizationGuid && { organizationGuid: formData.organizationGuid }),
+              ...(formData.cfoGuid && { cfoGuid: formData.cfoGuid }),
+              ...(formData.projectGuid && { projectGuid: formData.projectGuid })
             });
+            
+            onSave(updatedDocument);
           }
           onBack();
         } else {
@@ -1717,15 +1674,28 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
             onChange={(e) => handleModalSearch(e.target.value)}
           />
           <div className="modal-results-list">
-            {getFilteredModalData().map(item => (
-              <div 
-                key={item.guid || item.id}
-                onClick={() => handleModalSelect(item, modalType)}
-                className={`modal-result-item ${theme?.mode === 'dark' ? 'dark' : ''}`}
-              >
-                {item.name}
-              </div>
-            ))}
+            {getFilteredModalData().map(item => {
+              // Determine if this item is currently selected
+              const isItemSelected = 
+                (modalType === 'organization' && item.guid === formData.organizationGuid) ||
+                (modalType === 'project' && item.guid === formData.projectGuid) ||
+                (modalType === 'cfo' && item.guid === formData.cfoGuid) ||
+                (modalType === 'ddsArticle' && item.guid === formData.ddsArticleGuid) ||
+                (modalType === 'budgetArticle' && item.guid === formData.budgetArticleGuid) ||
+                (modalType === 'counterparty' && item.guid === formData.counterpartyGuid) ||
+                (modalType === 'contract' && item.guid === formData.contractGuid);
+              
+              return (
+                <div 
+                  key={item.guid || item.id}
+                  onClick={() => handleModalSelect(item, modalType)}
+                  className={`modal-result-item ${isItemSelected ? 'selected' : ''} ${theme?.mode === 'dark' ? 'dark' : ''}`}
+                >
+                  {item.name}
+                  {isItemSelected && <i className="fas fa-check selected-icon"></i>}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

@@ -18,6 +18,7 @@ import {
 import { showCustomMessage } from '../utils';
 import { t } from '../utils/messages';
 import { sanitizeInput } from '../utils/inputSanitization';
+import { mergeDocumentData, needsDetailedData, standardizeDocumentType, parseDateString, formatDate } from '../utils/documentUtils';
 import ConfirmModal from './ConfirmModal';
 import SigexQRModal from './SigexQRModal';
 import Attachments from './Attachments';
@@ -25,6 +26,8 @@ import RouteSteps from './RouteSteps';
 import DocumentSpecificFields from './DocumentSpecificFields';
 
 const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
+  console.log('DocumentDetail: Component rendered with document prop:', document);
+  
   const [documentDetail, setDocumentDetail] = useState(document);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -54,6 +57,11 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
   // Route type state
   const [routeType, setRouteType] = useState(null);
   const [loadingRouteType, setLoadingRouteType] = useState(false);
+
+  // Reset fetchAttempted when document changes
+  useEffect(() => {
+    setFetchAttempted(false);
+  }, [document?.id, document?.documentType]);
 
   // Parse date strings in format "dd.mm.yyyy hh:mm:ss"
   const parseDateString = (dateString) => {
@@ -95,7 +103,10 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
   };
 
   const getDocumentTypeText = (type) => {
-    switch (type) {
+    // Fix the typo in documentType using standardizeDocumentType
+    const correctedType = standardizeDocumentType(type);
+    
+    switch (correctedType) {
       case 'payment':
         return 'Заявка на оплату';
       case 'memo':
@@ -109,7 +120,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       case 'payment_request':
         return 'Запрос на оплату';
       default:
-        return type;
+        return correctedType;
     }
   };
 
@@ -153,256 +164,129 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
     }
   };
 
-  // Fetch detailed document data when component mounts
+  // Fetch detailed document data when component mounts or when document prop changes
   useEffect(() => {
+    console.log('DocumentDetail: useEffect triggered with document:', document);
+    
     const fetchDocumentDetail = async () => {
-      // If we already have detailed data, no need to fetch
-      if (documentDetail && documentDetail.documentType && documentDetail.id && !fetchAttempted) {
-        // Check if we have basic info but not detailed info
-        const hasBasicInfo = !!(documentDetail.title || documentDetail.number) && !!documentDetail.uploadDate;
-        let hasDetailedFields = documentDetail.hasOwnProperty('payments') || 
-                                  documentDetail.hasOwnProperty('project') || 
-                                  documentDetail.hasOwnProperty('documentType') || 
-                                  documentDetail.hasOwnProperty('paymentLines') ||
-                                  documentDetail.hasOwnProperty('expenseDate') ||
-                                  documentDetail.hasOwnProperty('author');
-        // console.log('Has basic info:', hasBasicInfo);
-        // console.log('Has detailed fields:', hasDetailedFields);
-        // console.log('Document type:', documentDetail.documentType);
-        // console.log('Current paymentLines:', documentDetail.paymentLines || 'No paymentLines');
-        hasDetailedFields = false; 
-        // Only fetch if we don't have detailed fields yet
-        if (hasBasicInfo && !hasDetailedFields) {
-          setFetchAttempted(true); // Mark that we've attempted to fetch
-          setLoading(true);
-          try {
-            const token = (() => {
-              try {
-                return sessionStorage.getItem('authToken');
-              } catch (e) {
-                return null;
-              }
-            })();
-            if (!token) {
-              showCustomMessage('No authentication token found', 'danger');
-              return;
-            }
-            
-            // Fetch document details based on document type and ID
-            const detailData = await fetchDocumentDetailsByType(
-              token, 
-              documentDetail.documentType, 
-              documentDetail.id
-            );
-            // console.log('Detail Data:', detailData);
-            if (detailData && detailData.data) {
-              // Transform the fetched data to match our Document type
-              const transformedData = {
-                ...documentDetail,
-                ...detailData.data,
-                // Ensure we keep existing properties that might not be in the response
-                id: documentDetail.id,
-                documentType: documentDetail.documentType,
-                title: detailData.data.title || documentDetail.title,
-                amount: detailData.data.amount !== undefined ? 
-                  parseFloat(detailData.data.amount) : documentDetail.amount,
-                currency: detailData.data.currency || documentDetail.currency,
-                uploadDate: detailData.data.date || documentDetail.uploadDate,
-                // Use documentState if available (English key), otherwise fallback to status
-                status: detailData.data.documentState || detailData.data.status || documentDetail.status,
-                // Include paymentLines for payment documents
-                paymentLines: detailData.data.paymentLines || documentDetail.paymentLines || [],
-                
-                // For expenditure documents, ensure we have the date field properly mapped
-                date: documentDetail.documentType === 'expenditure' ? 
-                  (detailData.data.expenseDate || detailData.data.date || documentDetail.date) : 
-                  (detailData.data.date || documentDetail.date),
-                
-                // Save GUIDs for all selectable fields to ensure they're available in edit form
-                organizationGuid: detailData.data.organizationGuid || detailData.data.organization?.guid || documentDetail.organizationGuid || '',
-                projectGuid: detailData.data.projectGuid || detailData.data.project?.guid || documentDetail.projectGuid || '',
-                cfoGuid: detailData.data.cfoGuid || detailData.data.cfo?.guid || documentDetail.cfoGuid || '',
-                documentTypeGuid: detailData.data.documentTypeGuid || detailData.data.documentTypeValue?.guid || documentDetail.documentTypeGuid || '',
-                ddsArticleGuid: detailData.data.ddsArticleGuid || detailData.data.ddsArticle?.guid || documentDetail.ddsArticleGuid || '',
-                budgetArticleGuid: detailData.data.budgetArticleGuid || detailData.data.budgetArticle?.guid || documentDetail.budgetArticleGuid || '',
-                counterpartyGuid: detailData.data.counterpartyGuid || detailData.data.counterparty?.guid || documentDetail.counterpartyGuid || '',
-                contractGuid: detailData.data.contractGuid || detailData.data.contract?.guid || documentDetail.contractGuid || ''
-              };
-              
-              // Log paymentLines to console when fetched, regardless of content
-              // console.log('Document type:', documentDetail.documentType);
-              // console.log('paymentLines fetched:', transformedData.paymentLines);
-              
-              setDocumentDetail(transformedData);
-            } else {
-              showCustomMessage('Failed to load document details', 'danger');
-            }
-          } catch (err) {
-            // Only show one alert per error case
-            console.error('Error fetching document details:', err);
-            showCustomMessage('Failed to load document details: ' + (err.message || 'Unknown error'), 'danger');
-          } finally {
-            setLoading(false);
-          }
-        } else if (hasDetailedFields) {
-          // If we already have detailed fields, mark fetch as attempted to prevent future attempts
-          // console.log('Skipping fetch - already has detailed fields');
-          // Let's still attempt to fetch if it's a payment document without paymentLines
-          if (documentDetail.documentType === 'payment' && !documentDetail.hasOwnProperty('paymentLines')) {
-            // console.log('Forcing fetch for payment document without paymentLines');
-            setFetchAttempted(true); // Mark that we've attempted to fetch
-            setLoading(true);
+      // Always fetch detailed data when opening document detail from anywhere
+      // This ensures we get the most up-to-date information regardless of how we got here
+      if (document && document.documentType && document.id) {
+        console.log('DocumentDetail: Always fetching detailed document data for ID:', document.id);
+        
+        // Fix the typo in documentType
+        const correctedDocumentType = standardizeDocumentType(document.documentType);
+        
+        setDocumentDetail(document); // Set initial document data
+        setFetchAttempted(true); // Mark that we've attempted to fetch
+        setLoading(true);
+        try {
+          const token = (() => {
             try {
-              const token = (() => {
-              try {
-                return sessionStorage.getItem('authToken');
-              } catch (e) {
-                return null;
-              }
-            })();
-              if (!token) {
-                showCustomMessage('No authentication token found', 'danger');
-                return;
-              }
-              
-              // Fetch document details based on document type and ID
-              const detailData = await fetchDocumentDetailsByType(
-                token, 
-                documentDetail.documentType, 
-                documentDetail.id
-              );
-              // console.log('Detail Data (forced fetch):', detailData);
-              if (detailData && detailData.data) {
-                // Transform the fetched data to match our Document type
-                const transformedData = {
-                  ...documentDetail,
-                  ...detailData.data,
-                  // Ensure we keep existing properties that might not be in the response
-                  id: documentDetail.id,
-                  documentType: documentDetail.documentType,
-                  title: detailData.data.title || documentDetail.title,
-                  amount: detailData.data.amount !== undefined ? 
-                    parseFloat(detailData.data.amount) : documentDetail.amount,
-                  currency: detailData.data.currency || documentDetail.currency,
-                  uploadDate: detailData.data.date || documentDetail.uploadDate,
-                  // Use documentState if available (English key), otherwise fallback to status
-                  status: detailData.data.documentState || detailData.data.status || documentDetail.status,
-                  // Include paymentLines for payment documents
-                  paymentLines: detailData.data.paymentLines || documentDetail.paymentLines || [],
-                  
-                  // For expenditure documents, ensure we have the date field properly mapped
-                  date: documentDetail.documentType === 'expenditure' ? 
-                    (detailData.data.expenseDate || detailData.data.date || documentDetail.date) : 
-                    (detailData.data.date || documentDetail.date),
-                  
-                  // Save GUIDs for all selectable fields to ensure they're available in edit form
-                  organizationGuid: detailData.data.organizationGuid || detailData.data.organization?.guid || documentDetail.organizationGuid || '',
-                  projectGuid: detailData.data.projectGuid || detailData.data.project?.guid || documentDetail.projectGuid || '',
-                  cfoGuid: detailData.data.cfoGuid || detailData.data.cfo?.guid || documentDetail.cfoGuid || '',
-                  documentTypeGuid: detailData.data.documentTypeGuid || detailData.data.documentTypeValue?.guid || documentDetail.documentTypeGuid || '',
-                  ddsArticleGuid: detailData.data.ddsArticleGuid || detailData.data.ddsArticle?.guid || documentDetail.ddsArticleGuid || '',
-                  budgetArticleGuid: detailData.data.budgetArticleGuid || detailData.data.budgetArticle?.guid || documentDetail.budgetArticleGuid || '',
-                  counterpartyGuid: detailData.data.counterpartyGuid || detailData.data.counterparty?.guid || documentDetail.counterpartyGuid || '',
-                  contractGuid: detailData.data.contractGuid || detailData.data.contract?.guid || documentDetail.contractGuid || ''
-                };
-                
-                // Log paymentLines to console when fetched, regardless of content
-                // console.log('Document type:', documentDetail.documentType);
-                // console.log('paymentLines fetched (forced):', transformedData.paymentLines);
-                
-                setDocumentDetail(transformedData);
-              } else {
-                showCustomMessage('Failed to load document details', 'danger');
-              }
-            } catch (err) {
-              // Only show one alert per error case
-              console.error('Error fetching document details:', err);
-              showCustomMessage('Failed to load document details: ' + (err.message || 'Unknown error'), 'danger');
-            } finally {
-              setLoading(false);
+              return sessionStorage.getItem('authToken');
+            } catch (e) {
+              return null;
             }
-          } else {
-            setFetchAttempted(true);
+          })();
+          if (!token) {
+            showCustomMessage('No authentication token found', 'danger');
+            return;
           }
-        } else {
-          // If we don't have basic info, we should still try to fetch
-          // console.log('Attempting fetch - missing basic info');
-          setFetchAttempted(true); // Mark that we've attempted to fetch
-          setLoading(true);
-          try {
-            const token = (() => {
-              try {
-                return sessionStorage.getItem('authToken');
-              } catch (e) {
-                return null;
-              }
-            })();
-            if (!token) {
-              showCustomMessage('No authentication token found', 'danger');
-              return;
-            }
+          
+          console.log('DocumentDetail: Calling fetchDocumentDetailsByType with:', {
+            token: token ? 'present' : 'missing',
+            documentType: correctedDocumentType, // Use corrected document type
+            documentId: document.id
+          });
+          
+          // Fetch document details based on document type and ID
+          const detailData = await fetchDocumentDetailsByType(
+            token, 
+            correctedDocumentType, // Use corrected document type
+            document.id
+          );
+          console.log('DocumentDetail: Received detailData from backend:', detailData);
+          // console.log('Detail Data:', detailData);
+          if (detailData && detailData.data) {
+            // Transform the fetched data to match our Document type
+            const transformedData = {
+              ...document,
+              ...detailData.data,
+              // Ensure we keep existing properties that might not be in the response
+              id: document.id,
+              documentType: correctedDocumentType, // Use corrected document type
+              title: detailData.data.title || document.title,
+              amount: detailData.data.amount !== undefined ? 
+                parseFloat(detailData.data.amount) : document.amount,
+              currency: detailData.data.currency || document.currency,
+              uploadDate: detailData.data.date || document.uploadDate,
+              // Use documentState if available (English key), otherwise fallback to status
+              status: detailData.data.documentState || detailData.data.status || document.status,
+              // Include paymentLines for payment documents
+              paymentLines: detailData.data.hasOwnProperty('paymentLines') 
+                ? (detailData.data.paymentLines && Array.isArray(detailData.data.paymentLines) 
+                   ? detailData.data.paymentLines 
+                   : [])
+                : (document.paymentLines && Array.isArray(document.paymentLines) ? document.paymentLines : []),
+              
+              // For expenditure documents, ensure we have the date field properly mapped
+              date: correctedDocumentType === 'expenditure' ? 
+                (detailData.data.expenseDate || detailData.data.date || document.date) : 
+                (detailData.data.date || document.date),
+              
+              // Save GUIDs for all selectable fields to ensure they're available in edit form
+              organizationGuid: detailData.data.organizationGuid || detailData.data.organization?.guid || document.organizationGuid || '',
+              projectGuid: detailData.data.projectGuid || detailData.data.project?.guid || document.projectGuid || '',
+              cfoGuid: detailData.data.cfoGuid || detailData.data.cfo?.guid || document.cfoGuid || '',
+              documentTypeGuid: detailData.data.documentTypeGuid || detailData.data.documentTypeValue?.guid || document.documentTypeGuid || '',
+              ddsArticleGuid: detailData.data.ddsArticleGuid || detailData.data.ddsArticle?.guid || document.ddsArticleGuid || '',
+              budgetArticleGuid: detailData.data.budgetArticleGuid || detailData.data.budgetArticle?.guid || document.budgetArticleGuid || '',
+              counterpartyGuid: detailData.data.counterpartyGuid || detailData.data.counterparty?.guid || document.counterpartyGuid || '',
+              contractGuid: detailData.data.contractGuid || detailData.data.contract?.guid || document.contractGuid || ''
+            };
             
-            // Fetch document details based on document type and ID
-            const detailData = await fetchDocumentDetailsByType(
-              token, 
-              documentDetail.documentType, 
-              documentDetail.id
-            );
-            // console.log('Detail Data (missing basic info):', detailData);
-            if (detailData && detailData.data) {
-              // Transform the fetched data to match our Document type
-              const transformedData = {
-                ...documentDetail,
-                ...detailData.data,
-                // Ensure we keep existing properties that might not be in the response
-                id: documentDetail.id,
-                documentType: documentDetail.documentType,
-                title: detailData.data.title || documentDetail.title,
-                amount: detailData.data.amount !== undefined ? 
-                  parseFloat(detailData.data.amount) : documentDetail.amount,
-                currency: detailData.data.currency || documentDetail.currency,
-                uploadDate: detailData.data.date || documentDetail.uploadDate,
-                // Use documentState if available (English key), otherwise fallback to status
-                status: detailData.data.documentState || detailData.data.status || documentDetail.status,
-                // Include paymentLines for payment documents
-                paymentLines: detailData.data.paymentLines || documentDetail.paymentLines || [],
-                
-                // For expenditure documents, ensure we have the date field properly mapped
-                date: documentDetail.documentType === 'expenditure' ? 
-                  (detailData.data.expenseDate || detailData.data.date || documentDetail.date) : 
-                  (detailData.data.date || documentDetail.date),
-                
-                // Save GUIDs for all selectable fields to ensure they're available in edit form
-                organizationGuid: detailData.data.organizationGuid || detailData.data.organization?.guid || documentDetail.organizationGuid || '',
-                projectGuid: detailData.data.projectGuid || detailData.data.project?.guid || documentDetail.projectGuid || '',
-                cfoGuid: detailData.data.cfoGuid || detailData.data.cfo?.guid || documentDetail.cfoGuid || '',
-                documentTypeGuid: detailData.data.documentTypeGuid || detailData.data.documentTypeValue?.guid || documentDetail.documentTypeGuid || '',
-                ddsArticleGuid: detailData.data.ddsArticleGuid || detailData.data.ddsArticle?.guid || documentDetail.ddsArticleGuid || '',
-                budgetArticleGuid: detailData.data.budgetArticleGuid || detailData.data.budgetArticle?.guid || documentDetail.budgetArticleGuid || '',
-                counterpartyGuid: detailData.data.counterpartyGuid || detailData.data.counterparty?.guid || documentDetail.counterpartyGuid || '',
-                contractGuid: detailData.data.contractGuid || detailData.data.contract?.guid || documentDetail.contractGuid || ''
-              };
-              // Log paymentLines to console when fetched, regardless of content
-              // console.log('Document type:', documentDetail.documentType);
-              // console.log('paymentLines fetched (missing basic info):', transformedData.paymentLines);
-              
-              setDocumentDetail(transformedData);
-            } else {
-              showCustomMessage('Failed to load document details', 'danger');
-            }
-          } catch (err) {
-            // Only show one alert per error case
-            console.error('Error fetching document details:', err);
-            showCustomMessage('Failed to load document details: ' + (err.message || 'Unknown error'), 'danger');
-          } finally {
-            setLoading(false);
+            // Log paymentLines to console when fetched, regardless of content
+            // console.log('Document type:', document.documentType);
+            // console.log('paymentLines fetched:', transformedData.paymentLines);
+            
+            console.log('DocumentDetail: Setting documentDetail state with transformedData:', transformedData);
+            setDocumentDetail(transformedData);
+          } else {
+            console.log('DocumentDetail: No detailData received from backend');
+            showCustomMessage('Failed to load document details', 'danger');
           }
+        } catch (err) {
+          // Only show one alert per error case
+          console.error('DocumentDetail: Error fetching document details:', err);
+          showCustomMessage('Failed to load document details: ' + (err.message || 'Unknown error'), 'danger');
+          // Reset fetchAttempted so we can retry if needed
+          setFetchAttempted(false);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        console.log('DocumentDetail: No valid document provided for fetching');
+        // If we have a document but don't need to fetch details, just update the state
+        if (document) {
+          // Update the documentType in the documentDetail state if needed
+          const correctedDocumentType = standardizeDocumentType(document.documentType);
+          setDocumentDetail(prev => ({
+            ...prev,
+            documentType: correctedDocumentType
+          }));
+          
+          setLoading(false);
+        } else {
+          console.log('DocumentDetail: No document provided');
+          setLoading(false);
         }
       }
     };
 
+    // Always reset fetchAttempted when document changes to ensure we fetch fresh data
+    setFetchAttempted(false);
     fetchDocumentDetail();
-  }, []); // Empty dependency array to run only once on mount
+  }, [document?.id, document?.documentType]); // Removed fetchAttempted from dependency array to prevent infinite loops
 
   // Clear route data when document status is 'prepared' or 'declined'
   useEffect(() => {
@@ -427,12 +311,19 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         setRouteSent(false);
       }
     }
-  }, [documentDetail?.status]);
+  }, [documentDetail?.id, documentDetail?.status]); // Changed dependency array to only depend on document ID and status
 
   // Fetch route type when document detail changes
   useEffect(() => {
     const fetchRouteType = async () => {
-      if (!documentDetail || !documentDetail.documentType || !documentDetail.id || routeType !== null) return;
+      // Only fetch if we have document details
+      if (!documentDetail || !documentDetail.documentType || !documentDetail.id) return;
+      
+      // Fix the typo in documentType
+      const correctedDocumentType = standardizeDocumentType(documentDetail.documentType);
+      
+      // Skip if we already have routeType
+      if (routeType !== null) return;
       
       try {
         setLoadingRouteType(true);
@@ -444,18 +335,26 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               }
             })();
         if (!token) {
-          throw new Error('No authentication token found');
+          console.warn('No authentication token found, skipping route type fetch');
+          setLoadingRouteType(false);
+          return;
         }
         
-        const response = await getDocumentRouteType(token, documentDetail.documentType, documentDetail.id);
+        const response = await getDocumentRouteType(token, correctedDocumentType, documentDetail.id);
         
         if (response && response.success === 1) {
           setRouteType(response.routeType);
-          // Update document detail with route type
-          setDocumentDetail(prev => ({
-            ...prev,
-            routeType: response.routeType
-          }));
+          // Update document detail with route type ONLY if it doesn't already exist
+          setDocumentDetail(prev => {
+            if (!prev.routeType) {
+              return {
+                ...prev,
+                routeType: response.routeType,
+                documentType: correctedDocumentType // Also update the documentType if it was corrected
+              };
+            }
+            return prev;
+          });
         } else {
           // Show error as alert instead of blocking the document view
           showCustomMessage(response?.message || 'Failed to fetch route type', 'warning');
@@ -471,11 +370,17 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
     };
 
     fetchRouteType();
-  }, [documentDetail]);
+  }, [documentDetail?.id, documentDetail?.documentType, routeType]); // Add routeType to dependencies
 
   // Fetch route steps data
   useEffect(() => {
     const fetchRouteSteps = async () => {
+      // Only fetch if we have document details
+      if (!documentDetail || !documentDetail.documentType || !documentDetail.id) return;
+      
+      // Fix the typo in documentType
+      const correctedDocumentType = standardizeDocumentType(documentDetail.documentType);
+      
       try {
         const token = (() => {
               try {
@@ -485,11 +390,12 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               }
             })();
         if (!token) {
-          throw new Error('No authentication token found');
+          console.warn('No authentication token found, skipping route steps fetch');
+          return;
         }
         
         // Fetch document routes based on document type and ID
-        const routeData = await fetchDocumentRoutes(token, documentDetail.documentType, documentDetail.id);
+        const routeData = await fetchDocumentRoutes(token, correctedDocumentType, documentDetail.id);
         // console.log('Document routes fetched from 1C backend:', routeData);
         
         if (routeData && routeData.data && Array.isArray(routeData.data)) {
@@ -539,15 +445,14 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       }
     };
 
-    // Only fetch routes if we have document details
-    if (documentDetail && documentDetail.documentType && documentDetail.id) {
-      fetchRouteSteps();
-    }
-  }, [documentDetail]);
+    fetchRouteSteps();
+  }, [documentDetail?.id, documentDetail?.documentType]);
 
   // Fetch route titles for free route type
   const fetchRouteTitles = async () => {
-    if (!documentDetail || routeType !== 'free' || routeTitles.length > 0) return;
+    // Remove the check for routeTitles.length > 0 to ensure we can re-fetch if needed
+    // Also remove the restriction to only payment documents
+    if (!documentDetail || !documentDetail.documentType || !documentDetail.id || routeType !== 'free') return;
     
     try {
       setLoadingRouteTitles(true);
@@ -559,10 +464,15 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               }
             })();
       if (!token) {
-        throw new Error('No authentication token found');
+        console.warn('No authentication token found, skipping route titles fetch');
+        setLoadingRouteTitles(false);
+        return;
       }
       
-      const response = await getRouteTitles(token, documentDetail.documentType, documentDetail.id);
+      // Fix the typo in documentType
+      const correctedDocumentType = standardizeDocumentType(documentDetail.documentType);
+      
+      const response = await getRouteTitles(token, correctedDocumentType, documentDetail.id);
       if (response && response.data && Array.isArray(response.data)) {
         setRouteTitles(response.data);
         // Initialize selectedUsers state
@@ -597,7 +507,8 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               }
             })();
         if (!token) {
-          throw new Error('No authentication token found');
+          console.warn('No authentication token found, skipping users list fetch');
+          return;
         }
         
         const response = await getUsersList(token);
@@ -620,10 +531,17 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
 
   // Fetch route titles when documentDetail changes and routeType is 'free'
   useEffect(() => {
-    if (documentDetail && routeType === 'free' && routeTitles.length === 0) {
+    // Remove the check for routeTitles.length === 0 to ensure we can re-fetch if needed
+    if (documentDetail && documentDetail.documentType && documentDetail.id && routeType === 'free') {
       fetchRouteTitles();
     }
-  }, [documentDetail, routeType]);
+  }, [documentDetail?.id, documentDetail?.documentType, routeType]);
+
+  // Fetch route information after document details are fully fetched
+  useEffect(() => {
+    // This useEffect is now simplified and will trigger when documentDetail changes
+    // The individual route fetching useEffects will handle their own logic
+  }, [documentDetail?.id]);
 
   // Render specific fields based on document type
  const renderDocumentSpecificFields = () => {
@@ -636,6 +554,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       />
     );
   };
+
   // Function to copy a route step
   const copyRouteStep = (stepGuid) => {
     // Find the route title to copy
@@ -719,12 +638,16 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       />
     );
   };
+
   // Render attachments component
   const renderAttachments = () => {
+    // Fix the typo in documentType using standardizeDocumentType
+    const correctedDocumentType = standardizeDocumentType(documentDetail?.documentType);
+    
     return (
       <Attachments 
         documentId={documentDetail?.id} 
-        documentType={documentDetail?.documentType}
+        documentType={correctedDocumentType} // Use corrected document type
         theme={theme} 
         onDownload={(attachment) => console.log(`Downloading ${attachment.fileName}`)}
       />
@@ -734,6 +657,9 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
   // Function to handle document decline
   const handleDeclineDocument = async () => {
     if (!documentDetail) return;
+    
+    // Fix the typo in documentType using standardizeDocumentType
+    const correctedDocumentType = standardizeDocumentType(documentDetail.documentType);
     
     try {
       setDeclining(true);
@@ -754,7 +680,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       // Send the decline request to the backend
       const response = await declineDocument(
         token,
-        documentDetail.documentType,
+        correctedDocumentType, // Use corrected document type
         documentDetail.id
       );
       
@@ -786,6 +712,9 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
   const handleDeleteDocument = async () => {
     if (!documentDetail) return;
     
+    // Fix the typo in documentType using standardizeDocumentType
+    const correctedDocumentType = standardizeDocumentType(documentDetail.documentType);
+    
     try {
       setDeleting(true);
       
@@ -805,7 +734,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       // Send the delete request to the backend
       const response = await deleteDocument(
         token,
-        documentDetail.documentType,
+        correctedDocumentType, // Use corrected document type
         documentDetail.id
       );
       
@@ -881,6 +810,9 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
   const handleApproveWithSigning = async () => {
     if (!documentDetail) return;
     
+    // Fix the typo in documentType using standardizeDocumentType
+    const correctedDocumentType = standardizeDocumentType(documentDetail.documentType);
+    
     try {
       setSigningLoading(true);
       
@@ -905,7 +837,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       }
       
       console.log('Fetching signing template for document:', {
-        documentType: documentDetail.documentType,
+        documentType: correctedDocumentType, // Use corrected document type
         documentId: documentDetail.id
       });
       
@@ -913,7 +845,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       const templateResponse = await Promise.race([
         getSigningTemplate(
           token,
-          documentDetail.documentType,
+          correctedDocumentType, // Use corrected document type
           documentDetail.id
         ),
         timeoutPromise
@@ -1009,6 +941,9 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
     // Pre-send validation
     if (!documentDetail) return;
     
+    // Fix the typo in documentType
+    const correctedDocumentType = standardizeDocumentType(documentDetail.documentType);
+    
     // Check if routeType is free
     if (routeType === "free") {
       // Check if route steps are filled
@@ -1068,7 +1003,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         // API Request for free route
         response = await sendToFreeRoute(
           token,
-          documentDetail.documentType,
+          correctedDocumentType, // Use corrected document type
           documentDetail.id,
           routeStepsArray
         );
@@ -1076,7 +1011,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         // API Request for fixed route
         response = await sendDocumentToRoute(
           token, 
-          documentDetail.documentType, 
+          correctedDocumentType, // Use corrected document type
           documentDetail.id, 
           "fixed"
         );
@@ -1090,7 +1025,8 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         if (documentDetail) {
           const updatedDocument = {
             ...documentDetail,
-            status: 'on_approving'
+            status: 'on_approving',
+            documentType: correctedDocumentType // Also update the documentType if it was corrected
           };
           setDocumentDetail(updatedDocument);
           
@@ -1098,17 +1034,19 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           try {
             const accessResponse = await checkAccessToApproveDecline(
               token,
-              documentDetail.documentType,
+              correctedDocumentType, // Use corrected document type
               documentDetail.id
             );
             
             if (accessResponse && accessResponse.success === 1) {
               // Update the document with access information
-              setDocumentDetail({
-                ...updatedDocument,
+              setDocumentDetail(prev => ({
+                ...prev,
                 canApprove: accessResponse.canApprove,
-                canReject: accessResponse.canReject
-              });
+                canReject: accessResponse.canReject,
+                status: 'on_approving',
+                documentType: correctedDocumentType // Also update the documentType if it was corrected
+              }));
             }
           } catch (accessError) {
             // Only log error and show one alert
@@ -1120,7 +1058,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         
         // After success: fetch and re-render route steps
         try {
-          const routeData = await fetchDocumentRoutes(token, documentDetail.documentType, documentDetail.id);
+          const routeData = await fetchDocumentRoutes(token, correctedDocumentType, documentDetail.id);
           if (routeData && routeData.data && Array.isArray(routeData.data)) {
             // Transform the fetched route data to match our route steps structure
             const transformedRoutes = routeData.data
@@ -1187,6 +1125,9 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       return;
     }
     
+    // Fix the typo in documentType
+    const correctedDocumentType = standardizeDocumentType(documentDetail.documentType);
+    
     try {
       // Close the SIGEX modal
       setShowSigningModal(false);
@@ -1221,7 +1162,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               saveSignedDocument(
                 token,
                 documentDetail.id,
-                documentDetail.documentType,
+                correctedDocumentType, // Use corrected document type
                 signedDocuments[0]?.data || '', // Pass the signed document data
                 documentDetail.signingTemplate.metadata // Pass the metadata
               ),
@@ -1243,7 +1184,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           const response = await Promise.race([
             saveSignedDocumentAndApprove(
               token,
-              documentDetail.documentType,
+              correctedDocumentType, // Use corrected document type
               documentDetail.id,
               signedDocuments[0]?.data || '' // Pass the signed document data
             ),
@@ -1263,7 +1204,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
             
             // Refetch routes to update the route steps
             try {
-              const routeData = await fetchDocumentRoutes(token, documentDetail.documentType, documentDetail.id);
+              const routeData = await fetchDocumentRoutes(token, correctedDocumentType, documentDetail.id);
               console.log('Document routes refetched from 1C backend:', routeData);
               
               if (routeData && routeData.data && Array.isArray(routeData.data)) {
@@ -1349,6 +1290,9 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
     }));
   };
 
+  // Render attachments - fix the typo in documentType
+  {documentDetail?.documentType !== 'payment' && documentDetail?.documentType !== 'paymemnt' && renderAttachments()}
+
   return (
     <div className={`document-detail-container ${theme?.mode === 'dark' ? 'dark' : ''}`}>
       <div className={`content-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
@@ -1369,9 +1313,15 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               <h1 className={`text-2xl font-bold text-gray-900 ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                 {documentDetail?.title || 'Без названия'}
               </h1>
-              <span className={`document-type-badge badge-${documentDetail?.documentType}`}>
-                {getDocumentTypeText(documentDetail?.documentType)}
-              </span>
+              {/* Fix the typo in documentType */}
+              {(() => {
+                const correctedDocumentType = documentDetail?.documentType === 'paymemnt' ? 'payment' : documentDetail?.documentType;
+                return (
+                  <span className={`document-type-badge badge-${correctedDocumentType}`}>
+                    {getDocumentTypeText(correctedDocumentType)}
+                  </span>
+                );
+              })()}
             </div>
             <div className='mt-2 flex items-center'>
               <span className={`status-badge ${getStatusBadgeClass(documentDetail?.status)}`}>
@@ -1395,7 +1345,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                   routeSent || 
                   !documentDetail || 
                   (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined' && documentDetail.status !== 'rejected') ||
-                  (routeType === 'free' && routeSteps.length === 0 && 
+                  (routeType === 'free' && routeTitles.length > 0 && 
                    Object.keys(selectedUsers).length !== routeTitles.length)
                 }
               >
@@ -1462,7 +1412,8 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 onClick={() => handleActionButtonClick('edit')}
                 disabled={
                   !documentDetail || 
-                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined' && documentDetail.status !== 'rejected')
+                  (documentDetail.documentType !== 'payment' && documentDetail.documentType !== 'paymemnt' &&
+                   documentDetail.status !== 'prepared' && documentDetail.status !== 'declined' && documentDetail.status !== 'rejected')
                 }
               >
                 <i className="fas fa-edit"></i>
@@ -1499,7 +1450,12 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           {renderRouteSteps()}
           
           {/* Attachments */}
-          {documentDetail?.documentType !== 'payment' && renderAttachments()}
+          {/* Fix the typo in documentType */}
+          {(() => {
+            const correctedDocumentType = standardizeDocumentType(documentDetail?.documentType);
+            return correctedDocumentType !== 'payment' && renderAttachments();
+          })()}
+
         </div>
       </div>
       

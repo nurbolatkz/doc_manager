@@ -402,6 +402,9 @@ body.dark .modal-search-input::placeholder {
   border-bottom: 1px solid #e5e7eb;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 body.dark .modal-result-item {
@@ -414,6 +417,23 @@ body.dark .modal-result-item {
 
 body.dark .modal-result-item:hover {
   background-color: #4b5563;
+}
+
+.modal-result-item.selected {
+  background-color: #dbeafe;
+  font-weight: 500;
+}
+
+body.dark .modal-result-item.selected {
+  background-color: #1e3a8a;
+}
+
+.selected-icon {
+  color: #2563eb;
+}
+
+body.dark .selected-icon {
+  color: #60a5fa;
 }
 
 /* Buttons */

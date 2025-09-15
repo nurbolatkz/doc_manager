@@ -8,7 +8,7 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [uniqueOrganizations, setUniqueOrganizations] = useState([]);
   const [uniqueCounterparties, setUniqueCounterparties] = useState([]);
-  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' or 'desc'
+  const [sortOrder, setSortOrder] = useState('desc'); // 'asc' or 'desc' - changed default to 'desc'
 
   // Extract unique organizations and counterparties from documents
   useEffect(() => {
@@ -233,7 +233,7 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
     return true;
   });
 
-  // Sort documents by date (default: ascending)
+  // Sort documents by date (default: descending)
   const sortedDocuments = [...filteredDocuments].sort((a, b) => {
     const dateA = parseDateString(a.uploadDate);
     const dateB = parseDateString(b.uploadDate);
@@ -242,7 +242,8 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
     if (!dateA) return 1;
     if (!dateB) return -1;
     
-    return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    // Changed to default to descending order
+    return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
   });
 
   // Document Card Component for mobile/tablet
@@ -250,7 +251,10 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
     return (
       <div 
         className="document-card"
-        onClick={() => onDocumentSelect(document)}
+        onClick={() => {
+          console.log('DocumentList: Document card clicked, calling onDocumentSelect with document:', document);
+          onDocumentSelect(document);
+        }}
       >
         <div className="document-card-header">
           <h3>{document.title || 'Без названия'}</h3>
@@ -553,9 +557,9 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
                     <th scope="col">Организация</th>
                     <th scope="col">Контрагент</th>
                     <th scope="col">Сумма</th>
-                    <th scope="col" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')} style={{ cursor: 'pointer' }}>
+                    <th scope="col" onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')} style={{ cursor: 'pointer' }}>
                       Дата создания
-                      <i className={`fas fa-sort-${sortOrder === 'asc' ? 'up' : 'down'} ml-2`}></i>
+                      <i className={`fas fa-sort-${sortOrder === 'desc' ? 'down' : 'up'} ml-2`}></i>
                     </th>
                     <th scope="col">Автор</th>
                     <th scope="col">Статус</th>
@@ -570,7 +574,10 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
                 </tr>
               ) : (
                 sortedDocuments.map((document, index) => (
-                  <tr key={document.id} style={{ cursor: 'pointer' }} onClick={() => onDocumentSelect(document)}>
+                  <tr key={document.id} style={{ cursor: 'pointer' }} onClick={() => {
+                    console.log('DocumentList: Table row clicked, calling onDocumentSelect with document:', document);
+                    onDocumentSelect(document);
+                  }}>
                     <td>{index + 1}</td>
                     <td>
                       <div>

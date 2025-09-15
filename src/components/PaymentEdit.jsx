@@ -1,6 +1,7 @@
 import React from 'react';
 import './Dashboard_Restructured.css';
 import './PaymentCreationForm.css';
+import { formatDateForInput } from '../utils/documentUtils';
 
 const PaymentEdit = ({ 
   formData, 
@@ -169,7 +170,7 @@ const PaymentEdit = ({
                       <td className={`px-6 py-4 text-sm ${theme?.mode === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                         <input
                           type="date"
-                          value={new Date(payment.paymentDate || payment.ДатаПлатежа || new Date()).toISOString().split('T')[0]}
+                          value={formatDateForInput(payment.paymentDate || payment.ДатаПлатежа || new Date())}
                           onChange={(e) => updatePaymentDate(index, e.target.value)}
                           className={`w-full p-1 rounded ${
                             theme?.mode === 'dark' 

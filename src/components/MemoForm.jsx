@@ -414,16 +414,21 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
       // Send request to backend
       const response = await apiRequest("register_document_action", requestBody, token);
       
+      console.log('MemoForm: Received response from backend:', response);
+      
       if (response && response.success === 1) {
+        // Extract document ID from response (use guid if documentId is not available)
+        const documentId = response.documentId || response.guid;
+        
         // If there are files to upload, upload them now
-        if (arrayToUpload.length > 0 && response.guid) {
+        if (arrayToUpload.length > 0 && documentId) {
           try {
             // Upload files to the newly created document
             const fileUploadRequestBody = {
               username: "Администратор",
               action: "update_document_files",
               type: "memo",
-              documentId: response.guid,
+              documentId: documentId,
               array_to_remove: [], // No files to remove for a new document
               array_to_upload: arrayToUpload
             };
@@ -444,11 +449,13 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
         }
         
         // Call onSave with the form data and created document ID
+        console.log('MemoForm: Calling onSave with documentId:', documentId);
         if (onSave) {
-          onSave(formData, response.guid);
+          onSave(formData, documentId);
         }
-        // Close the form after successful submission
-        onBack();
+        console.log('MemoForm: onSave completed');
+        // Don't call onBack() here as we want to show the document detail view
+        // Close the form after successful submission by setting showCreateForm to null in the parent
       } else {
         const errorMessage = response && response.message ? response.message : 'Неизвестная ошибка при создании документа';
         showCustomMessage(errorMessage, 'danger');

@@ -3,6 +3,9 @@ import React from 'react';
 const DocumentSpecificFields = ({ documentDetail, theme, formatDate, formatCurrency }) => {
   if (!documentDetail) return null;
 
+  // Fix the typo in documentType
+  const correctedDocumentType = documentDetail.documentType === 'paymemnt' ? 'payment' : documentDetail.documentType;
+
   // Function to get document type text by GUID
   const getDocumentTypeText = (type) => {
     switch(type) {
@@ -42,7 +45,7 @@ const DocumentSpecificFields = ({ documentDetail, theme, formatDate, formatCurre
     marginTop: '1.5rem'
   };
 
-  switch (documentDetail.documentType) {
+  switch (correctedDocumentType) {
     case 'payment':
       return (
         <>

@@ -16,6 +16,7 @@ const initialDocumentCounts = {
   incomingPaymentSchedule: 0,
   incomingMemo: 0,
   outgoingPending: 0,
+  outgoingPrepared: 0,
   outgoingSigned: 0,
   outgoingRejected: 0
 };
@@ -108,6 +109,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
           incomingPaymentSchedule: countsResponse.counts.incomingPaymentSchedule || 0,
           incomingMemo: countsResponse.counts.incomingMemo || 0,
           outgoingPending: countsResponse.counts.outgoingPending || 0,
+          outgoingPrepared: countsResponse.counts.outgoingPrepared || 0,
           outgoingSigned: countsResponse.counts.outgoingSigned || 0,
           outgoingRejected: countsResponse.counts.outgoingRejected || 0
         });
@@ -129,6 +131,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
         incomingPaymentSchedule: 1,
         incomingMemo: 1,
         outgoingPending: 4,
+        outgoingPrepared: 2,
         outgoingSigned: 8,
         outgoingRejected: 2
       });
@@ -138,6 +141,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
 
 
   const handleDocumentSelect = (document) => {
+    console.log('Dashboard: handleDocumentSelect called with document:', document);
     setSelectedDocument(document);
   };
 
@@ -356,6 +360,17 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                     <button 
                       className="nav-button"
                       onClick={() => {
+                        handleFilterChange({ SelectedFilter: "get_outgoing_prepared" });
+                        setOpenDropdown(null);
+                      }}
+                    >
+                      <i className="fas fa-file-alt nav-item-icon"></i>
+                      <span className="nav-item-text">Подготовлено</span>
+                      <span className="count-badge">{documentCounts.outgoingPrepared}</span>
+                    </button>
+                    <button 
+                      className="nav-button"
+                      onClick={() => {
                         handleFilterChange({ SelectedFilter: "get_outgoing_signed" });
                         setOpenDropdown(null);
                       }}
@@ -495,6 +510,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
               loadDashboardData();
             }}
             onSave={(updatedDocument) => {
+              console.log('Dashboard: Received onSave callback from DocumentEdit with updatedDocument:', updatedDocument);
               setIsEditingDocument(false);
               // Update the selected document with the updated data
               setSelectedDocument(updatedDocument);
@@ -513,6 +529,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
               loadDashboardData();
             }}
             onEdit={(detailedDocument) => {
+              console.log('Dashboard: Received onEdit callback from DocumentDetail with detailedDocument:', detailedDocument);
               // Update the selectedDocument with the detailed data if provided
               if (detailedDocument) {
                 setSelectedDocument(detailedDocument);
@@ -527,6 +544,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
             currentUser={currentUser}
             onBack={handleBackToList}
             onSave={(formData, documentId) => {
+              console.log('Dashboard: Received onSave callback from MemoForm with documentId:', documentId);
               // Handle form submission
               // console.log('Memo form submitted:', formData);
               // In a real app, this would save to the backend
@@ -537,15 +555,21 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                   id: documentId,
                   documentType: 'memo',
                   title: 'Новая служебная записка',
-                  status: 'prepared'
+                  status: 'prepared',
+                  uploadDate: new Date().toISOString().split('T')[0] // Format as YYYY-MM-DD
                 };
+                console.log('Dashboard: Setting selectedDocument to:', newDocument);
                 setSelectedDocument(newDocument);
+                console.log('Dashboard: Setting showCreateForm to null');
                 setShowCreateForm(null); // Hide the form
+                console.log('Dashboard: Completed setting state for document detail view');
+                console.log('Dashboard: Current state after setting - selectedDocument:', newDocument, 'showCreateForm:', null);
+                // Refresh the document list after creating a document
+                loadDashboardData();
               } else {
+                console.log('Dashboard: No documentId received, calling handleBackToList');
                 handleBackToList();
               }
-              // Refresh the document list after creating a document
-              loadDashboardData();
             }}
             theme={theme}
           />
@@ -555,6 +579,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
             currentUser={currentUser}
             onBack={handleBackToList}
             onSave={(formData, documentId) => {
+              console.log('Dashboard: Received onSave callback from ExpenditureForm with documentId:', documentId);
               // Handle form submission
               // console.log('Expenditure form submitted:', formData);
               // In a real app, this would save to the backend
@@ -565,15 +590,21 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                   id: documentId,
                   documentType: 'expenditure',
                   title: 'Новая заявка на расходы',
-                  status: 'prepared'
+                  status: 'prepared',
+                  uploadDate: new Date().toISOString().split('T')[0] // Format as YYYY-MM-DD
                 };
+                console.log('Dashboard: Setting selectedDocument to:', newDocument);
                 setSelectedDocument(newDocument);
+                console.log('Dashboard: Setting showCreateForm to null');
                 setShowCreateForm(null); // Hide the form
+                console.log('Dashboard: Completed setting state for document detail view');
+                console.log('Dashboard: Current state after setting - selectedDocument:', newDocument, 'showCreateForm:', null);
+                // Refresh the document list after creating a document
+                loadDashboardData();
               } else {
+                console.log('Dashboard: No documentId received, calling handleBackToList');
                 handleBackToList();
               }
-              // Refresh the document list after creating a document
-              loadDashboardData();
             }}
             theme={theme}
           />
@@ -583,6 +614,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
             currentUser={currentUser}
             onBack={handleBackToList}
             onSave={(formData, documentId) => {
+              console.log('Dashboard: Received onSave callback from PaymentCreationForm with documentId:', documentId);
               // Handle form submission
               // console.log('Payment form submitted:', formData);
               // In a real app, this would save to the backend
@@ -593,15 +625,21 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                   id: documentId,
                   documentType: 'payment',
                   title: 'Новый платежный документ',
-                  status: 'prepared'
+                  status: 'prepared',
+                  uploadDate: new Date().toISOString().split('T')[0] // Format as YYYY-MM-DD
                 };
+                console.log('Dashboard: Setting selectedDocument to:', newDocument);
                 setSelectedDocument(newDocument);
+                console.log('Dashboard: Setting showCreateForm to null');
                 setShowCreateForm(null); // Hide the form
+                console.log('Dashboard: Completed setting state for document detail view');
+                console.log('Dashboard: Current state after setting - selectedDocument:', newDocument, 'showCreateForm:', null);
+                // Refresh the document list after creating a document
+                loadDashboardData();
               } else {
+                console.log('Dashboard: No documentId received, calling handleBackToList');
                 handleBackToList();
               }
-              // Refresh the document list after creating a document
-              loadDashboardData();
             }}
             theme={theme}
           />
