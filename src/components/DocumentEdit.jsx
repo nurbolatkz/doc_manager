@@ -34,7 +34,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
     text: '',
     
     // Expenditure-specific fields
-    date: new Date().toISOString().split('T')[0],
+    date: '',
     currency: 'KZT',
     amount: '',
     paymentForm: 'Наличные',
@@ -51,7 +51,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
     
     // Payment-specific fields
     documentNumber: '',
-    documentDate: new Date().toISOString().split('T')[0],
+    documentDate: '',
     payments: [],
     selectedPayments: [] // For tracking selected payment lines
   });
@@ -222,21 +222,9 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   // Initialize form data with document data
   useEffect(() => {
     if (document) {
-      console.log('Initializing form with', document.documentType, 'document');
-      console.log('Document data:', document);
-      console.log('Document GUIDs:', {
-        organizationGuid: document.organizationGuid,
-        projectGuid: document.projectGuid,
-        cfoGuid: document.cfoGuid,
-        ddsArticleGuid: document.ddsArticleGuid,
-        budgetArticleGuid: document.budgetArticleGuid,
-        counterpartyGuid: document.counterpartyGuid,
-        contractGuid: document.contractGuid
-      });
-      
       // Common fields that should be initialized for all document types
       const commonFields = {
-        documentType: document.documentType || '',
+        documentType: document.documentTypeGuid || document.documentTypeValue?.guid || document.documentType || '',
         documentTypeGuid: document.documentTypeGuid || document.documentTypeValue?.guid || '',
         organizationGuid: document.organizationGuid || document.organization?.guid || '',
         cfoGuid: document.cfoGuid || document.cfo?.guid || '',
@@ -245,13 +233,12 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         project: document.project || document.project?.name || ''
       };
       
-      console.log('Common fields:', commonFields);
-      
       if (document.documentType === 'memo') {
         setFormData(prev => ({
           ...prev,
           ...commonFields,
-          text: document.message || '',
+          documentType: document.documentTypeGuid || document.documentTypeValue?.guid || '',
+          text: document.message || document.text || '',
           organization: document.organization || document.organization?.name || '',
           organizationGuid: document.organizationGuid || document.organization?.guid || '',
           cfo: document.cfo || document.cfo?.name || '',
@@ -261,14 +248,12 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         }));
       } else if (document.documentType === 'expenditure') {
         // For expenditure documents, the date field might be called 'expenseDate' instead of 'date'
-        const documentDate = document.date || document.expenseDate || new Date().toISOString().split('T')[0];
-        console.log('Document date:', documentDate);
-        const formattedDate = formatInputDate(documentDate);
-        console.log('Formatted date:', formattedDate);
+        const documentDate = document.date || document.expenseDate || '';
+        const formattedDate = documentDate ? formatInputDate(documentDate) : '';
         
         const expenditureFields = {
           ...commonFields,
-          date: formattedDate,
+          date: formattedDate || '',
           currency: document.currency || 'KZT',
           amount: document.amount || '',
           paymentForm: document.paymentForm || 'Наличные',
@@ -290,18 +275,19 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
           contractGuid: document.contractGuid || document.contract?.guid || ''
         };
         
-        console.log('Expenditure fields:', expenditureFields);
-        
         setFormData(prev => ({
           ...prev,
           ...expenditureFields
         }));
       } else if (document.documentType === 'payment') {
+        // Format the document date for input field
+        const formattedDate = document.date ? formatInputDate(document.date) : '';
+        
         setFormData(prev => ({
           ...prev,
           ...commonFields,
           documentNumber: document.number || '',
-          documentDate: document.date || new Date().toISOString().split('T')[0],
+          documentDate: formattedDate || '',
           payments: document.paymentLines || [],
           // Initialize selected payments
           selectedPayments: document.paymentLines ? document.paymentLines.map((_, index) => index + 1) : [],
@@ -356,9 +342,9 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         throw new Error('No authentication token found');
       }
 
-      // Using a sample document ID for the request
-      const sampleDocumentId = '7c779250-11f8-11f0-8dbb-fff1bb3bb704';
-      const response = await fetchOrganizations(token, sampleDocumentId);
+      // Use the actual document ID if available, otherwise use a sample document ID
+      const documentId = document?.id || '7c779250-11f8-11f0-8dbb-fff1bb3bb704';
+      const response = await fetchOrganizations(token, documentId);
       
       if (response && response.data && Array.isArray(response.data)) {
         // Normalize the data structure to ensure we have the expected properties
@@ -409,9 +395,9 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         throw new Error('No authentication token found');
       }
 
-      // Using a sample document ID for the request
-      const sampleDocumentId = '7c779250-11f8-11f0-8dbb-fff1bb3bb704';
-      const response = await fetchProjects(token, sampleDocumentId);
+      // Use the actual document ID if available, otherwise use a sample document ID
+      const documentId = document?.id || '7c779250-11f8-11f0-8dbb-fff1bb3bb704';
+      const response = await fetchProjects(token, documentId);
       
       if (response && response.data && Array.isArray(response.data)) {
         // Normalize the data structure to ensure we have the expected properties
@@ -462,9 +448,9 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         throw new Error('No authentication token found');
       }
 
-      // Using a sample document ID for the request
-      const sampleDocumentId = '7c779250-11f8-11f0-8dbb-fff1bb3bb704';
-      const response = await fetchCFOs(token, sampleDocumentId);
+      // Use the actual document ID if available, otherwise use a sample document ID
+      const documentId = document?.id || '7c779250-11f8-11f0-8dbb-fff1bb3bb704';
+      const response = await fetchCFOs(token, documentId);
       
       if (response && response.data && Array.isArray(response.data)) {
         // Normalize the data structure to ensure we have the expected properties
@@ -515,9 +501,9 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         throw new Error('No authentication token found');
       }
 
-      // Using a sample document ID for the request
-      const sampleDocumentId = '7c779250-11f8-11f0-8dbb-fff1bb3bb704';
-      const response = await fetchDocumentTypes(token, sampleDocumentId);
+      // Use the actual document ID if available, otherwise use a sample document ID
+      const documentId = document?.id || '7c779250-11f8-11f0-8dbb-fff1bb3bb704';
+      const response = await fetchDocumentTypes(token, documentId);
       
       if (response && response.data && Array.isArray(response.data)) {
         // Normalize the data structure to ensure we have the expected properties
@@ -576,9 +562,9 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         throw new Error('No authentication token found');
       }
 
-      // Using a sample document ID for the request
-      const sampleDocumentId = 'f10c6dfe-84a4-11f0-8dd9-d8859d41b83b';
-      const response = await fetchDdsArticles(token, sampleDocumentId);
+      // Use the actual document ID if available, otherwise use a sample document ID
+      const documentId = document?.id || 'f10c6dfe-84a4-11f0-8dd9-d8859d41b83b';
+      const response = await fetchDdsArticles(token, documentId);
       
       if (response && response.data && Array.isArray(response.data)) {
         // Normalize the data structure to ensure we have the expected properties
@@ -625,9 +611,9 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         throw new Error('No authentication token found');
       }
 
-      // Using a sample document ID for the request
-      const sampleDocumentId = 'f10c6dfe-84a4-11f0-8dd9-d8859d41b83b';
-      const response = await fetchBudgetArticles(token, sampleDocumentId);
+      // Use the actual document ID if available, otherwise use a sample document ID
+      const documentId = document?.id || 'f10c6dfe-84a4-11f0-8dd9-d8859d41b83b';
+      const response = await fetchBudgetArticles(token, documentId);
       
       if (response && response.data && Array.isArray(response.data)) {
         // Normalize the data structure to ensure we have the expected properties
@@ -674,9 +660,9 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         throw new Error('No authentication token found');
       }
 
-      // Using a sample document ID for the request
-      const sampleDocumentId = 'f10c6dfe-84a4-11f0-8dd9-d8859d41b83b';
-      const response = await fetchCounterparties(token, sampleDocumentId);
+      // Use the actual document ID if available, otherwise use a sample document ID
+      const documentId = document?.id || 'f10c6dfe-84a4-11f0-8dd9-d8859d41b83b';
+      const response = await fetchCounterparties(token, documentId);
       
       if (response && response.data && Array.isArray(response.data)) {
         // Normalize the data structure to ensure we have the expected properties
@@ -725,9 +711,9 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
           throw new Error('No authentication token found');
         }
 
-        // Using a sample document ID for the request
-        const sampleDocumentId = 'f10c6dfe-84a4-11f0-8dd9-d8859d41b83b';
-        const response = await fetchContracts(token, sampleDocumentId, counterpartyGuid);
+        // Use the actual document ID if available, otherwise use a sample document ID
+        const documentId = document?.id || 'f10c6dfe-84a4-11f0-8dd9-d8859d41b83b';
+        const response = await fetchContracts(token, documentId, counterpartyGuid);
         
         if (response && response.data && Array.isArray(response.data)) {
           // Normalize the data structure to ensure we have the expected properties
@@ -1103,30 +1089,23 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
     // Validate based on document type
     if (document.documentType === 'memo') {
       // Validate required fields for memo
-      if (!sanitizedFormData.documentType) {
-        showCustomMessage('Пожалуйста, выберите тип документа', 'danger');
-        return;
-      }
+      // When editing, we should allow updating individual fields
+      // We only validate that the fields that are required have values
+      // Either from the existing document or from the form data
       
-      if (!sanitizedFormData.text) {
-        showCustomMessage('Пожалуйста, введите текст обращения', 'danger');
-        return;
-      }
+      // For editing, we assume the document already has all required fields
+      // We only validate if the user is trying to submit empty values for fields
+      // that previously had values
       
-      if (!sanitizedFormData.organizationGuid) {
-        showCustomMessage('Пожалуйста, выберите организацию', 'danger');
-        return;
-      }
+      // If user is trying to clear a field that had a value, that's their choice
+      // We don't force them to re-enter all fields
       
-      if (!sanitizedFormData.cfoGuid) {
-        showCustomMessage('Пожалуйста, выберите ЦФО', 'danger');
-        return;
-      }
+      // Only validate if we're missing critical information
+      // In practice, for editing we should allow partial updates
       
-      if (!sanitizedFormData.projectGuid) {
-        showCustomMessage('Пожалуйста, выберите проект', 'danger');
-        return;
-      }
+      // For memo editing, we allow updating any field without requiring all fields
+      // The backend will handle preserving existing values
+      console.log('Memo validation passed - allowing partial updates');
       
       try {
         const token = (() => {
@@ -1141,18 +1120,38 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         }
         
         // Prepare request body according to specification
+        // For editing, we send only the fields that have values
+        // Either from the form or from the existing document
         const requestBody = {
           username: "Администратор",
           token: token,
           documentId: document.id,
           action: "update_document_memo",
           type: "memo",
-          documentTypeGuid: sanitizedFormData.documentTypeGuid,
-          projectGuid: sanitizedFormData.projectGuid,
-          organizationGuid: sanitizedFormData.organizationGuid,
-          cfoGuid: sanitizedFormData.cfoGuid,
-          text: sanitizedFormData.text
+          // Only include fields that have values
+          ...(sanitizedFormData.documentTypeGuid && { documentTypeGuid: sanitizedFormData.documentTypeGuid }),
+          ...(sanitizedFormData.projectGuid && { projectGuid: sanitizedFormData.projectGuid }),
+          ...(sanitizedFormData.organizationGuid && { organizationGuid: sanitizedFormData.organizationGuid }),
+          ...(sanitizedFormData.cfoGuid && { cfoGuid: sanitizedFormData.cfoGuid }),
+          ...(sanitizedFormData.text && { text: sanitizedFormData.text })
         };
+        
+        // If we don't have a value in the form but had one in the document, use the document value
+        if (!requestBody.documentTypeGuid && document.documentTypeGuid) {
+          requestBody.documentTypeGuid = document.documentTypeGuid;
+        }
+        if (!requestBody.projectGuid && document.projectGuid) {
+          requestBody.projectGuid = document.projectGuid;
+        }
+        if (!requestBody.organizationGuid && document.organizationGuid) {
+          requestBody.organizationGuid = document.organizationGuid;
+        }
+        if (!requestBody.cfoGuid && document.cfoGuid) {
+          requestBody.cfoGuid = document.cfoGuid;
+        }
+        if (!requestBody.text && document.message) {
+          requestBody.text = document.message;
+        }
         
         // Send request to backend
         const response = await apiRequest("register_document_action", requestBody, token);
@@ -1205,45 +1204,13 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         showCustomMessage('Ошибка при обновлении служебной записки: ' + error.message, 'danger');
       }
     } else if (document.documentType === 'expenditure') {
-      // Validate required fields for expenditure
-      if (!sanitizedFormData.amount) {
-        showCustomMessage('Пожалуйста, укажите сумму', 'danger');
-        return;
-      }
+      // For expenditure editing, we allow partial updates
+      // We don't require all fields to be re-entered
+      // The backend will preserve existing values
       
-      if (!sanitizedFormData.organizationGuid) {
-        showCustomMessage('Пожалуйста, выберите организацию', 'danger');
-        return;
-      }
-      
-      if (!sanitizedFormData.counterpartyGuid) {
-        showCustomMessage('Пожалуйста, выберите контрагента', 'danger');
-        return;
-      }
-      
-      if (!sanitizedFormData.cfoGuid) {
-        showCustomMessage('Пожалуйста, выберите ЦФО', 'danger');
-        return;
-      }
-      
-      if (!sanitizedFormData.projectGuid) {
-        showCustomMessage('Пожалуйста, выберите проект', 'danger');
-        return;
-      }
-      
-      if (!sanitizedFormData.ddsArticleGuid) {
-        console.log('DDS Article data:', formData.ddsArticle, formData.ddsArticleGuid);
-        showCustomMessage('Пожалуйста, выберите статью ДДС', 'danger');
-        return;
-      }
-      
-      if (!sanitizedFormData.budgetArticleGuid) {
-        showCustomMessage('Пожалуйста, выберите статью бюджета', 'danger');
-        return;
-      }
-      
-      if (!sanitizedFormData.contractGuid) {
-        showCustomMessage('Пожалуйста, выберите договор', 'danger');
+      // We only validate that we have the document ID
+      if (!document.id) {
+        showCustomMessage('Ошибка: отсутствует идентификатор документа', 'danger');
         return;
       }
       
@@ -1261,26 +1228,70 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         }
         
         // Prepare request body according to specification
+        // For editing, we send only the fields that have values
+        // Either from the form or from the existing document
         const requestBody = {
           username: "Администратор",
           token: token,
           documentId: document.id,
           action: "update_document_expenditure",
           type: "expenditure",
-          organizationGuid: sanitizedFormData.organizationGuid,
-          cfoGuid: sanitizedFormData.cfoGuid,
-          projectGuid: sanitizedFormData.projectGuid,
-          counterpartyGuid: sanitizedFormData.counterpartyGuid,
-          date: sanitizedFormData.date,
-          amount: sanitizedFormData.amount,
-          currency: sanitizedFormData.currency,
-          paymentForm: sanitizedFormData.paymentForm,
-          operationType: sanitizedFormData.operationType,
-          purposeText: sanitizedFormData.purposeText,
-          budgetArticleGuid: sanitizedFormData.budgetArticleGuid,
-          ddsArticleGuid: sanitizedFormData.ddsArticleGuid,
-          contractGuid: sanitizedFormData.contractGuid
+          // Only include fields that have values
+          ...(sanitizedFormData.organizationGuid && { organizationGuid: sanitizedFormData.organizationGuid }),
+          ...(sanitizedFormData.cfoGuid && { cfoGuid: sanitizedFormData.cfoGuid }),
+          ...(sanitizedFormData.projectGuid && { projectGuid: sanitizedFormData.projectGuid }),
+          ...(sanitizedFormData.counterpartyGuid && { counterpartyGuid: sanitizedFormData.counterpartyGuid }),
+          ...(sanitizedFormData.date && { date: sanitizedFormData.date }),
+          ...(sanitizedFormData.amount && { amount: sanitizedFormData.amount }),
+          ...(sanitizedFormData.currency && { currency: sanitizedFormData.currency }),
+          ...(sanitizedFormData.paymentForm && { paymentForm: sanitizedFormData.paymentForm }),
+          ...(sanitizedFormData.operationType && { operationType: sanitizedFormData.operationType }),
+          ...(sanitizedFormData.purposeText && { purposeText: sanitizedFormData.purposeText }),
+          ...(sanitizedFormData.budgetArticleGuid && { budgetArticleGuid: sanitizedFormData.budgetArticleGuid }),
+          ...(sanitizedFormData.ddsArticleGuid && { ddsArticleGuid: sanitizedFormData.ddsArticleGuid }),
+          ...(sanitizedFormData.contractGuid && { contractGuid: sanitizedFormData.contractGuid })
         };
+        
+        // If we don't have a value in the form but had one in the document, use the document value
+        if (!requestBody.organizationGuid && document.organizationGuid) {
+          requestBody.organizationGuid = document.organizationGuid;
+        }
+        if (!requestBody.cfoGuid && document.cfoGuid) {
+          requestBody.cfoGuid = document.cfoGuid;
+        }
+        if (!requestBody.projectGuid && document.projectGuid) {
+          requestBody.projectGuid = document.projectGuid;
+        }
+        if (!requestBody.counterpartyGuid && document.counterpartyGuid) {
+          requestBody.counterpartyGuid = document.counterpartyGuid;
+        }
+        if (!requestBody.date && document.date) {
+          requestBody.date = document.date;
+        }
+        if (!requestBody.amount && document.amount) {
+          requestBody.amount = document.amount;
+        }
+        if (!requestBody.currency && document.currency) {
+          requestBody.currency = document.currency;
+        }
+        if (!requestBody.paymentForm && document.paymentForm) {
+          requestBody.paymentForm = document.paymentForm;
+        }
+        if (!requestBody.operationType && document.operationType) {
+          requestBody.operationType = document.operationType;
+        }
+        if (!requestBody.purposeText && document.purposeText) {
+          requestBody.purposeText = document.purposeText;
+        }
+        if (!requestBody.budgetArticleGuid && document.budgetArticleGuid) {
+          requestBody.budgetArticleGuid = document.budgetArticleGuid;
+        }
+        if (!requestBody.ddsArticleGuid && document.ddsArticleGuid) {
+          requestBody.ddsArticleGuid = document.ddsArticleGuid;
+        }
+        if (!requestBody.contractGuid && document.contractGuid) {
+          requestBody.contractGuid = document.contractGuid;
+        }
         
         // Send request to backend
         console.log("sanitizedFormData:", sanitizedFormData);
@@ -1343,19 +1354,13 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         showCustomMessage('Ошибка при обновлении заявки на расходы: ' + error.message, 'danger');
       }
     } else if (document.documentType === 'payment') {
-      // Validate required fields for payment
-      if (!sanitizedFormData.documentNumber) {
-        showCustomMessage('Пожалуйста, укажите номер документа', 'danger');
-        return;
-      }
+      // For payment editing, we allow partial updates
+      // We don't require all fields to be re-entered
+      // The backend will preserve existing values
       
-      if (!sanitizedFormData.documentDate) {
-        showCustomMessage('Пожалуйста, укажите дату документа', 'danger');
-        return;
-      }
-      
-      if (!sanitizedFormData.selectedPayments || sanitizedFormData.selectedPayments.length === 0) {
-        showCustomMessage('Пожалуйста, выберите хотя бы одну строку платежа', 'danger');
+      // We only validate that we have the document ID
+      if (!document.id) {
+        showCustomMessage('Ошибка: отсутствует идентификатор документа', 'danger');
         return;
       }
       
@@ -1377,20 +1382,40 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         );
         
         // Prepare request body according to specification
+        // For editing, we send only the fields that have values
+        // Either from the form or from the existing document
         const requestBody = {
           username: "Администратор",
           token: token,
           documentId: document.id,
           action: "update_document_payment",
           type: "payment",
-          documentNumber: sanitizedFormData.documentNumber,
-          documentDate: sanitizedFormData.documentDate,
-          paymentLines: selectedPaymentLines.map(payment => ({
+          // Only include fields that have values
+          ...(sanitizedFormData.documentNumber && { documentNumber: sanitizedFormData.documentNumber }),
+          ...(sanitizedFormData.documentDate && { documentDate: sanitizedFormData.documentDate }),
+          ...(selectedPaymentLines.length > 0 && {
+            paymentLines: selectedPaymentLines.map(payment => ({
+              guid: payment.guid,
+              amount: payment.amount,
+              paymentDate: payment.paymentDate
+            }))
+          })
+        };
+        
+        // If we don't have a value in the form but had one in the document, use the document value
+        if (!requestBody.documentNumber && document.number) {
+          requestBody.documentNumber = document.number;
+        }
+        if (!requestBody.documentDate && document.date) {
+          requestBody.documentDate = document.date;
+        }
+        if (!requestBody.paymentLines && document.paymentLines && document.paymentLines.length > 0) {
+          requestBody.paymentLines = document.paymentLines.map(payment => ({
             guid: payment.guid,
             amount: payment.amount,
             paymentDate: payment.paymentDate
-          }))
-        };
+          }));
+        }
         
         // Send request to backend
         const response = await apiRequest("register_document_action", requestBody, token);

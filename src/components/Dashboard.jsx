@@ -526,11 +526,24 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
           <MemoForm
             currentUser={currentUser}
             onBack={handleBackToList}
-            onSave={(formData) => {
+            onSave={(formData, documentId) => {
               // Handle form submission
               // console.log('Memo form submitted:', formData);
               // In a real app, this would save to the backend
-              handleBackToList();
+              // Select the newly created document to show its detail view
+              if (documentId) {
+                // Create a minimal document object to show in detail view
+                const newDocument = {
+                  id: documentId,
+                  documentType: 'memo',
+                  title: 'Новая служебная записка',
+                  status: 'prepared'
+                };
+                setSelectedDocument(newDocument);
+                setShowCreateForm(null); // Hide the form
+              } else {
+                handleBackToList();
+              }
               // Refresh the document list after creating a document
               loadDashboardData();
             }}
@@ -541,11 +554,24 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
           <ExpenditureForm
             currentUser={currentUser}
             onBack={handleBackToList}
-            onSave={(formData) => {
+            onSave={(formData, documentId) => {
               // Handle form submission
               // console.log('Expenditure form submitted:', formData);
               // In a real app, this would save to the backend
-              handleBackToList();
+              // Select the newly created document to show its detail view
+              if (documentId) {
+                // Create a minimal document object to show in detail view
+                const newDocument = {
+                  id: documentId,
+                  documentType: 'expenditure',
+                  title: 'Новая заявка на расходы',
+                  status: 'prepared'
+                };
+                setSelectedDocument(newDocument);
+                setShowCreateForm(null); // Hide the form
+              } else {
+                handleBackToList();
+              }
               // Refresh the document list after creating a document
               loadDashboardData();
             }}
@@ -556,11 +582,24 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
           <PaymentCreationForm
             currentUser={currentUser}
             onBack={handleBackToList}
-            onSave={(formData) => {
+            onSave={(formData, documentId) => {
               // Handle form submission
               // console.log('Payment form submitted:', formData);
               // In a real app, this would save to the backend
-              handleBackToList();
+              // Select the newly created document to show its detail view
+              if (documentId) {
+                // Create a minimal document object to show in detail view
+                const newDocument = {
+                  id: documentId,
+                  documentType: 'payment',
+                  title: 'Новый платежный документ',
+                  status: 'prepared'
+                };
+                setSelectedDocument(newDocument);
+                setShowCreateForm(null); // Hide the form
+              } else {
+                handleBackToList();
+              }
               // Refresh the document list after creating a document
               loadDashboardData();
             }}

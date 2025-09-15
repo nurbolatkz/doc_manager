@@ -19,7 +19,6 @@ const ExpenditureEdit = ({
   existingAttachments,
   loadingAttachments
 }) => {
-  console.log('ExpenditureEdit formData:', formData);
   return (
     <>
       {/* Basic Information Section */}

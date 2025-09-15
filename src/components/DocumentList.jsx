@@ -8,6 +8,7 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [uniqueOrganizations, setUniqueOrganizations] = useState([]);
   const [uniqueCounterparties, setUniqueCounterparties] = useState([]);
+  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' or 'desc'
 
   // Extract unique organizations and counterparties from documents
   useEffect(() => {
@@ -230,6 +231,18 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
       );
     }
     return true;
+  });
+
+  // Sort documents by date (default: ascending)
+  const sortedDocuments = [...filteredDocuments].sort((a, b) => {
+    const dateA = parseDateString(a.uploadDate);
+    const dateB = parseDateString(b.uploadDate);
+    
+    if (!dateA && !dateB) return 0;
+    if (!dateA) return 1;
+    if (!dateB) return -1;
+    
+    return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
   });
 
   // Document Card Component for mobile/tablet
@@ -516,13 +529,13 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
       {/* Responsive Document Display */}
       {/* Mobile/Tablet Cards */}
       <div className="document-cards-container">
-        {filteredDocuments.length === 0 ? (
+        {sortedDocuments.length === 0 ? (
           <div className="no-documents">
             <i className="fas fa-file-alt fa-3x mb-3"></i>
             <p>Документы не найдены. Попробуйте изменить критерии поиска или фильтры.</p>
           </div>
         ) : (
-          filteredDocuments.map((document, index) => (
+          sortedDocuments.map((document, index) => (
             <DocumentCard key={document.id} document={document} index={index} />
           ))
         )}
@@ -540,20 +553,23 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
                     <th scope="col">Организация</th>
                     <th scope="col">Контрагент</th>
                     <th scope="col">Сумма</th>
-                    <th scope="col">Дата создания</th>
+                    <th scope="col" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')} style={{ cursor: 'pointer' }}>
+                      Дата создания
+                      <i className={`fas fa-sort-${sortOrder === 'asc' ? 'up' : 'down'} ml-2`}></i>
+                    </th>
                     <th scope="col">Автор</th>
                     <th scope="col">Статус</th>
               </tr>
             </thead>
             <tbody>
-              {filteredDocuments.length === 0 ? (
+              {sortedDocuments.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="text-center text-muted py-4">
                     Документы не найдены. Попробуйте изменить критерии поиска или фильтры.
                   </td>
                 </tr>
               ) : (
-                filteredDocuments.map((document, index) => (
+                sortedDocuments.map((document, index) => (
                   <tr key={document.id} style={{ cursor: 'pointer' }} onClick={() => onDocumentSelect(document)}>
                     <td>{index + 1}</td>
                     <td>

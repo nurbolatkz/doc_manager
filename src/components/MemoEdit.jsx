@@ -61,7 +61,7 @@ const MemoEdit = ({
           <label className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Организация:</label>
           <select 
             className={`form-control ${theme?.mode === 'dark' ? 'dark' : 'light'}`}
-            value={formData.organizationGuid}
+            value={formData.organizationGuid || ''}
             onChange={(e) => {
               handleInputChange('organizationGuid', e.target.value);
             }}
