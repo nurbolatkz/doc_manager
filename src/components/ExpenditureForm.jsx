@@ -10,7 +10,7 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
     currency: 'KZT',
     amount: '',
     paymentForm: 'Наличные',
-    operationType: 'Возврат денежных средств покупателю',
+    operationType: 'Оплата поставщику',
     organization: '',
     organizationGuid: '',
     purposeText: '',
@@ -89,72 +89,9 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
 
   // Fetch operation types from API
   useEffect(() => {
-    const loadOperationTypes = async () => {
-      try {
-        setLoadingOperationTypes(true);
-        const token = sessionStorage.getItem('authToken');
-        if (!token) {
-          throw new Error('No authentication token found');
-        }
-
-        const requestBody = {
-          username: "Администратор",
-          type: "expenditure"
-        };
-
-        // Using the apiRequest function directly with the endpoint
-        const response = await apiRequest("operation-type", requestBody, token);
-        
-        if (response && response.data && Array.isArray(response.data)) {
-          setOperationTypes(response.data.map(item => item.name));
-        } else {
-          // Fallback to default options if API doesn't return expected data
-          setOperationTypes([
-            'Возврат денежных средств покупателю',
-            'Выдача денежных средств подотчетнику',
-            'Перечисление заработной платы',
-            'Перечисление налога',
-            'Перечисление НДС с изменённым сроком уплаты',
-            'Перечисление пенсионных взносов',
-            'Перечисление по исполнительным листам',
-            'Перечисление социальных отчислений',
-            'Прочие расчёты с контрагентами',
-            'Расчёты по кредитам и займам с работниками',
-            'Прочий расход денежных средств',
-            'Расчёты по кредитам и займам с контрагентами',
-            'Расчёты по доходу от разовых выплат с контрагентами',
-            'Оплата структурному подразделению',
-            'Перевод на другой счёт',
-            'Оплата поставщику'
-          ]);
-        }
-      } catch (err) {
-        console.error('Error fetching operation types:', err);
-        // Fallback to default options on error
-        setOperationTypes([
-          'Возврат денежных средств покупателю',
-          'Выдача денежных средств подотчетнику',
-          'Перечисление заработной платы',
-          'Перечисление налога',
-          'Перечисление НДС с изменённым сроком уплаты',
-          'Перечисление пенсионных взносов',
-          'Перечисление по исполнительным листам',
-          'Перечисление социальных отчислений',
-          'Прочие расчёты с контрагентами',
-          'Расчёты по кредитам и займам с работниками',
-          'Прочий расход денежных средств',
-          'Расчёты по кредитам и займам с контрагентами',
-          'Расчёты по доходу от разовых выплат с контрагентами',
-          'Оплата структурному подразделению',
-          'Перевод на другой счёт',
-          'Оплата поставщику'
-        ]);
-      } finally {
-        setLoadingOperationTypes(false);
-      }
-    };
-
-    loadOperationTypes();
+    // Set default operation type without fetching from API
+    setOperationTypes(['Оплата поставщику']);
+    setLoadingOperationTypes(false);
   }, []);
 
   // Fetch organizations from API
