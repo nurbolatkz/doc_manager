@@ -44,6 +44,20 @@ const PaymentEdit = ({
         </div>
       </div>
 
+      {/* Comment field */}
+      <div className="form-group">
+        <label htmlFor="payment-comment">Комментарий:</label>
+        <textarea
+          id="payment-comment"
+          name="comment"
+          value={formData.comment}
+          onChange={(e) => handleInputChange('comment', e.target.value)}
+          className={`form-control ${theme?.mode === 'dark' ? 'dark' : 'light'}`}
+          placeholder="Введите комментарий..."
+          rows="3"
+        />
+      </div>
+
       {/* Payments Table */}
       <div className="form-group">
         <div className="flex justify-between items-center mb-2">

@@ -154,6 +154,15 @@ export const formatDateForInput = (dateValue) => {
   if (!dateValue) return '';
   
   try {
+    // Handle string dates in format dd.mm.yyyy
+    if (typeof dateValue === 'string' && dateValue.includes('.') && dateValue.split('.').length === 3) {
+      const [day, month, year] = dateValue.split('.');
+      const date = new Date(`${year}-${month}-${day}`);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
+      }
+    }
+    
     // Handle different date formats
     const date = new Date(dateValue);
     

@@ -17,8 +17,8 @@ import { t } from '../utils/messages';
 import { sanitizeInput, sanitizeFormData } from '../utils/inputSanitization';
 import { mergeDocumentData, formatDateForInput } from '../utils/documentUtils';
 import MemoEdit from './MemoEdit';
-import PaymentEdit from './PaymentEdit';
 import ExpenditureEdit from './ExpenditureEdit';
+import PaymentEdit from './PaymentEdit';  // Rename back to PaymentEdit
 
 const DocumentEdit = ({ document, onBack, onSave, theme }) => {
   // Initial form state
@@ -54,6 +54,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
     // Payment-specific fields
     documentNumber: '',
     documentDate: '',
+    comment: '',  // Add comment field for payment documents
     paymentGuid: '',
     payments: [],
     selectedPayments: [],
@@ -253,7 +254,42 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         break;
 
       case 'payment':
-        const paymentFormattedDate = document.date ? formatDateForInput(document.date) : '';
+        // Comprehensive date extraction for payment documents
+        let paymentDocumentDate = '';
+        
+        // Check various possible date field names
+        const dateFields = ['date', 'documentDate', 'uploadDate', 'createdDate', 'actionDate'];
+        for (const field of dateFields) {
+          if (document[field]) {
+            paymentDocumentDate = document[field];
+            break;
+          }
+        }
+        
+        // Check nested documentData object
+        if (!paymentDocumentDate && document.documentData && typeof document.documentData === 'object') {
+          for (const field of dateFields) {
+            if (document.documentData[field]) {
+              paymentDocumentDate = document.documentData[field];
+              break;
+            }
+          }
+        }
+        
+        // Check for date in document properties with different naming
+        if (!paymentDocumentDate) {
+          const documentKeys = Object.keys(document);
+          for (const key of documentKeys) {
+            if (key.toLowerCase().includes('date') && document[key]) {
+              paymentDocumentDate = document[key];
+              break;
+            }
+          }
+        }
+        
+        // Format the date for input field
+        const paymentFormattedDate = paymentDocumentDate ? formatDateForInput(paymentDocumentDate) : '';
+        
         let paymentGuid = document.paymentGuid || '';
         
         if (!paymentGuid && document.paymentLines?.length > 0) {
@@ -282,6 +318,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
           ...commonFields,
           documentNumber: document.number || '',
           documentDate: paymentFormattedDate,
+          comment: document.comment || '',  // Add comment field initialization
           paymentGuid: paymentGuid,
           payments: initialPayments,
           selectedPayments: initialPayments.map(payment => payment.id),
@@ -841,6 +878,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       type: "payment",
       documentNumber: sanitizedFormData.documentNumber || document.number,
       documentDate: sanitizedFormData.documentDate || document.date,
+      comment: sanitizedFormData.comment || document.comment || '',  // Add comment field
       paymentGuid: sanitizedFormData.paymentGuid || document.paymentGuid || formData.paymentGuid,
       paymentLines: selectedPaymentLines.map(payment => ({
         guid: payment.guid,
@@ -874,6 +912,7 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         const updatedDocument = mergeDocumentData(document, {
           number: formData.documentNumber || document.number,
           date: formData.documentDate || document.date,
+          comment: formData.comment || document.comment || '',  // Add comment field
           paymentGuid: formData.paymentGuid || document.paymentGuid,
           paymentLines: paymentLinesData,
           ...(formData.organizationGuid && { organizationGuid: formData.organizationGuid }),

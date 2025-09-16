@@ -60,6 +60,11 @@ const DocumentSpecificFields = ({ documentDetail, theme, formatDate, formatCurre
             </div>
             <div className="info-grid" style={infoGridStyle}>
               <div className={`detail-card ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                {/* Added date field before the "Ответственный" (Responsible) field as per UI specifications */}
+                <div className="detail-item">
+                  <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Дата:</span>
+                  <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{formatDate(documentDetail.date) || 'Не указано'}</span>
+                </div>
                 <div className="detail-item">
                   <span className={`detail-label ${theme?.mode === 'dark' ? 'dark' : ''}`}>Ответственный:</span>
                   <span className={`detail-value ${theme?.mode === 'dark' ? 'dark' : ''}`}>{documentDetail.responsible || 'Не указано'}</span>
