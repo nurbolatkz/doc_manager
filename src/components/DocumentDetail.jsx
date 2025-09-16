@@ -57,6 +57,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
   // Route type state
   const [routeType, setRouteType] = useState(null);
   const [loadingRouteType, setLoadingRouteType] = useState(false);
+  const [routeTypeRetryCount, setRouteTypeRetryCount] = useState(0);
 
   // Reset fetchAttempted when document changes
   useEffect(() => {
@@ -313,7 +314,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
     }
   }, [documentDetail?.id, documentDetail?.status]); // Changed dependency array to only depend on document ID and status
 
-  // Fetch route type when document detail changes
+  // Fetch route type when document detail changes with retry logic for newly created documents
   useEffect(() => {
     const fetchRouteType = async () => {
       // Only fetch if we have document details
@@ -322,8 +323,8 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       // Fix the typo in documentType
       const correctedDocumentType = standardizeDocumentType(documentDetail.documentType);
       
-      // Skip if we already have routeType
-      if (routeType !== null) return;
+      // Skip if we already have routeType and haven't exceeded retry limit
+      if (routeType !== null && routeTypeRetryCount < 3) return;
       
       try {
         setLoadingRouteType(true);
@@ -344,6 +345,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         
         if (response && response.success === 1) {
           setRouteType(response.routeType);
+          setRouteTypeRetryCount(0); // Reset retry count on success
           // Update document detail with route type ONLY if it doesn't already exist
           setDocumentDetail(prev => {
             if (!prev.routeType) {
@@ -358,21 +360,32 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         } else {
           // Show error as alert instead of blocking the document view
           showCustomMessage(response?.message || 'Failed to fetch route type', 'warning');
+          // Increment retry count
+          setRouteTypeRetryCount(prev => prev + 1);
         }
       } catch (err) {
         // Only log error and show one alert
         console.error('Error fetching route type:', err);
         // Show error as alert instead of blocking the document view
         showCustomMessage(err.message || 'Failed to fetch route type', 'danger');
+        // Increment retry count
+        setRouteTypeRetryCount(prev => prev + 1);
       } finally {
         setLoadingRouteType(false);
       }
     };
 
-    fetchRouteType();
-  }, [documentDetail?.id, documentDetail?.documentType, routeType]); // Add routeType to dependencies
+    // For newly created documents, we may need to retry fetching route type
+    // Add a small delay before fetching to allow backend to initialize routing metadata
+    const timer = setTimeout(() => {
+      fetchRouteType();
+    }, 500); // 500ms delay for newly created documents
 
-  // Fetch route steps data
+    // Cleanup timer on unmount or when dependencies change
+    return () => clearTimeout(timer);
+  }, [documentDetail?.id, documentDetail?.documentType, routeType, routeTypeRetryCount]); // Add routeType and retry count to dependencies
+
+  // Fetch route steps data with retry logic for newly created documents
   useEffect(() => {
     const fetchRouteSteps = async () => {
       // Only fetch if we have document details
@@ -445,7 +458,14 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       }
     };
 
-    fetchRouteSteps();
+    // For newly created documents, we may need to retry fetching route steps
+    // Add a small delay before fetching to allow backend to initialize routing metadata
+    const timer = setTimeout(() => {
+      fetchRouteSteps();
+    }, 500); // 500ms delay for newly created documents
+
+    // Cleanup timer on unmount or when dependencies change
+    return () => clearTimeout(timer);
   }, [documentDetail?.id, documentDetail?.documentType]);
 
   // Fetch route titles for free route type
@@ -533,14 +553,24 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
   useEffect(() => {
     // Remove the check for routeTitles.length === 0 to ensure we can re-fetch if needed
     if (documentDetail && documentDetail.documentType && documentDetail.id && routeType === 'free') {
-      fetchRouteTitles();
+      // For newly created documents, we may need to retry fetching route titles
+      // Add a small delay before fetching to allow backend to initialize routing metadata
+      const timer = setTimeout(() => {
+        fetchRouteTitles();
+      }, 500); // 500ms delay for newly created documents
+
+      // Cleanup timer on unmount or when dependencies change
+      return () => clearTimeout(timer);
     }
   }, [documentDetail?.id, documentDetail?.documentType, routeType]);
 
-  // Fetch route information after document details are fully fetched
+  // Enhanced useEffect for route information after document details are fully fetched
   useEffect(() => {
-    // This useEffect is now simplified and will trigger when documentDetail changes
-    // The individual route fetching useEffects will handle their own logic
+    // This useEffect is now enhanced to handle newly created documents properly
+    if (documentDetail && documentDetail.id) {
+      // Reset retry counters when document changes
+      setRouteTypeRetryCount(0);
+    }
   }, [documentDetail?.id]);
 
   // Render specific fields based on document type

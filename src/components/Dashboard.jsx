@@ -550,13 +550,16 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
               // In a real app, this would save to the backend
               // Select the newly created document to show its detail view
               if (documentId) {
-                // Create a minimal document object to show in detail view
+                // Create a minimal document object to show in detail view with route metadata
                 const newDocument = {
                   id: documentId,
                   documentType: 'memo',
                   title: 'Новая служебная записка',
                   status: 'prepared',
-                  uploadDate: new Date().toISOString().split('T')[0] // Format as YYYY-MM-DD
+                  uploadDate: new Date().toISOString().split('T')[0], // Format as YYYY-MM-DD
+                  // Add route metadata placeholders for newly created documents
+                  routeType: null,
+                  routeSteps: []
                 };
                 console.log('Dashboard: Setting selectedDocument to:', newDocument);
                 setSelectedDocument(newDocument);
@@ -585,13 +588,16 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
               // In a real app, this would save to the backend
               // Select the newly created document to show its detail view
               if (documentId) {
-                // Create a minimal document object to show in detail view
+                // Create a minimal document object to show in detail view with route metadata
                 const newDocument = {
                   id: documentId,
                   documentType: 'expenditure',
                   title: 'Новая заявка на расходы',
                   status: 'prepared',
-                  uploadDate: new Date().toISOString().split('T')[0] // Format as YYYY-MM-DD
+                  uploadDate: new Date().toISOString().split('T')[0], // Format as YYYY-MM-DD
+                  // Add route metadata placeholders for newly created documents
+                  routeType: null,
+                  routeSteps: []
                 };
                 console.log('Dashboard: Setting selectedDocument to:', newDocument);
                 setSelectedDocument(newDocument);
@@ -620,13 +626,16 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
               // In a real app, this would save to the backend
               // Select the newly created document to show its detail view
               if (documentId) {
-                // Create a minimal document object to show in detail view
+                // Create a minimal document object to show in detail view with route metadata
                 const newDocument = {
                   id: documentId,
                   documentType: 'payment',
                   title: 'Новый платежный документ',
                   status: 'prepared',
-                  uploadDate: new Date().toISOString().split('T')[0] // Format as YYYY-MM-DD
+                  uploadDate: new Date().toISOString().split('T')[0], // Format as YYYY-MM-DD
+                  // Add route metadata placeholders for newly created documents
+                  routeType: null,
+                  routeSteps: []
                 };
                 console.log('Dashboard: Setting selectedDocument to:', newDocument);
                 setSelectedDocument(newDocument);
