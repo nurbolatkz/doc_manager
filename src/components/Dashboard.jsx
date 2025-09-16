@@ -218,7 +218,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
             {sidebarOpen && (
               <>
                 <i className="fas fa-file-contract mr-2"></i>
-                ДокМенеджер
+                AgTech-<span style={{color: '#FFD700'}}>1C</span>Portal
               </>
             )}
           </div>

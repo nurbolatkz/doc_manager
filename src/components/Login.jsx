@@ -166,7 +166,7 @@ const Login = ({ onLogin }) => {
       <div className={`login-card ${darkMode ? 'dark' : ''}`}>
         <div className="login-header">
           <h1 className="login-title">
-            <i className="fas fa-file-contract mr-2"></i> ДокМенеджер
+            <i className="fas fa-file-contract mr-2"></i> AgTech-<span style={{color: '#FFD700'}}>1C</span>Portal
           </h1>
           <p className={`login-subtitle ${darkMode ? 'dark' : ''}`}>Пожалуйста, войдите в свой аккаунт</p>
         </div>
@@ -284,7 +284,7 @@ const Login = ({ onLogin }) => {
         </button>
       </div>
 
-      <footer className={`footer ${darkMode ? 'dark' : ''}`}>
+      <footer className={`footer ${darkMode ? 'dark' : ''}`} style={{ color: 'white', fontSize: '12px' }}>
         <p>Этот веб-сайт был создан компанией "KazUni", 2025</p>
       </footer>
 
