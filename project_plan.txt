@@ -1,0 +1,109 @@
+Ag-Tech Portal Project Plan
+==========================
+
+1. Current Functionality & Flow
+- App.jsx handles auth gating, persists theme and auth token in sessionStorage, and toggles between Login and Dashboard views.
+- Login.jsx authenticates against the 1C proxy API using Basic auth, fetches CSRF tokens, sanitises inputs, and stores the issued token via App callbacks.
+- Dashboard.jsx loads document lists and aggregate counts via services/fetchManager, controls filters, document selection, creation flows, and toggles between list, detail, and edit states.
+- DocumentList/Detail/Edit + Memo/Payment/Expenditure forms render domain-specific data entry, validation, attachment management, and routing metadata with a shared CSS layer.
+- services/fetchManager centralises API calls to the 1C backend, wrapping CSRF handling, Basic auth, and provides helpers for documents, counts, CFO, counterparty, contract, upload, and approval actions.
+- utils (alerts, messages, sanitisation) and data/mockData supply UI feedback, localisation strings, and offline fallbacks when API calls fail.
+
+2. Key Pain Points Observed
+- Monolithic feature components (Dashboard, DocumentDetail/Edit, ExpenditureForm, PaymentCreationForm) exceed tens of KB, mixing view logic, state management, side effects, and API orchestration.
+- All data fetching lives in a single file, making it hard to isolate auth logic, document queries, or reuse calls in other components (e.g., future mobile clients).
+- CSS is concentrated in a few global files, leading to leakage between screens and hard-to-track style regressions.
+- Lack of feature boundaries or typed models results in defensive transformations scattered across components, increasing bug risk when backend shapes change.
+- No central routing/layout shell or provider layer (theme, notifications, query cache) which limits expansion to new pages or background sync features.
+
+3. Architectural Goals
+- Separate cross-cutting app shell (routing, providers, theme) from domain features (auth, documents) to enable independent iteration and testing.
+- Adopt feature folders with clear public APIs (components, hooks, services, models) to keep document workflows modular and reusable.
+- Encapsulate remote access in thin API clients plus data hooks, making it easier to swap between real backend, mock data, or tests.
+- Normalize styling via co-located CSS Modules or a shared design system to avoid global leakage while keeping incremental migration easy.
+- Prepare the codebase for incremental adoption of state/query libraries (React Query, Zustand) without forcing immediate rewrites.
+
+4. Target Directory Layout
+```text
+src/
+  app/
+    App.jsx               # top-level shell
+    routes.jsx            # central route definitions
+    providers/
+      AuthProvider.jsx
+      ThemeProvider.jsx
+      QueryProvider.jsx   # wrapper for react-query later
+    layout/
+      MainLayout.jsx      # navigation, sidebar, header
+  features/
+    auth/
+      api/authApi.js
+      components/LoginForm.jsx
+      hooks/useAuth.js
+      services/sessionStorage.js
+      index.js            # exports feature surface
+    documents/
+      api/
+        documentsApi.js   # list, detail, counts
+        attachmentsApi.js
+      components/
+        DocumentList/
+          DocumentList.jsx
+          DocumentList.css
+        DocumentDetail/
+          DocumentDetail.jsx
+        DocumentEditor/
+          DocumentEditor.jsx
+          forms/
+            PaymentForm.jsx
+            MemoForm.jsx
+            ExpenditureForm.jsx
+      hooks/
+        useDocuments.js
+        useDocumentDetail.js
+      models/
+        document.js       # schema/type helpers
+      state/
+        documentsStore.js # optional Zustand/Context
+      index.js
+    shared/
+      components/
+        Button/
+        Modal/
+        FormField/
+      hooks/
+        useDebounce.js
+        useToggle.js
+      utils/
+        formatDate.js
+        formatCurrency.js
+  services/
+    httpClient.js         # fetch wrapper, interceptors
+    csrf.js
+  config/
+    index.js              # runtime config, env helpers
+  styles/
+    globals.css
+    variables.css
+  lib/                    # third-party wrappers (sigex, dompurify)
+  utils/                  # legacy utilities kept until migrated
+  data/
+    mocks/
+      documents.js
+      users.js
+```
+
+5. Migration Strategy
+- Phase 1: Extract httpClient + authApi/documentsApi from services/fetchManager, route all existing calls through new clients while keeping component code intact.
+- Phase 2: Move Login into features/auth with an AuthProvider that wraps App, exposing useAuth hook for Dashboard and future routes.
+- Phase 3: Carve DocumentList/Detail/Edit into features/documents components and introduce useDocuments/useDocumentDetail hooks that depend on the new API clients.
+- Phase 4: Introduce app/routes.jsx and MainLayout, wiring routes for login, dashboard list, document detail, and creation forms; keep navigation minimal at first.
+- Phase 5: Gradually migrate styling into component-scoped CSS (or CSS Modules), starting with DocumentList and Login, to reduce reliance on Dashboard_Restructured.css.
+- Phase 6: Add typed model helpers (with JSDoc or TypeScript) to centralise field normalisation and remove duplicate mapping logic across components.
+- Phase 7: Optionally integrate React Query for caching and background refetch, once API clients are stable, to cut down on manual loading/error state handling.
+
+6. Supporting Practices
+- Introduce unit tests for API clients and normalisers using the mocks in data/mocks; add integration tests around the major document flows as structure stabilises.
+- Document key environment variables and backend expectations in README while migrating config into config/index.js with explicit schema validation.
+- Establish lint rules and formatting (ESLint, Prettier) per feature folder to keep contributions consistent as the team scales.
+- Track incremental refactor progress in plan_architecture.txt or a project board, closing tasks as each module moves into the new layout.

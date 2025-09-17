@@ -289,30 +289,42 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
     fetchDocumentDetail();
   }, [document?.id, document?.documentType]); // Removed fetchAttempted from dependency array to prevent infinite loops
 
-  // Clear route data when document status is 'prepared' or 'declined'
+  // Clear route data when document status changes to 'prepared' or 'declined'
   useEffect(() => {
+    console.log('Clear route data useEffect triggered with:', { 
+      documentStatus: documentDetail?.status, 
+      routeType, 
+      routeStepsLength: routeSteps.length,
+      routeTitlesLength: routeTitles.length
+    });
+    
     if (documentDetail && (documentDetail.status === 'prepared' || documentDetail.status === 'declined')) {
       // Clear route steps if they exist
       if (routeSteps.length > 0) {
+        console.log('Clearing route steps');
         setRouteSteps([]);
       }
       
-      // Clear route titles if they exist
-      if (routeTitles.length > 0) {
+      // Don't clear route titles for free routes as they will be fetched automatically
+      // Clear route titles only for fixed routes
+      if (routeType === 'fixed' && routeTitles.length > 0) {
+        console.log('Clearing route titles for fixed route');
         setRouteTitles([]);
       }
       
-      // Reset selected users
-      if (Object.keys(selectedUsers).length > 0) {
+      // Reset selected users only for fixed routes
+      if (routeType === 'fixed' && Object.keys(selectedUsers).length > 0) {
+        console.log('Clearing selected users for fixed route');
         setSelectedUsers({});
       }
       
       // Reset route sent status
       if (routeSent) {
+        console.log('Resetting route sent status');
         setRouteSent(false);
       }
     }
-  }, [documentDetail?.id, documentDetail?.status]); // Changed dependency array to only depend on document ID and status
+  }, [documentDetail?.status, routeType]);
 
   // Fetch route type when document detail changes with retry logic for newly created documents
   useEffect(() => {
@@ -407,48 +419,109 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           return;
         }
         
-        // Fetch document routes based on document type and ID
-        const routeData = await fetchDocumentRoutes(token, correctedDocumentType, documentDetail.id);
-        // console.log('Document routes fetched from 1C backend:', routeData);
-        
-        if (routeData && routeData.data && Array.isArray(routeData.data)) {
-          // Transform the fetched route data to match our route steps structure
-          const transformedRoutes = routeData.data
-            .map((route, index) => {
-              // Find the current step based on status
-              let status = 'pending';
-              if (route.status === 'approved') {
-                status = 'approved';
-              } else if (route.status === 'rejected') {
-                status = 'rejected';
-              }
-              
-              // Extract users from the route data
-              let users = [''];
-              if (route.users && Array.isArray(route.users)) {
-                // Split each user by newlines and flatten into a single array
-                users = route.users.flatMap(user => 
-                  user.split('\n').filter(line => line.trim() !== '')
-                );
-                // If no valid users after splitting, use a default
-                if (users.length === 0) users = [''];
-              }
-              
-              return {
-                id: route.id || `step-${index}`,
-                stepNumber: route.order !== undefined ? route.order + 1 : index + 1,
-                title: route.step_title || `Шаг ${index + 1}`,
-                users: users,
-                status: status,
-                comment: route.info || ''
-              };
-            })
-            .sort((a, b) => a.stepNumber - b.stepNumber); // Sort by step number to ensure correct order
+        // For documents with status "on_approving", "approved", "declined" - fetch routeSteps
+        // No need to check routeType because all steps are filled
+        const relevantStatuses = ['on_approving', 'approved', 'declined'];
+        if (relevantStatuses.includes(documentDetail.status)) {
+          // Fetch document routes based on document type and ID
+          const routeData = await fetchDocumentRoutes(token, correctedDocumentType, documentDetail.id);
+          // console.log('Document routes fetched from 1C backend:', routeData);
           
-          setRouteSteps(transformedRoutes);
-        } else {
-          // Show error as alert instead of setting error state
-          showCustomMessage(routeData?.message || 'Failed to fetch document routes', 'warning');
+          if (routeData && routeData.data && Array.isArray(routeData.data)) {
+            // Transform the fetched route data to match our route steps structure
+            const transformedRoutes = routeData.data
+              .map((route, index) => {
+                // Find the current step based on status
+                let status = 'pending';
+                if (route.status === 'approved') {
+                  status = 'approved';
+                } else if (route.status === 'rejected') {
+                  status = 'rejected';
+                }
+                
+                // Extract users from the route data
+                let users = [''];
+                if (route.users && Array.isArray(route.users)) {
+                  // Split each user by newlines and flatten into a single array
+                  users = route.users.flatMap(user => 
+                    user.split('\n').filter(line => line.trim() !== '')
+                  );
+                  // If no valid users after splitting, use a default
+                  if (users.length === 0) users = [''];
+                }
+                
+                return {
+                  id: route.id || `step-${index}`,
+                  stepNumber: route.order !== undefined ? route.order + 1 : index + 1,
+                  title: route.step_title || `Шаг ${index + 1}`,
+                  users: users,
+                  status: status,
+                  comment: route.info || ''
+                };
+              })
+              .sort((a, b) => a.stepNumber - b.stepNumber); // Sort by step number to ensure correct order
+            
+            setRouteSteps(transformedRoutes);
+          } else {
+            // Show error as alert instead of setting error state
+            showCustomMessage(routeData?.message || 'Failed to fetch document routes', 'warning');
+          }
+          return; // Exit early for these statuses
+        }
+        
+        // For fixed routes - fetch fixed routes in all statuses including "prepared"
+        if (routeType === 'fixed') {
+          // Fetch document routes based on document type and ID
+          const routeData = await fetchDocumentRoutes(token, correctedDocumentType, documentDetail.id);
+          // console.log('Document routes fetched from 1C backend:', routeData);
+          
+          if (routeData && routeData.data && Array.isArray(routeData.data)) {
+            // Transform the fetched route data to match our route steps structure
+            const transformedRoutes = routeData.data
+              .map((route, index) => {
+                // Find the current step based on status
+                let status = 'pending';
+                if (route.status === 'approved') {
+                  status = 'approved';
+                } else if (route.status === 'rejected') {
+                  status = 'rejected';
+                }
+                
+                // Extract users from the route data
+                let users = [''];
+                if (route.users && Array.isArray(route.users)) {
+                  // Split each user by newlines and flatten into a single array
+                  users = route.users.flatMap(user => 
+                    user.split('\n').filter(line => line.trim() !== '')
+                  );
+                  // If no valid users after splitting, use a default
+                  if (users.length === 0) users = [''];
+                }
+                
+                return {
+                  id: route.id || `step-${index}`,
+                  stepNumber: route.order !== undefined ? route.order + 1 : index + 1,
+                  title: route.step_title || `Шаг ${index + 1}`,
+                  users: users,
+                  status: status,
+                  comment: route.info || ''
+                };
+              })
+              .sort((a, b) => a.stepNumber - b.stepNumber); // Sort by step number to ensure correct order
+            
+            setRouteSteps(transformedRoutes);
+          } else {
+            // Show error as alert instead of setting error state
+            showCustomMessage(routeData?.message || 'Failed to fetch document routes', 'warning');
+          }
+        }
+        // For free routes with status "prepared" or "declined" - clear route steps if they exist
+        else if (routeType === 'free' && 
+                 (documentDetail.status === 'prepared' || documentDetail.status === 'declined')) {
+          // Clear route steps for free routes in prepared/declined status
+          if (routeSteps.length > 0) {
+            setRouteSteps([]);
+          }
         }
       } catch (err) {
         // Only log error and show one alert
@@ -466,7 +539,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
 
     // Cleanup timer on unmount or when dependencies change
     return () => clearTimeout(timer);
-  }, [documentDetail?.id, documentDetail?.documentType]);
+  }, [documentDetail?.id, documentDetail?.documentType, documentDetail?.status, routeType]);
 
   // Fetch route titles for free route type
   const fetchRouteTitles = async () => {
@@ -493,14 +566,23 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       const correctedDocumentType = standardizeDocumentType(documentDetail.documentType);
       
       const response = await getRouteTitles(token, correctedDocumentType, documentDetail.id);
+      console.log('Route titles fetched:', response); // Add logging to see what we get
       if (response && response.data && Array.isArray(response.data)) {
         setRouteTitles(response.data);
-        // Initialize selectedUsers state
+        // Always initialize selectedUsers state when we fetch new route titles
         const initialSelectedUsers = {};
-        response.data.forEach(title => {
-          initialSelectedUsers[title.guid] = '';
+        
+        response.data.forEach((title, index) => {
+          // For the first step (index 0), set a default value since it's the current user's step
+          if (index === 0) {
+            initialSelectedUsers[title.guid] = 'current_user'; // Special value to indicate current user's step
+          } else {
+            initialSelectedUsers[title.guid] = '';
+          }
         });
+        
         setSelectedUsers(initialSelectedUsers);
+        console.log('Selected users initialized:', initialSelectedUsers); // Add logging
       } else {
         // Show error as alert instead of setting error state
         showCustomMessage(response?.message || 'Failed to fetch route titles', 'warning');
@@ -551,8 +633,12 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
 
   // Fetch route titles when documentDetail changes and routeType is 'free'
   useEffect(() => {
-    // Remove the check for routeTitles.length === 0 to ensure we can re-fetch if needed
-    if (documentDetail && documentDetail.documentType && documentDetail.id && routeType === 'free') {
+    // For free routes, fetch route titles when:
+    // 1. Document status is 'prepared' or 'declined'
+    // 2. Route type is 'free'
+    if (documentDetail && documentDetail.documentType && documentDetail.id && 
+        routeType === 'free' && 
+        (documentDetail.status === 'prepared' || documentDetail.status === 'declined')) {
       // For newly created documents, we may need to retry fetching route titles
       // Add a small delay before fetching to allow backend to initialize routing metadata
       const timer = setTimeout(() => {
@@ -562,7 +648,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       // Cleanup timer on unmount or when dependencies change
       return () => clearTimeout(timer);
     }
-  }, [documentDetail?.id, documentDetail?.documentType, routeType]);
+  }, [documentDetail?.id, documentDetail?.documentType, documentDetail?.status, routeType]);
 
   // Enhanced useEffect for route information after document details are fully fetched
   useEffect(() => {
@@ -968,29 +1054,52 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
 
   // Function to send document to route
   const handleSendToRoute = async () => {
+    console.log('handleSendToRoute called with:', { 
+      documentDetail, 
+      routeType, 
+      routeTitlesLength: routeTitles.length,
+      selectedUsers
+    });
+    
     // Pre-send validation
     if (!documentDetail) return;
     
     // Fix the typo in documentType
     const correctedDocumentType = standardizeDocumentType(documentDetail.documentType);
     
+    // Check document state - only allow sending when document is prepared, declined
+    if (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined')  {
+      showCustomMessage('Document is not in a state that allows sending to route', 'warning');
+      return;
+    }
+    
     // Check if routeType is free
     if (routeType === "free") {
-      // Check if route steps are filled
-      if (routeSteps.length === 0) {
-        // Check if all users are selected for free route
-        const allUsersSelected = Object.values(selectedUsers).every(userGuid => userGuid && userGuid.trim() !== '');
+      // If we don't have route titles yet, fetch them first and return
+      // The user will need to click the button again after selecting users
+      if (routeTitles.length === 0) {
+        console.log('Fetching route titles for free route');
+        await fetchRouteTitles();
+        showCustomMessage('Пожалуйста, выберите пользователей для всех шагов кроме первого', 'info');
+        return;
+      }
+      
+      // Check if all users are selected (excluding the first step which is the current user's step)
+      // Get all route title GUIDs except the first one (which is the current user's step)
+      const routeTitleGuids = routeTitles.map(title => title.guid);
+      if (routeTitleGuids.length > 1) {
+        // Skip the first step (index 0) as it's the current user's step
+        const usersToCheck = routeTitleGuids.slice(1);
+        const allUsersSelected = usersToCheck.every(guid => {
+          const userGuid = selectedUsers[guid];
+          return userGuid && userGuid.trim() !== '';
+        });
+        
         if (!allUsersSelected) {
-          showCustomMessage('Пожалуйста, заполните маршрутные шаги', 'warning');
+          showCustomMessage('Пожалуйста, выберите пользователей для всех шагов кроме первого', 'warning');
           return;
         }
       }
-    }
-    
-    // Check document state - only allow sending when document is prepared, declined, or rejected
-    if (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined' && documentDetail.status !== 'rejected')  {
-      showCustomMessage('Document is not in a state that allows sending to route', 'warning');
-      return;
     }
     
     // Disable button after successful send
@@ -1016,19 +1125,21 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       
       // Check if routeType is free
       if (routeType === "free") {
-        // Check if all users are selected
-        const allUsersSelected = Object.values(selectedUsers).every(userGuid => userGuid && userGuid.trim() !== '');
-        if (!allUsersSelected) {
-          showCustomMessage('Пожалуйста, выберите пользователей для всех шагов', 'warning');
-          setSendingToRoute(false);
-          return;
-        }
-        
-        // Build routeSteps array
-        const routeStepsArray = Object.entries(selectedUsers).map(([stepGuid, userGuid]) => ({
-          step_guid: stepGuid,
-          user_guid: userGuid
-        }));
+        // Build routeSteps array (excluding the first step which is the current user's step)
+        const routeStepsArray = [];
+        const routeTitleGuids = routeTitles.map(title => title.guid);
+        routeTitleGuids.forEach((stepGuid, index) => {
+          // Skip the first step (index 0) as it's the current user's step
+          if (index > 0) {
+            const userGuid = selectedUsers[stepGuid];
+            if (userGuid && userGuid.trim() !== '') {
+              routeStepsArray.push({
+                step_guid: stepGuid,
+                user_guid: userGuid
+              });
+            }
+          }
+        });
         
         // API Request for free route
         response = await sendToFreeRoute(
@@ -1046,7 +1157,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           "fixed"
         );
       }
-      
+
       // Response handling
       if (response && response.success === 1) {
         // Success - update document status to on_approving
@@ -1088,42 +1199,51 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         
         // After success: fetch and re-render route steps
         try {
-          const routeData = await fetchDocumentRoutes(token, correctedDocumentType, documentDetail.id);
-          if (routeData && routeData.data && Array.isArray(routeData.data)) {
-            // Transform the fetched route data to match our route steps structure
-            const transformedRoutes = routeData.data
-              .map((route, index) => {
-                // Find the current step based on status
-                let status = 'pending';
-                if (route.status === 'approved') {
-                  status = 'approved';
-                } else if (route.status === 'rejected') {
-                  status = 'rejected';
-                }
-                
-                // Extract users from the route data
-                let users = [''];
-                if (route.users && Array.isArray(route.users)) {
-                  // Split each user by newlines and flatten into a single array
-                  users = route.users.flatMap(user => 
-                    user.split('\n').filter(line => line.trim() !== '')
-                  );
-                  // If no valid users after splitting, use a default
-                  if (users.length === 0) users = [''];
-                }
-                
-                return {
-                  id: route.id || `step-${index}`,
-                  stepNumber: route.order !== undefined ? route.order + 1 : index + 1,
-                  title: route.step_title || `Шаг ${index + 1}`,
-                  users: users,
-                  status: status,
-                  comment: route.info || ''
-                };
-              })
-              .sort((a, b) => a.stepNumber - b.stepNumber); // Sort by step number to ensure correct order
+          // For free routes, we should refetch the route titles, not the fixed route steps
+          if (routeType === 'free') {
+            // Refetch route titles for free routes
+            await fetchRouteTitles();
+          } else {
+            // For fixed routes, fetch the route steps
+            const routeData = await fetchDocumentRoutes(token, correctedDocumentType, documentDetail.id);
+            console.log('Document routes refetched from 1C backend:', routeData);
             
-            setRouteSteps(transformedRoutes);
+            if (routeData && routeData.data && Array.isArray(routeData.data)) {
+              // Transform the fetched route data to match our route steps structure
+              const transformedRoutes = routeData.data
+                .map((route, index) => {
+                  // Find the current step based on status
+                  let status = 'pending';
+                  if (route.status === 'approved') {
+                    status = 'approved';
+                  } else if (route.status === 'rejected') {
+                    status = 'rejected';
+                  }
+                  
+                  // Extract users from the route data
+                  let users = [''];
+                  if (route.users && Array.isArray(route.users)) {
+                    // Split each user by newlines and flatten into a single array
+                    users = route.users.flatMap(user => 
+                      user.split('\n').filter(line => line.trim() !== '')
+                    );
+                    // If no valid users after splitting, use a default
+                    if (users.length === 0) users = [''];
+                  }
+                  
+                  return {
+                    id: route.id || `step-${index}`,
+                    stepNumber: route.order !== undefined ? route.order + 1 : index + 1,
+                    title: route.step_title || `Шаг ${index + 1}`,
+                    users: users,
+                    status: status,
+                    comment: route.info || ''
+                  };
+                })
+                .sort((a, b) => a.stepNumber - b.stepNumber); // Sort by step number to ensure correct order
+              
+              setRouteSteps(transformedRoutes);
+            }
           }
         } catch (routeError) {
           // Only log error and show one alert
@@ -1314,6 +1434,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
 
   // Function to handle user selection for a route step
   const handleUserSelection = (stepGuid, userGuid) => {
+    // Prevent selection for the first step (index 0) as it's the current user's step
+    const stepIndex = routeTitles.findIndex(title => title.guid === stepGuid);
+    if (stepIndex === 0) {
+      // Don't allow changing the first step selection
+      return;
+    }
+    
     setSelectedUsers(prev => ({
       ...prev,
       [stepGuid]: userGuid
@@ -1374,9 +1501,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                   sendingToRoute || 
                   routeSent || 
                   !documentDetail || 
-                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined' && documentDetail.status !== 'rejected') ||
-                  (routeType === 'free' && routeTitles.length > 0 && 
-                   Object.keys(selectedUsers).length !== routeTitles.length)
+                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined')
                 }
               >
                 {sendingToRoute ? (

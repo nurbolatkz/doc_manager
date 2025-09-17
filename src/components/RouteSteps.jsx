@@ -13,6 +13,8 @@ const RouteSteps = ({
   onUserSelection, 
   onSearchTermChange 
 }) => {
+  console.log('RouteSteps rendered with props:', { routeSteps, routeType, routeTitles, selectedUsers }); // Add logging
+  
   // Function to get filtered users for a step based on search term
   const getFilteredUsers = (stepGuid) => {
     const searchTerm = searchTerms[stepGuid] || '';
@@ -143,10 +145,12 @@ const RouteSteps = ({
                   <div className={`route-step-info ${theme?.mode === 'dark' ? 'dark' : ''}`}>
                     <strong className={`${theme?.mode === 'dark' ? 'dark' : ''}`}>{title.name || `Шаг ${index + 1}`}</strong>
                     
-                    {/* User selection dropdown with search */}
-                    <div className={`user-dropdown ${theme?.mode === 'dark' ? 'dark' : ''}`}>
-                      {renderUserDropdown(stepGuid, title)}
-                    </div>
+                    {/* For the first step (index 0), don't show user selection as it's the current user's step */}
+                    {index > 0 && (
+                      <div className={`user-dropdown ${theme?.mode === 'dark' ? 'dark' : ''}`}>
+                        {renderUserDropdown(stepGuid, title)}
+                      </div>
+                    )}
                   </div>
                   
                   {/* Action buttons for free route steps */}
