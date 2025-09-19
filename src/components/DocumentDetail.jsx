@@ -1080,7 +1080,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       if (routeTitles.length === 0) {
         console.log('Fetching route titles for free route');
         await fetchRouteTitles();
-        showCustomMessage('Пожалуйста, выберите пользователей для всех шагов кроме первого', 'info');
+        showCustomMessage('Пожалуйста, выберите пользователей для всех шагов', 'info');
         return;
       }
       
@@ -1096,7 +1096,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         });
         
         if (!allUsersSelected) {
-          showCustomMessage('Пожалуйста, выберите пользователей для всех шагов кроме первого', 'warning');
+          showCustomMessage('Пожалуйста, выберите пользователей для всех шагов', 'warning');
           return;
         }
       }

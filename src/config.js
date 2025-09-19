@@ -11,7 +11,7 @@ backend_1c_url: API_BASE,
   loginURL: "login",
   username_admin: process.env.REACT_APP_ADMIN_USERNAME || "Администратор",
   username_admin_password: process.env.REACT_APP_ADMIN_PASSWORD || "ckfdbyf",
-  localhost_url: "http://localhost/Ag_Tech_Mobile/hs/MobileExchange/"
+  localhost_url: "http://localhost/AG_Tech_unikaz_prod/hs/MobileExchange/"
 };
 
 export default config;
