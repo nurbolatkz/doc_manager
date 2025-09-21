@@ -420,6 +420,15 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
         // Extract document ID from response (use guid if documentId is not available)
         const documentId = response.documentId || response.guid;
         
+        // NEW: Update formData with more detailed fields from response.data if available
+        if (response.data) {
+          setFormData(prevFormData => ({
+            ...prevFormData,
+            ...response.data
+          }));
+        }
+        console.log("data = ", response.data);
+        
         // If there are files to upload, upload them now
         if (arrayToUpload.length > 0 && documentId) {
           try {
@@ -451,7 +460,19 @@ const MemoForm = ({ currentUser, onBack, onSave, theme }) => {
         // Call onSave with the form data and created document ID
         console.log('MemoForm: Calling onSave with documentId:', documentId);
         if (onSave) {
-          onSave(formData, documentId);
+          // Pass the detailed document data from response.data if available
+          const documentData = response.data ? {
+            ...formData,
+            ...response.data,
+            id: documentId,
+            documentType: 'memo'
+          } : {
+            ...formData,
+            id: documentId,
+            documentType: 'memo'
+          };
+          
+          onSave(documentData, documentId);
         }
         console.log('MemoForm: onSave completed');
         // Don't call onBack() here as we want to show the document detail view

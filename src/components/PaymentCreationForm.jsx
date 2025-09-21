@@ -108,9 +108,30 @@ const PaymentCreationForm = ({ currentUser, onBack, onSave, theme = { mode: 'lig
       if (response && response.success === 1) {
         showCustomMessage('Платежный документ успешно сохранен', 'success');
         if (onSave) {
+          // Update formData with more detailed fields from response.data if available
+          if (response.data) {
+            setDocumentInfo(prevDocumentInfo => ({
+              ...prevDocumentInfo,
+              ...response.data
+            }));
+          }
+          
           // Pass the document ID (use guid if documentId is not available) as the second parameter to match other forms
           const documentId = response.documentId || response.guid;
-          onSave({ documentInfo, payments: selectedPaymentsData, totalAmount: selectedPaymentsData.reduce((sum, payment) => sum + payment.amount, 0) }, documentId);
+          
+          // Pass the detailed document data from response.data if available
+          const documentData = response.data ? {
+            ...documentInfo,
+            ...response.data,
+            id: documentId,
+            documentType: 'payment'
+          } : {
+            ...documentInfo,
+            id: documentId,
+            documentType: 'payment'
+          };
+          
+          onSave(documentData, documentId);
         }
       } else {
         const errorMessage = response && response.message ? response.message : 'Не удалось сохранить документ';

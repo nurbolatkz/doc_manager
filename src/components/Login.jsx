@@ -25,7 +25,6 @@ function getCookie(name) {
 const Login = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [showModal, setShowModal] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('theme') === 'dark' || 
            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -153,14 +152,6 @@ const Login = ({ onLogin }) => {
     setter(e.target.value);
   };
 
-  const handleModalClose = () => {
-    setShowModal(false);
-  };
-
-  const handleModalOpen = () => {
-    setShowModal(true);
-  };
-
   return (
     <div className={`login-container ${darkMode ? 'dark' : ''}`}>
       <div className={`login-card ${darkMode ? 'dark' : ''}`}>
@@ -194,7 +185,7 @@ const Login = ({ onLogin }) => {
             />
           </div>
 
-          <div className="password-group">
+          <div className="form-group">
             <label htmlFor="password" className={`form-label ${darkMode ? 'dark' : ''}`}>
               <i className="fas fa-lock mr-2"></i> Пароль
             </label>
@@ -208,9 +199,6 @@ const Login = ({ onLogin }) => {
               required
               disabled={isLoading}
             />
-            <a href="#" className="forgot-password-link">
-              Забыли пароль?
-            </a>
           </div>
 
           <div className="form-group">
@@ -231,47 +219,7 @@ const Login = ({ onLogin }) => {
             </button>
           </div>
         </form>
-
-        <div className={`register-section ${darkMode ? 'dark' : ''}`}>
-          <p>
-            Нет аккаунта?{' '}
-            <button
-              onClick={handleModalOpen}
-              className="register-link"
-            >
-              Зарегистрироваться
-            </button>
-          </p>
-        </div>
       </div>
-
-      {/* Registration Modal */}
-      {showModal && (
-        <div className="modal-overlay">
-          <div className={`modal-content ${darkMode ? 'dark' : ''}`}>
-            <div className="modal-header">
-              <p className={`modal-title ${darkMode ? 'dark' : ''}`}>Регистрация</p>
-              <button
-                onClick={handleModalClose}
-                className={`modal-close-button ${darkMode ? 'dark' : ''}`}
-              >
-                <i className="fas fa-times"></i>
-              </button>
-            </div>
-            <p className={`modal-body ${darkMode ? 'dark' : ''}`}>
-              Для регистрации, пожалуйста, обратитесь к администратору.
-            </p>
-            <div className="modal-footer">
-              <button
-                onClick={handleModalClose}
-                className="modal-button"
-              >
-                Закрыть
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Theme Toggle */}
       <div className="theme-toggle">

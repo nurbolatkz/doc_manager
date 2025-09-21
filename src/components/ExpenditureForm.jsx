@@ -655,6 +655,14 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
         // Extract document ID from response (use guid if documentId is not available)
         const documentId = response.documentId || response.guid;
         
+        // NEW: Update formData with more detailed fields from response.data if available
+        if (response.data) {
+          setFormData(prevFormData => ({
+            ...prevFormData,
+            ...response.data
+          }));
+        }
+        
         // If there are files to upload, upload them now
         if (arrayToUpload.length > 0 && documentId) {
           try {
@@ -685,7 +693,19 @@ const ExpenditureForm = ({ currentUser, onBack, onSave, theme }) => {
         
         // Call onSave with the form data and created document ID
         if (onSave) {
-          onSave(formData, documentId);
+          // Pass the detailed document data from response.data if available
+          const documentData = response.data ? {
+            ...formData,
+            ...response.data,
+            id: documentId,
+            documentType: 'expenditure'
+          } : {
+            ...formData,
+            id: documentId,
+            documentType: 'expenditure'
+          };
+          
+          onSave(documentData, documentId);
         }
         // Don't call onBack() here as we want to show the document detail view
         // Close the form after successful submission by setting showCreateForm to null in the parent

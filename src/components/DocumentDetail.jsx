@@ -637,7 +637,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
     // 1. Document status is 'prepared' or 'declined'
     // 2. Route type is 'free'
     if (documentDetail && documentDetail.documentType && documentDetail.id && 
-        routeType === 'free' && 
+        documentDetail.routeType === 'free' && 
         (documentDetail.status === 'prepared' || documentDetail.status === 'declined')) {
       // For newly created documents, we may need to retry fetching route titles
       // Add a small delay before fetching to allow backend to initialize routing metadata
@@ -648,7 +648,7 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       // Cleanup timer on unmount or when dependencies change
       return () => clearTimeout(timer);
     }
-  }, [documentDetail?.id, documentDetail?.documentType, documentDetail?.status, routeType]);
+  }, [documentDetail?.id, documentDetail?.documentType, documentDetail?.status, documentDetail?.routeType, routeType]);
 
   // Enhanced useEffect for route information after document details are fully fetched
   useEffect(() => {
@@ -1199,6 +1199,9 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         
         // After success: fetch and re-render route steps
         try {
+          // Add a small delay to ensure the document status update is processed
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
           // For free routes, we should refetch the route titles, not the fixed route steps
           if (routeType === 'free') {
             // Refetch route titles for free routes
