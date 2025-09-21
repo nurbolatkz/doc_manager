@@ -243,7 +243,11 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               ddsArticleGuid: detailData.data.ddsArticleGuid || detailData.data.ddsArticle?.guid || document.ddsArticleGuid || '',
               budgetArticleGuid: detailData.data.budgetArticleGuid || detailData.data.budgetArticle?.guid || document.budgetArticleGuid || '',
               counterpartyGuid: detailData.data.counterpartyGuid || detailData.data.counterparty?.guid || document.counterpartyGuid || '',
-              contractGuid: detailData.data.contractGuid || detailData.data.contract?.guid || document.contractGuid || ''
+              contractGuid: detailData.data.contractGuid || detailData.data.contract?.guid || document.contractGuid || '',
+              
+              // Access control fields - use values from detailData if available, otherwise default to false
+              canApprove: detailData.data.canApprove !== undefined ? detailData.data.canApprove : false,
+              canReject: detailData.data.canReject !== undefined ? detailData.data.canReject : false
             };
             
             // Log paymentLines to console when fetched, regardless of content
@@ -774,6 +778,12 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
   const handleDeclineDocument = async () => {
     if (!documentDetail) return;
     
+    // Check access control - if canReject is false, prevent declining
+    if (documentDetail.canReject === false) {
+      showCustomMessage('У вас нет прав для отклонения этого документа', 'warning');
+      return;
+    }
+    
     // Fix the typo in documentType using standardizeDocumentType
     const correctedDocumentType = standardizeDocumentType(documentDetail.documentType);
     
@@ -925,6 +935,12 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
   // Function to handle approval with signing
   const handleApproveWithSigning = async () => {
     if (!documentDetail) return;
+    
+    // Check access control - if canApprove is false, prevent approving
+    if (documentDetail.canApprove === false) {
+      showCustomMessage('У вас нет прав для согласования этого документа', 'warning');
+      return;
+    }
     
     // Fix the typo in documentType using standardizeDocumentType
     const correctedDocumentType = standardizeDocumentType(documentDetail.documentType);
@@ -1167,7 +1183,10 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           const updatedDocument = {
             ...documentDetail,
             status: 'on_approving',
-            documentType: correctedDocumentType // Also update the documentType if it was corrected
+            documentType: correctedDocumentType, // Also update the documentType if it was corrected
+            // Reset access control fields as they may have changed
+            canApprove: false,
+            canReject: false
           };
           setDocumentDetail(updatedDocument);
           
@@ -1183,8 +1202,17 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               // Update the document with access information
               setDocumentDetail(prev => ({
                 ...prev,
-                canApprove: accessResponse.canApprove,
-                canReject: accessResponse.canReject,
+                canApprove: accessResponse.canApprove !== undefined ? accessResponse.canApprove : false,
+                canReject: accessResponse.canReject !== undefined ? accessResponse.canReject : false,
+                status: 'on_approving',
+                documentType: correctedDocumentType // Also update the documentType if it was corrected
+              }));
+            } else {
+              // Set default access values if check fails or returns no data
+              setDocumentDetail(prev => ({
+                ...prev,
+                canApprove: false,
+                canReject: false,
                 status: 'on_approving',
                 documentType: correctedDocumentType // Also update the documentType if it was corrected
               }));
@@ -1194,6 +1222,14 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
             console.error('Error checking access to approve/decline:', accessError);
             showCustomMessage('Error checking access to approve/decline: ' + (accessError.message || 'Unknown error'), 'warning');
             // Continue even if access check fails
+            // Set default access values if check fails
+            setDocumentDetail(prev => ({
+              ...prev,
+              canApprove: false,
+              canReject: false,
+              status: 'on_approving',
+              documentType: correctedDocumentType // Also update the documentType if it was corrected
+            }));
           }
         }
         
@@ -1529,7 +1565,8 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 disabled={
                   !documentDetail || 
                   documentDetail.status !== 'on_approving' ||
-                  signingLoading
+                  signingLoading ||
+                  (documentDetail.canApprove === false) // Disable if user doesn't have approve rights
                 }
               >
                 {signingLoading ? (
@@ -1550,7 +1587,8 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 disabled={
                   declining ||
                   !documentDetail || 
-                  documentDetail.status !== 'on_approving'
+                  documentDetail.status !== 'on_approving' ||
+                  (documentDetail.canReject === false) // Disable if user doesn't have reject rights
                 }
               >
                 {declining ? (
@@ -1570,8 +1608,9 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 onClick={() => handleActionButtonClick('edit')}
                 disabled={
                   !documentDetail || 
-                  (documentDetail.documentType !== 'payment' && documentDetail.documentType !== 'paymemnt' &&
-                   documentDetail.status !== 'prepared' && documentDetail.status !== 'declined' && documentDetail.status !== 'rejected')
+                  (standardizeDocumentType(documentDetail.documentType) !== 'memo' && 
+                   standardizeDocumentType(documentDetail.documentType) !== 'expenditure') ||
+                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined')
                 }
               >
                 <i className="fas fa-edit"></i>
@@ -1584,7 +1623,9 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 disabled={
                   deleting ||
                   !documentDetail || 
-                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined' && documentDetail.status !== 'rejected')
+                  (standardizeDocumentType(documentDetail.documentType) !== 'memo' && 
+                   standardizeDocumentType(documentDetail.documentType) !== 'expenditure') ||
+                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined')
                 }
               >
                 {deleting ? (

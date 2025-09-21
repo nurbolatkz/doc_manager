@@ -588,6 +588,11 @@ button {
   background-color: #1d4ed8;
 }
 
+.mobile-sidebar-toggle i {
+  color: white; /* Ensure icon is white for visibility */
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5); /* Add shadow for better contrast */
+}
+
 /* Mobile Sidebar Overlay */
 .mobile-sidebar-overlay {
   display: none;
@@ -717,21 +722,23 @@ button {
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 0.5rem;
-  color: #6b7280;
+  color: #ffffff; /* Changed to white for better visibility */
   transition: background-color 0.2s;
   margin-left: auto;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5); /* Added subtle shadow for better contrast */
 }
 
 .sidebar.dark .sidebar-toggle-btn {
-  color: #9ca3af;
+  color: #ffffff; /* Changed to white for better visibility in dark mode too */
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.7); /* Increased shadow for dark mode */
 }
 
 .sidebar-toggle-btn:hover {
-  background-color: #f3f4f6;
+  background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white for better contrast */
 }
 
 .sidebar.dark .sidebar-toggle-btn:hover {
-  background-color: #374151;
+  background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent white for dark mode */
 }
 
 /* Navigation Styles */

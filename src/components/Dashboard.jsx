@@ -258,16 +258,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                       <i className="fas fa-list nav-item-icon"></i>
                       <span className="nav-item-text">Все</span>
                     </button>
-                    <button 
-                      className="nav-button"
-                      onClick={() => {
-                        handleFilterChange({ SelectedFilter: "get_outgoing_signed" });
-                        setOpenDropdown(null);
-                      }}
-                    >
-                      <i className="fas fa-history nav-item-icon"></i>
-                      <span className="nav-item-text">История</span>
-                    </button>
+                   
                   </div>
                 )}
               </div>
