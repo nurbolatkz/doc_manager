@@ -447,9 +447,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 let users = [''];
                 if (route.users && Array.isArray(route.users)) {
                   // Split each user by newlines and flatten into a single array
-                  users = route.users.flatMap(user => 
-                    user.split('\n').filter(line => line.trim() !== '')
-                  );
+                  users = route.users.flatMap(user => {
+                    // Check if user is not null or undefined before splitting
+                    if (user && typeof user === 'string') {
+                      return user.split('\n').filter(line => line.trim() !== '');
+                    }
+                    return []; // Return empty array for null/undefined/invalid users
+                  });
                   // If no valid users after splitting, use a default
                   if (users.length === 0) users = [''];
                 }
@@ -495,9 +499,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 let users = [''];
                 if (route.users && Array.isArray(route.users)) {
                   // Split each user by newlines and flatten into a single array
-                  users = route.users.flatMap(user => 
-                    user.split('\n').filter(line => line.trim() !== '')
-                  );
+                  users = route.users.flatMap(user => {
+                    // Check if user is not null or undefined before splitting
+                    if (user && typeof user === 'string') {
+                      return user.split('\n').filter(line => line.trim() !== '');
+                    }
+                    return []; // Return empty array for null/undefined/invalid users
+                  });
                   // If no valid users after splitting, use a default
                   if (users.length === 0) users = [''];
                 }
@@ -1263,9 +1271,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                   let users = [''];
                   if (route.users && Array.isArray(route.users)) {
                     // Split each user by newlines and flatten into a single array
-                    users = route.users.flatMap(user => 
-                      user.split('\n').filter(line => line.trim() !== '')
-                    );
+                    users = route.users.flatMap(user => {
+                      // Check if user is not null or undefined before splitting
+                      if (user && typeof user === 'string') {
+                        return user.split('\n').filter(line => line.trim() !== '');
+                      }
+                      return []; // Return empty array for null/undefined/invalid users
+                    });
                     // If no valid users after splitting, use a default
                     if (users.length === 0) users = [''];
                   }
@@ -1412,9 +1424,13 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                     let users = [''];
                     if (route.users && Array.isArray(route.users)) {
                       // Split each user by newlines and flatten into a single array
-                      users = route.users.flatMap(user => 
-                        user.split('\n').filter(line => line.trim() !== '')
-                      );
+                      users = route.users.flatMap(user => {
+                        // Check if user is not null or undefined before splitting
+                        if (user && typeof user === 'string') {
+                          return user.split('\n').filter(line => line.trim() !== '');
+                        }
+                        return []; // Return empty array for null/undefined/invalid users
+                      });
                       // If no valid users after splitting, use a default
                       if (users.length === 0) users = [''];
                     }
