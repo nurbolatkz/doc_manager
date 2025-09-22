@@ -149,7 +149,6 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         }
       }
     } catch (err) {
-      console.error(`Error fetching ${dataKey}:`, err);
       setDataStates(prev => ({ ...prev, [dataKey]: getDummyData(dataKey) }));
     } finally {
       setLoadingStates(prev => ({ ...prev, [dataKey]: false }));
@@ -360,7 +359,6 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         setExistingAttachments([]);
       }
     } catch (err) {
-      console.error('Error fetching attachments:', err);
       // Don't show error to user for attachment fetching, just use empty array
       setExistingAttachments([]);
     } finally {
@@ -417,7 +415,6 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         showCustomMessage('Ошибка при загрузке данных платежей', 'danger');
       }
     } catch (error) {
-      console.error("Error fetching payment lines:", error);
       showCustomMessage('Ошибка при загрузке данных платежей: ' + error.message, 'danger');
     } finally {
       setLoadingStates(prev => ({ ...prev, paymentLines: false }));
@@ -475,7 +472,6 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
         showCustomMessage('Ошибка при загрузке данных платежей', 'danger');
       }
     } catch (error) {
-      console.error("Error fetching all payment lines:", error);
       showCustomMessage('Ошибка при загрузке данных платежей: ' + error.message, 'danger');
     } finally {
       setLoadingStates(prev => ({ ...prev, paymentLines: false }));
@@ -639,7 +635,6 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       }));
       setUploadedFiles(prev => [...prev, ...newFiles]);
     } catch (error) {
-      console.error('Error converting files to base64:', error);
       showCustomMessage('Ошибка при загрузке файлов: ' + error.message, 'danger');
     }
   };
@@ -738,7 +733,6 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
       );
       return response;
     } catch (error) {
-      console.error('Error updating document files:', error);
       showCustomMessage('Ошибка при обновлении файлов документа: ' + error.message, 'danger');
       return null;
     }
@@ -955,7 +949,6 @@ const DocumentEdit = ({ document, onBack, onSave, theme }) => {
           showCustomMessage('Неподдерживаемый тип документа', 'danger');
       }
     } catch (error) {
-      console.error(`Error updating ${document.documentType}:`, error);
       showCustomMessage(`Ошибка при обновлении документа: ${error.message}`, 'danger');
     }
   };

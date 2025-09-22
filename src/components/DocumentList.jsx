@@ -252,7 +252,6 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
       <div 
         className="document-card"
         onClick={() => {
-          console.log('DocumentList: Document card clicked, calling onDocumentSelect with document:', document);
           onDocumentSelect(document);
         }}
       >
@@ -575,7 +574,6 @@ const DocumentList = ({ documents, onDocumentSelect, filter, onFilterChange, the
               ) : (
                 sortedDocuments.map((document, index) => (
                   <tr key={document.id} style={{ cursor: 'pointer' }} onClick={() => {
-                    console.log('DocumentList: Table row clicked, calling onDocumentSelect with document:', document);
                     onDocumentSelect(document);
                   }}>
                     <td>{index + 1}</td>
