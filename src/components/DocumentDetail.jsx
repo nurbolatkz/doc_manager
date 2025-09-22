@@ -26,8 +26,6 @@ import RouteSteps from './RouteSteps';
 import DocumentSpecificFields from './DocumentSpecificFields';
 
 const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
-  console.log('DocumentDetail: Component rendered with document prop:', document);
-  
   const [documentDetail, setDocumentDetail] = useState(document);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -167,14 +165,10 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
 
   // Fetch detailed document data when component mounts or when document prop changes
   useEffect(() => {
-    console.log('DocumentDetail: useEffect triggered with document:', document);
-    
     const fetchDocumentDetail = async () => {
       // Always fetch detailed data when opening document detail from anywhere
       // This ensures we get the most up-to-date information regardless of how we got here
       if (document && document.documentType && document.id) {
-        console.log('DocumentDetail: Always fetching detailed document data for ID:', document.id);
-        
         // Fix the typo in documentType
         const correctedDocumentType = standardizeDocumentType(document.documentType);
         
@@ -194,20 +188,12 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
             return;
           }
           
-          console.log('DocumentDetail: Calling fetchDocumentDetailsByType with:', {
-            token: token ? 'present' : 'missing',
-            documentType: correctedDocumentType, // Use corrected document type
-            documentId: document.id
-          });
-          
           // Fetch document details based on document type and ID
           const detailData = await fetchDocumentDetailsByType(
             token, 
             correctedDocumentType, // Use corrected document type
             document.id
           );
-          console.log('DocumentDetail: Received detailData from backend:', detailData);
-          // console.log('Detail Data:', detailData);
           if (detailData && detailData.data) {
             // Transform the fetched data to match our Document type
             const transformedData = {
@@ -254,15 +240,12 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
             // console.log('Document type:', document.documentType);
             // console.log('paymentLines fetched:', transformedData.paymentLines);
             
-            console.log('DocumentDetail: Setting documentDetail state with transformedData:', transformedData);
             setDocumentDetail(transformedData);
           } else {
-            console.log('DocumentDetail: No detailData received from backend');
             showCustomMessage('Failed to load document details', 'danger');
           }
         } catch (err) {
           // Only show one alert per error case
-          console.error('DocumentDetail: Error fetching document details:', err);
           showCustomMessage('Failed to load document details: ' + (err.message || 'Unknown error'), 'danger');
           // Reset fetchAttempted so we can retry if needed
           setFetchAttempted(false);
@@ -270,7 +253,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           setLoading(false);
         }
       } else {
-        console.log('DocumentDetail: No valid document provided for fetching');
         // If we have a document but don't need to fetch details, just update the state
         if (document) {
           // Update the documentType in the documentDetail state if needed
@@ -282,7 +264,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           
           setLoading(false);
         } else {
-          console.log('DocumentDetail: No document provided');
           setLoading(false);
         }
       }
@@ -295,36 +276,25 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
 
   // Clear route data when document status changes to 'prepared' or 'declined'
   useEffect(() => {
-    console.log('Clear route data useEffect triggered with:', { 
-      documentStatus: documentDetail?.status, 
-      routeType, 
-      routeStepsLength: routeSteps.length,
-      routeTitlesLength: routeTitles.length
-    });
-    
     if (documentDetail && (documentDetail.status === 'prepared' || documentDetail.status === 'declined')) {
       // Clear route steps if they exist
       if (routeSteps.length > 0) {
-        console.log('Clearing route steps');
         setRouteSteps([]);
       }
       
       // Don't clear route titles for free routes as they will be fetched automatically
       // Clear route titles only for fixed routes
       if (routeType === 'fixed' && routeTitles.length > 0) {
-        console.log('Clearing route titles for fixed route');
         setRouteTitles([]);
       }
       
       // Reset selected users only for fixed routes
       if (routeType === 'fixed' && Object.keys(selectedUsers).length > 0) {
-        console.log('Clearing selected users for fixed route');
         setSelectedUsers({});
       }
       
       // Reset route sent status
       if (routeSent) {
-        console.log('Resetting route sent status');
         setRouteSent(false);
       }
     }
@@ -578,7 +548,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       const correctedDocumentType = standardizeDocumentType(documentDetail.documentType);
       
       const response = await getRouteTitles(token, correctedDocumentType, documentDetail.id);
-      console.log('Route titles fetched:', response); // Add logging to see what we get
       if (response && response.data && Array.isArray(response.data)) {
         setRouteTitles(response.data);
         // Always initialize selectedUsers state when we fetch new route titles
@@ -594,7 +563,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         });
         
         setSelectedUsers(initialSelectedUsers);
-        console.log('Selected users initialized:', initialSelectedUsers); // Add logging
       } else {
         // Show error as alert instead of setting error state
         showCustomMessage(response?.message || 'Failed to fetch route titles', 'warning');
@@ -818,8 +786,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         documentDetail.id
       );
       
-      console.log('Document declined:', response);
-      
       // Check if response has success flag
       if (response && response.success === 1) {
         // Update document status to declined
@@ -834,7 +800,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         showCustomMessage('Failed to decline document: ' + (response?.message || 'Unknown error'), 'danger');
       }
     } catch (err) {
-      console.error('Error declining document:', err);
       showCustomMessage('Failed to decline document: ' + (err.message || 'Unknown error'), 'danger');
     } finally {
       setDeclining(false);
@@ -886,7 +851,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         showCustomMessage('Failed to delete document: ' + (response?.message || 'Unknown error'), 'danger');
       }
     } catch (err) {
-      console.error('Error deleting document:', err);
       showCustomMessage('Failed to delete document: ' + (err.message || 'Unknown error'), 'danger');
     } finally {
       setDeleting(false);
@@ -976,11 +940,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         return;
       }
       
-      console.log('Fetching signing template for document:', {
-        documentType: correctedDocumentType, // Use corrected document type
-        documentId: documentDetail.id
-      });
-      
       // Get signing template with timeout
       const templateResponse = await Promise.race([
         getSigningTemplate(
@@ -990,8 +949,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
         ),
         timeoutPromise
       ]);
-      
-      console.log('Template response received:', templateResponse);
       
       // Always try to process the response, even if success flag is missing
       if (templateResponse) {
@@ -1017,15 +974,8 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           metadata = templateResponse?.ДанныеДляРС;
         }
         
-        console.log('Extracted template data:', {
-          documentInfo,
-          binaryData: binaryData ? `${binaryData.substring(0, 50)}...` : null,
-          metadata
-        });
-        
         // Log the size of the template data
         if (binaryData) {
-          console.log('Template size:', binaryData.length, 'characters');
         }
         
         // Check if we have the required data
@@ -1046,19 +996,14 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           }
         };
         
-        console.log('Setting document detail with signing template');
         setDocumentDetail(updatedDocument);
-        console.log('Setting signing action to: approve');
         setSigningAction('approve');
-        console.log('Setting showSigningModal to true');
         setShowSigningModal(true);
-        console.log('State update completed');
       } else {
         showCustomMessage('Failed to get signing template for approve', 'danger');
         setSigningLoading(false); // Add this to prevent hanging loading state
       }
     } catch (err) {
-      console.error('Error getting signing template for approve:', err);
       // Handle timeout error specifically
       if (err.message === 'Request timeout') {
         showCustomMessage('Request timed out. Please try again.', 'danger');
@@ -1078,13 +1023,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
 
   // Function to send document to route
   const handleSendToRoute = async () => {
-    console.log('handleSendToRoute called with:', { 
-      documentDetail, 
-      routeType, 
-      routeTitlesLength: routeTitles.length,
-      selectedUsers
-    });
-    
     // Pre-send validation
     if (!documentDetail) return;
     
@@ -1102,7 +1040,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       // If we don't have route titles yet, fetch them first and return
       // The user will need to click the button again after selecting users
       if (routeTitles.length === 0) {
-        console.log('Fetching route titles for free route');
         await fetchRouteTitles();
         showCustomMessage('Пожалуйста, выберите пользователей для всех шагов', 'info');
         return;
@@ -1227,7 +1164,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
             }
           } catch (accessError) {
             // Only log error and show one alert
-            console.error('Error checking access to approve/decline:', accessError);
             showCustomMessage('Error checking access to approve/decline: ' + (accessError.message || 'Unknown error'), 'warning');
             // Continue even if access check fails
             // Set default access values if check fails
@@ -1253,7 +1189,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           } else {
             // For fixed routes, fetch the route steps
             const routeData = await fetchDocumentRoutes(token, correctedDocumentType, documentDetail.id);
-            console.log('Document routes refetched from 1C backend:', routeData);
             
             if (routeData && routeData.data && Array.isArray(routeData.data)) {
               // Transform the fetched route data to match our route steps structure
@@ -1298,7 +1233,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
           }
         } catch (routeError) {
           // Only log error and show one alert
-          console.error('Error refetching document routes:', routeError);
           showCustomMessage('Error refetching document routes: ' + (routeError.message || 'Unknown error'), 'warning');
           // Continue even if route fetch fails
         }
@@ -1311,7 +1245,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       }
     } catch (err) {
       // Only log error and show one alert
-      console.error('Error sending document to route:', err);
       showCustomMessage('Failed to send document to route: ' + (err.message || 'Unknown error'), 'danger');
     } finally {
       setSendingToRoute(false);
@@ -1320,7 +1253,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
 
   // Function to handle SIGEX signing completion
   const handleSigningComplete = (signedDocuments) => {
-    console.log('SIGEX signing completed with documents:', signedDocuments);
     if (!documentDetail || !signingAction) {
       setSigningLoading(false);
       return;
@@ -1370,8 +1302,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               timeoutPromise
             ]);
             
-            console.log('Signed document saved:', saveResponse);
-            
             // Check if response has success flag (handle both 'success' and 'Success')
             const isSuccess = saveResponse && (saveResponse.success === 1 || saveResponse.Success === 1);
             if (!isSuccess) {
@@ -1392,8 +1322,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
             timeoutPromise
           ]);
           
-          console.log('Signed document saved and approved:', response);
-          
           // Check if response has success flag (handle both 'success' and 'Success')
           const isResponseSuccess = response && (response.success === 1 || response.Success === 1);
           if (isResponseSuccess) {
@@ -1406,7 +1334,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
             // Refetch routes to update the route steps
             try {
               const routeData = await fetchDocumentRoutes(token, correctedDocumentType, documentDetail.id);
-              console.log('Document routes refetched from 1C backend:', routeData);
               
               if (routeData && routeData.data && Array.isArray(routeData.data)) {
                 // Transform the fetched route data to match our route steps structure
@@ -1449,7 +1376,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
                 setRouteSteps(transformedRoutes);
               }
             } catch (routeError) {
-              console.error('Error refetching document routes:', routeError);
               showCustomMessage('Error refetching document routes: ' + (routeError.message || 'Unknown error'), 'warning');
               // Continue even if route fetch fails
             }
@@ -1467,7 +1393,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
             showCustomMessage('Request timed out. Please try again.', 'danger');
           } else {
             // Only log error and show one alert
-            console.error('Error saving signed document:', err);
             showCustomMessage('Failed to approve document: ' + (err.message || 'Unknown error'), 'danger');
           }
         } finally {
@@ -1480,7 +1405,6 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
       sendSignedDocument();
     } catch (err) {
       // Only log error and show one alert
-      console.error('Error handling signed document:', err);
       showCustomMessage('Failed to process signed document: ' + (err.message || 'Unknown error'), 'danger');
       // Ensure loading state is reset
       setSigningLoading(false);
