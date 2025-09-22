@@ -290,7 +290,7 @@ body.dark .autocomplete-item:hover {
   background-color: #4b5563;
 }
 
-/* Modal */
+/* Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -302,6 +302,27 @@ body.dark .autocomplete-item:hover {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  /* Enhanced fixes for Chrome white screen issue */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000;
+  perspective: 1000;
+  /* Additional Chrome-specific fixes */
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  /* Fix for Chrome overlay positioning */
+  will-change: transform;
+  -webkit-will-change: transform;
+}
+
+.modal-overlay.active {
   opacity: 1;
   visibility: visible;
 }
@@ -315,6 +336,14 @@ body.dark .autocomplete-item:hover {
   overflow: hidden;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   z-index: 1001;
+  /* Additional fixes for Chrome */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000;
+  perspective: 1000;
+  position: relative;
 }
 
 .modal-content.light {
@@ -326,6 +355,64 @@ body.dark .modal-content,
   background: #374151;
 }
 
+/* SIGEX Modal Specific Styles */
+.sigex-modal {
+  /* Ensure proper positioning and rendering in Chrome */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000;
+  perspective: 1000;
+  position: relative;
+  z-index: 1002;
+}
+
+/* Chrome-specific fixes for modal overlay */
+@supports (-webkit-appearance: none) {
+  .modal-overlay {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-perspective: 1000;
+    perspective: 1000;
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+  }
+  
+  .modal-content {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  
+  .sigex-modal {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+}
+
+/* Fallback for older browsers */
+.modal-overlay {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.modal-content {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.sigex-modal {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* Modal Header */
 .modal-header {
   display: flex;
   justify-content: space-between;

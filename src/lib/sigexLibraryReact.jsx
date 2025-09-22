@@ -9,7 +9,6 @@ const SigexLibraryReact = ({
   onSuccess, 
   onError 
 }) => {
-  //console.log('SigexLibraryReact props:', { apiUrl, documentData: documentData ? `${documentData.substring(0, 50)}...` : null, documentInfo, isOpen });
   
   // State management
   const [internalIsOpen, setInternalIsOpen] = useState(false);
@@ -34,7 +33,6 @@ const SigexLibraryReact = ({
   
   // Sync internal state with external isOpen prop
   useEffect(() => {
-    //console.log('Syncing internalIsOpen with isOpen prop:', isOpen);
     if (isOpen !== undefined) {
       setInternalIsOpen(isOpen);
     }
@@ -42,9 +40,7 @@ const SigexLibraryReact = ({
   
   // Open modal automatically if documentData is provided
   useEffect(() => {
-    console.log('useEffect triggered with documentData:', documentData ? `${documentData.substring(0, 50)}...` : null);
     if (documentData) {
-      //console.log('Opening modal automatically because documentData is provided');
       open();
     }
   }, [documentData]);
@@ -52,14 +48,12 @@ const SigexLibraryReact = ({
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      //console.log('Cleaning up SigexLibraryReact component');
       stopPolling();
       stopQRPolling();
     };
   }, []);
 
   useEffect(() => {
-    //console.log('useEffect triggered for signUrl:', signUrl);
     if (signUrl) {
       // Only start polling if signUrl is not null
       startPollingForSignature();
@@ -73,15 +67,12 @@ const SigexLibraryReact = ({
   
   // Open the modal
   const open = () => {
-    //console.log('Opening SigexLibraryReact modal');
     resetForm();
     setInternalIsOpen(true);
   };
   
   // Close the modal
   const close = () => {
-    //console.log('Closing SigexLibraryReact modal');
-    // Only close the modal when user clicks close button
     setInternalIsOpen(false);
     stopPolling();
     stopQRPolling();
@@ -128,7 +119,6 @@ const SigexLibraryReact = ({
   const startSigning = async () => {
     // Use either the selected file or the provided document data
     const hasFile = currentFile || documentData;
-    //console.log('Starting signing with document data:', documentData ? `${documentData.substring(0, 50)}...` : null);
     
     if (!hasFile) {
       showError('Пожалуйста, выберите файл или предоставьте данные документа');
@@ -150,7 +140,6 @@ const SigexLibraryReact = ({
       if (qrResponse.eGovMobileLaunchLink && qrResponse.qrCode && qrResponse.dataURL) {
         // Store dataURL in local variable to avoid state timing issues
         const sessionDataUrl = qrResponse.dataURL;
-        //console.log('QR dataURL:', sessionDataUrl);
         
         // Set state
         setDataUrl(sessionDataUrl);
@@ -165,7 +154,6 @@ const SigexLibraryReact = ({
         throw new Error('Некорректный ответ от сервера');
       }
     } catch (error) {
-      //console.error('Error getting QR code:', error);
       showError(`Ошибка при получении QR-кода: ${error.message}`);
       setIsSigning(false);
     }
@@ -173,7 +161,6 @@ const SigexLibraryReact = ({
 
   // Get QR code from API
   const getQRCode = async (description) => {
-    console.log('Getting QR code with description:', description);
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -187,7 +174,6 @@ const SigexLibraryReact = ({
     }
     
     const data = await response.json();
-    console.log('QR code response:', data);
     return data;
   };
   
@@ -199,7 +185,7 @@ const SigexLibraryReact = ({
   
   // Start QR scan polling
   const startQRScanPolling = () => {
-    //console.log('startQRScanPolling is deprecated - not used in current SIGEX flow');
+    // This is deprecated - not used in current SIGEX flow
   };
   
   // Stop QR polling
@@ -210,12 +196,10 @@ const SigexLibraryReact = ({
     }
   };
   
-  // Send document for signing
   // Send document for signing - Updated to use signURL from response
   const sendDocumentForSigning = async (sessionDataUrl) => {
     // Use parameter first, then state
     const activeDataUrl = sessionDataUrl || dataUrl;
-    //console.log('sendDocumentForSigning called with dataUrl:', activeDataUrl);
     
     showStatus('Отправка документа на подписание... Пожалуйста, отсканируйте QR-код', 'info');
     
@@ -236,8 +220,6 @@ const SigexLibraryReact = ({
         throw new Error('Не удалось получить данные документа');
       }
       
-      console.log('Sending document for signing with data length:', base64Data.length);
-      
       // Extract document names from documentInfo object
       let nameRu = "Документ на подписание";
       let nameKz = "Қол қою үшін құжат";
@@ -256,7 +238,6 @@ const SigexLibraryReact = ({
       
       // Extract the session ID from the activeDataUrl
       const sessionId = activeDataUrl.replace('https://sigex.kz/api/egovQr/', '');
-      //console.log('Extracted session ID:', sessionId);
       
       const payload = {
         signMethod: "CMS_WITH_DATA",
@@ -274,20 +255,11 @@ const SigexLibraryReact = ({
         }]
       };
       
-      console.log('Sending payload to SIGEX API:', {
-        url: `${apiUrl}/${sessionId}`,
-        payloadSize: JSON.stringify(payload).length,
-        documentDataLength: base64Data.length
-      });
-      
       // Send document to SIGEX API - this call will wait until user scans QR
       const response = await postWithRetry(`${apiUrl}/${sessionId}`, payload);
       
-      //console.log('SIGEX API response after sending document:', response);
-      
       // Use the signURL from the response for polling
       const pollingUrl = response.signURL || response.signURLAuto || activeDataUrl;
-     // console.log('Using polling URL:', pollingUrl);
       
       // Set the signUrl for polling using the URL from the response
       setSignUrl(pollingUrl);
@@ -297,7 +269,6 @@ const SigexLibraryReact = ({
       showProgress(true);
       
     } catch (error) {
-      console.error('Error in sendDocumentForSigning:', error);
       showError(`Ошибка при отправке документа: ${error.message}`);
       setIsSigning(false);
     }
@@ -306,8 +277,6 @@ const SigexLibraryReact = ({
   // Post with retry logic
   const postWithRetry = async (url, payload, currentRetry = 0) => {
     try {
-      //console.log(`Posting to SIGEX API (attempt ${currentRetry + 1}):`, { url });
-      
       // Increase timeout for SIGEX to wait for QR scan (30 seconds)
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -323,14 +292,8 @@ const SigexLibraryReact = ({
       
       clearTimeout(timeoutId);
       
-      console.log(`SIGEX API response (attempt ${currentRetry + 1}):`, {
-        status: response.status,
-        statusText: response.statusText
-      });
-      
       if (response.status === 200) {
         const data = await response.json();
-        //console.log(`SIGEX API success response (attempt ${currentRetry + 1}):`, data);
         return data;
       } else if (currentRetry < maxRetries) {
         showStatus(`Повтор отправки... (${currentRetry + 1}/${maxRetries})`, 'info');
@@ -338,12 +301,9 @@ const SigexLibraryReact = ({
         return await postWithRetry(url, payload, currentRetry + 1);
       } else {
         const errorText = await response.text();
-        //console.error('Final error response:', errorText);
         throw new Error(`Сервис не принимает файл! Код состояния: ${response.status}`);
       }
     } catch (error) {
-      //console.error(`Error in postWithRetry (attempt ${currentRetry + 1}):`, error);
-      
       if (error.name === 'AbortError') {
         throw new Error('Превышено время ожидания сканирования QR-кода (30 секунд)');
       }
@@ -385,7 +345,6 @@ const SigexLibraryReact = ({
           // Continue polling - document is still being signed
           return;
         } else {
-          console.error('Error in signature polling:', error);
           stopPolling();
           showError(`Ошибка при получении статуса: ${error.message}`);
           setIsSigning(false);
@@ -401,7 +360,6 @@ const SigexLibraryReact = ({
     }
     
     const signId = signUrl.replace('https://sigex.kz/api/egovQr/', '');
-   // console.log('Checking signing status for session:', signId);
     
     try {
       const response = await fetch(`${apiUrl}/${signId}`, {
@@ -411,15 +369,11 @@ const SigexLibraryReact = ({
         }
       });
       
-      console.log('Status check response:', response.status, response.statusText);
-      
       if (response.status === 200) {
         const data = await response.json();
-        //console.log('Status check data:', data);
         
         if (data.documentsToSign && data.documentsToSign.length > 0 && 
             data.documentsToSign[0].document && data.documentsToSign[0].document.file) {
-          //console.log('Document is signed!');
           return data;
         } else {
           // Document is still being signed
@@ -536,7 +490,6 @@ const SigexLibraryReact = ({
       link.href = url;
       link.download = fileName;
       document.body.appendChild(link);
-      //link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
@@ -552,13 +505,6 @@ const SigexLibraryReact = ({
   // Convert document data to PDF base64 format
   const convertDocumentDataToPDFBase64 = async (documentData) => {
     try {
-      // If the documentData is already a valid PDF base64 string, return it as is
-      // Otherwise, we might need to process it depending on the format
-      
-      // For now, we'll assume the documentData from 1C is already in the correct format
-      // but we'll ensure it's properly formatted for SIGEX
-      //console.log('Converting document data to PDF base64, data length:', documentData.length);
-      
       // Remove any whitespace/newlines that might interfere
       const cleanData = documentData.replace(/\r?\n|\r/g, '');
       
@@ -567,18 +513,14 @@ const SigexLibraryReact = ({
       try {
         const decodedData = atob(cleanData.substring(0, 100)); // Decode first 100 chars to check
         if (decodedData.includes('%PDF-')) {
-          console.log('Document data appears to be valid PDF base64');
           return cleanData;
         } else {
-          //console.warn('Document data does not appear to be PDF format, but sending as-is');
           return cleanData;
         }
       } catch (decodeError) {
-        //console.warn('Could not decode document data for validation, sending as-is');
         return cleanData;
       }
     } catch (error) {
-      //console.error('Error converting document data to PDF base64:', error);
       throw new Error('Не удалось преобразовать данные документа в PDF формат');
     }
   };
@@ -592,7 +534,7 @@ const SigexLibraryReact = ({
     <div className="modal-overlay active">
       <div className="modal-content sigex-modal">
         <div className="modal-header">
-          <h3 className="modal-title">Подписание документа через SIGEX</h3>
+          <h3 className="modal-title">Подписание документа через Egov</h3>
           <button 
             className="modal-close" 
             onClick={close}
