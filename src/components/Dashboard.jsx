@@ -59,9 +59,6 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
         fetchDocumentCounts(token)
       ]);
 
-      // console.log('Documents fetched from 1C backend:', documentsResponse);
-      // console.log('Document counts fetched from 1C backend:', countsResponse);
-
       // Transform the documents data to match our Document type
       if (documentsResponse.documents && Array.isArray(documentsResponse.documents)) {
         const transformedDocuments = documentsResponse.documents.map((doc) => ({
@@ -117,7 +114,6 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
 
       setLoading(false);
     } catch (err) {
-      // console.error('Error fetching dashboard data:', err);
       // Fallback to mock data in case of error
       setDocuments([
         { id: '1', title: 'Sample Document 1', status: 'on_approving' },
@@ -141,7 +137,6 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
 
 
   const handleDocumentSelect = (document) => {
-    console.log('Dashboard: handleDocumentSelect called with document:', document);
     setSelectedDocument(document);
   };
 
@@ -413,7 +408,7 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                     <i className="fas fa-money-bill-wave nav-item-icon"></i>
                     <span className="nav-item-text">План Платежей</span>
                   </button>
-          
+      
                   <button 
                     className="nav-button"
                     onClick={() => {
@@ -501,7 +496,6 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
               loadDashboardData();
             }}
             onSave={(updatedDocument) => {
-              console.log('Dashboard: Received onSave callback from DocumentEdit with updatedDocument:', updatedDocument);
               setIsEditingDocument(false);
               // Update the selected document with the updated data
               setSelectedDocument(updatedDocument);
@@ -520,7 +514,6 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
               loadDashboardData();
             }}
             onEdit={(detailedDocument) => {
-              console.log('Dashboard: Received onEdit callback from DocumentDetail with detailedDocument:', detailedDocument);
               // Update the selectedDocument with the detailed data if provided
               if (detailedDocument) {
                 setSelectedDocument(detailedDocument);
@@ -535,7 +528,6 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
             currentUser={currentUser}
             onBack={handleBackToList}
             onSave={(formData, documentId) => {
-              console.log('Dashboard: Received onSave callback from MemoForm with documentId:', documentId);
               // Handle form submission
               // console.log('Memo form submitted:', formData);
               // In a real app, this would save to the backend
@@ -558,16 +550,13 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                     routeType: null,
                     routeSteps: []
                   };
-                console.log('Dashboard: Setting selectedDocument to:', newDocument);
                 setSelectedDocument(newDocument);
-                console.log('Dashboard: Setting showCreateForm to null');
                 setShowCreateForm(null); // Hide the form
                 console.log('Dashboard: Completed setting state for document detail view');
                 console.log('Dashboard: Current state after setting - selectedDocument:', newDocument, 'showCreateForm:', null);
                 // Refresh the document list after creating a document
                 loadDashboardData();
               } else {
-                console.log('Dashboard: No documentId received, calling handleBackToList');
                 handleBackToList();
               }
             }}
@@ -579,7 +568,6 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
             currentUser={currentUser}
             onBack={handleBackToList}
             onSave={(formData, documentId) => {
-              console.log('Dashboard: Received onSave callback from ExpenditureForm with documentId:', documentId);
               // Handle form submission
               // console.log('Expenditure form submitted:', formData);
               // In a real app, this would save to the backend
@@ -602,16 +590,13 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                     routeType: null,
                     routeSteps: []
                   };
-                console.log('Dashboard: Setting selectedDocument to:', newDocument);
                 setSelectedDocument(newDocument);
-                console.log('Dashboard: Setting showCreateForm to null');
                 setShowCreateForm(null); // Hide the form
                 console.log('Dashboard: Completed setting state for document detail view');
                 console.log('Dashboard: Current state after setting - selectedDocument:', newDocument, 'showCreateForm:', null);
                 // Refresh the document list after creating a document
                 loadDashboardData();
               } else {
-                console.log('Dashboard: No documentId received, calling handleBackToList');
                 handleBackToList();
               }
             }}
@@ -623,7 +608,6 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
             currentUser={currentUser}
             onBack={handleBackToList}
             onSave={(formData, documentId) => {
-              console.log('Dashboard: Received onSave callback from PaymentCreationForm with documentId:', documentId);
               // Handle form submission
               // console.log('Payment form submitted:', formData);
               // In a real app, this would save to the backend
@@ -646,16 +630,13 @@ const Dashboard = ({ currentUser, onLogout, theme, onThemeToggle }) => {
                     routeType: null,
                     routeSteps: []
                   };
-                console.log('Dashboard: Setting selectedDocument to:', newDocument);
                 setSelectedDocument(newDocument);
-                console.log('Dashboard: Setting showCreateForm to null');
                 setShowCreateForm(null); // Hide the form
                 console.log('Dashboard: Completed setting state for document detail view');
                 console.log('Dashboard: Current state after setting - selectedDocument:', newDocument, 'showCreateForm:', null);
                 // Refresh the document list after creating a document
                 loadDashboardData();
               } else {
-                console.log('Dashboard: No documentId received, calling handleBackToList');
                 handleBackToList();
               }
             }}
