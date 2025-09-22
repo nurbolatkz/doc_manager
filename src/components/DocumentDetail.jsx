@@ -1621,12 +1621,21 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               <button 
                 type="button" 
                 className="btn btn-secondary"
-                onClick={() => handleActionButtonClick('edit')}
+                onClick={() => {
+                  
+                  handleActionButtonClick('edit');
+                }}
                 disabled={
                   !documentDetail || 
-                  (standardizeDocumentType(documentDetail.documentType) !== 'memo' && 
-                   standardizeDocumentType(documentDetail.documentType) !== 'expenditure') ||
-                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined')
+                  (standardizeDocumentType(documentDetail.documentType) === 'payment' 
+                    ? (documentDetail.status !== 'on_approving' && 
+                       documentDetail.status !== 'declined' && 
+                       documentDetail.status !== 'prepared')
+                    : (standardizeDocumentType(documentDetail.documentType) === 'memo' || 
+                       standardizeDocumentType(documentDetail.documentType) === 'expenditure')
+                      ? (documentDetail.status !== 'prepared' && 
+                         documentDetail.status !== 'declined')
+                      : true) // Disable for other document types
                 }
               >
                 <i className="fas fa-edit"></i>
@@ -1635,13 +1644,22 @@ const DocumentDetail = ({ document, onBack, onDelete, onEdit, theme }) => {
               <button 
                 type="button" 
                 className="btn btn-danger"
-                onClick={() => setShowDeleteConfirmModal(true)}
+                onClick={() => {
+                 
+                  setShowDeleteConfirmModal(true);
+                }}
                 disabled={
                   deleting ||
                   !documentDetail || 
-                  (standardizeDocumentType(documentDetail.documentType) !== 'memo' && 
-                   standardizeDocumentType(documentDetail.documentType) !== 'expenditure') ||
-                  (documentDetail.status !== 'prepared' && documentDetail.status !== 'declined')
+                  (standardizeDocumentType(documentDetail.documentType) === 'payment' 
+                    ? (documentDetail.status !== 'on_approving' && 
+                       documentDetail.status !== 'declined' && 
+                       documentDetail.status !== 'prepared')
+                    : (standardizeDocumentType(documentDetail.documentType) === 'memo' || 
+                       standardizeDocumentType(documentDetail.documentType) === 'expenditure')
+                      ? (documentDetail.status !== 'prepared' && 
+                         documentDetail.status !== 'declined')
+                      : true) // Disable for other document types
                 }
               >
                 {deleting ? (
